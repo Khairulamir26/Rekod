@@ -7,9 +7,20 @@ CT.views.utama = (function () {
   'use strict';
 
   var u = CT.util;
-  // Fail logo rasmi dicari mengikut susunan ini di dalam folder assets.
+
+  /* Logo rasmi UIS adalah TETAP. Ia datang daripada fail yang dihantar bersama
+     aplikasi sahaja — folder assets, atau data terbenam dalam binaan satu fail.
+     Tiada cara untuk pengguna aplikasi menukar, memuat naik atau memadamnya.
+     Hanya orang yang mempunyai akses kepada repositori boleh menggantikan fail. */
   var FAIL_LOGO = ['assets/logo-uis.png', 'assets/logo-uis.jpg', 'assets/logo-uis.svg'];
-  var urlLogo = null;
+
+  function sumberLogo() {
+    // Binaan satu fail membenamkan logo terus sebagai data URI.
+    if (typeof window.CT_LOGO_TERBENAM === 'string' && window.CT_LOGO_TERBENAM) {
+      return [window.CT_LOGO_TERBENAM];
+    }
+    return window.CT_TIADA_FAIL_LOGO ? [] : FAIL_LOGO;
+  }
 
   function bingkaiLogo() {
     var bingkai = document.createElement('div');
@@ -26,27 +37,8 @@ CT.views.utama = (function () {
     imej.addEventListener('click', function (e) { e.preventDefault(); });
     imej.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
-    // Versi satu fail (pratonton) tiada folder assets — terus cuba simpanan peranti.
-    var senarai = window.CT_TIADA_FAIL_LOGO ? [] : FAIL_LOGO;
+    var senarai = sumberLogo();
     var cubaan = 0;
-    var cubaBlob = false;
-
-    // Logo yang disimpan pada peranti oleh guru.
-    function cubaLogoPeranti() {
-      if (cubaBlob) { bingkai.replaceWith(kotakMasukLogo()); return; }
-      cubaBlob = true;
-      CT.store.ambilFail('logo').then(function (rekod) {
-        if (rekod && rekod.blob) {
-          if (urlLogo) { URL.revokeObjectURL(urlLogo); }
-          urlLogo = URL.createObjectURL(rekod.blob);
-          imej.src = urlLogo;
-        } else {
-          bingkai.replaceWith(kotakMasukLogo());
-        }
-      }).catch(function () {
-        bingkai.replaceWith(kotakMasukLogo());
-      });
-    }
 
     imej.addEventListener('error', function () {
       cubaan++;
@@ -54,36 +46,23 @@ CT.views.utama = (function () {
         imej.src = senarai[cubaan];
         return;
       }
-      cubaLogoPeranti();
+      bingkai.replaceWith(kotakLogoTiada());
     });
 
     if (senarai.length) { imej.src = senarai[0]; }
-    else { cubaLogoPeranti(); }
+    else { return kotakLogoTiada(); }
     return bingkai;
   }
 
-  /* Dipaparkan hanya jika fail logo rasmi belum diletakkan dalam folder assets.
-     Logo tidak dijana semula; guru memasukkan fail rasmi sendiri. */
-  function kotakMasukLogo() {
+  /* Hanya muncul jika fail logo rasmi belum diletakkan dalam folder assets.
+     Sengaja tiada butang: logo tidak boleh ditukar dari dalam aplikasi. */
+  function kotakLogoTiada() {
     var kotak = document.createElement('div');
     kotak.className = 'logo-ganti';
     kotak.innerHTML =
-      '<p class="tebal" style="color:var(--teks);margin-bottom:6px">Logo rasmi belum dimasukkan</p>' +
-      '<p class="kecil" style="margin-bottom:12px">Letakkan fail logo rasmi UIS sebagai ' +
-      '<code>assets/logo-uis.png</code>, atau masukkan fail itu di sini sekali sahaja.</p>' +
-      '<label class="butang butang-luar butang-kecil" style="cursor:pointer">' +
-      'Masukkan fail logo<input type="file" accept="image/*" hidden></label>';
-
-    kotak.querySelector('input[type="file"]').addEventListener('change', function (e) {
-      var fail = e.target.files && e.target.files[0];
-      if (!fail) { return; }
-      CT.store.simpanFail('logo', fail, { nama: fail.name }).then(function () {
-        CT.ui.toast('Logo disimpan pada peranti.');
-        CT.app.pergi('utama');
-      }).catch(function () {
-        CT.ui.toast('Logo tidak dapat disimpan.');
-      });
-    });
+      '<p class="tebal" style="color:var(--teks);margin-bottom:6px">Logo rasmi tiada</p>' +
+      '<p class="kecil">Pentadbir perlu meletakkan fail logo rasmi UIS sebagai ' +
+      '<code>assets/logo-uis.png</code> dalam projek.</p>';
     return kotak;
   }
 

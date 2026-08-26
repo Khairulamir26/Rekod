@@ -1,23 +1,44 @@
 LOGO RASMI UNIVERSITI ISLAM SELANGOR (UIS)
 ==========================================
 
-Letakkan fail logo rasmi UIS di dalam folder ini dengan salah satu nama berikut:
+Logo rasmi adalah TETAP dan tidak boleh ditukar oleh pengguna aplikasi.
+Tiada butang muat naik logo di dalam aplikasi. Hanya orang yang mempunyai
+akses kepada repositori projek boleh menggantikan fail logo.
+
+CARA MELETAKKAN LOGO
+--------------------
+Letakkan fail logo rasmi di dalam folder ini dengan salah satu nama berikut:
 
     logo-uis.png   (disyorkan)
     logo-uis.jpg
     logo-uis.svg
 
-Aplikasi akan mencari fail mengikut susunan di atas dan memaparkannya pada
-halaman Utama dengan nisbah asal dikekalkan.
+Aplikasi mencari fail mengikut susunan di atas dan memaparkannya pada halaman
+Utama dengan nisbah asal dikekalkan.
 
-Nota penting:
-- Logo dipaparkan sebagai gambar sahaja. Ia tidak boleh ditekan dan tidak
-  dipautkan ke mana-mana laman web.
-- Jangan ubah warna, bentuk atau susunan logo rasmi.
+Melalui laman GitHub (paling mudah, tiada perisian diperlukan):
+  1. Buka https://github.com/Khairulamir26/Rekod
+  2. Masuk ke folder "assets"
+  3. Add file > Upload files, seret fail logo ke situ
+  4. Namakan fail sebagai logo-uis.png, kemudian Commit changes
+
+BINAAN SATU FAIL
+----------------
+Selepas fail logo berada di sini, jalankan:
+
+    node tools/buat-satu-fail.mjs
+
+Logo akan dibenamkan terus ke dalam classtrack-satu-fail.html sebagai data URI,
+jadi fail tunggal itu membawa logo bersamanya walaupun dikongsi tanpa folder
+assets.
+
+PERATURAN PAPARAN
+-----------------
+- Logo dipaparkan sebagai gambar sahaja: tidak boleh ditekan, tidak dipautkan
+  ke mana-mana laman web, dan tidak boleh diseret.
+- Jangan ubah warna, bentuk, nisbah atau susunan logo rasmi.
 - Aplikasi ini tidak menjana semula logo UIS. Gunakan fail rasmi daripada
   pihak universiti.
 
-Jika fail belum diletakkan di sini, halaman Utama akan memaparkan kotak
-"Logo rasmi belum dimasukkan" berserta butang untuk memasukkan fail logo
-terus daripada telefon. Logo yang dimasukkan melalui butang itu disimpan
-dalam IndexedDB peranti tersebut sahaja.
+Jika fail belum ada, halaman Utama memaparkan nota ringkas "Logo rasmi tiada"
+tanpa sebarang butang.

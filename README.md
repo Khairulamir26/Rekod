@@ -47,12 +47,20 @@ Keseluruhan antara muka menggunakan **Bahasa Melayu**, tarikh format Malaysia
 
 ## 2. Logo rasmi UIS
 
-Letakkan fail logo rasmi sebagai `assets/logo-uis.png` (atau `.jpg` / `.svg`).
+Logo rasmi adalah **tetap**. Ia dimuatkan daripada fail yang dihantar bersama
+aplikasi sahaja — `assets/logo-uis.png` (atau `.jpg` / `.svg`), atau data yang
+dibenamkan dalam binaan satu fail. **Tiada cara untuk pengguna aplikasi
+menukar, memuat naik atau memadam logo**; hanya orang yang mempunyai akses
+kepada repositori boleh menggantikan fail itu.
+
 Logo dipaparkan pada halaman Utama sahaja, sebagai gambar yang **tidak boleh
 ditekan** dan **tidak dipautkan** ke mana-mana laman web, dengan nisbah asal
-dikekalkan. Jika fail belum ada, halaman Utama memaparkan kotak "Logo rasmi
-belum dimasukkan" berserta butang untuk memasukkan fail terus daripada telefon
-(disimpan dalam IndexedDB peranti). Aplikasi ini tidak menjana semula logo UIS.
+dikekalkan. Jika fail belum ada, halaman Utama memaparkan nota ringkas
+"Logo rasmi tiada" tanpa butang. Aplikasi ini tidak menjana semula logo UIS.
+
+Selepas fail logo diletakkan, `node tools/buat-satu-fail.mjs` membenamkan logo
+terus ke dalam `classtrack-satu-fail.html` sebagai data URI, jadi fail tunggal
+itu membawa logo bersamanya.
 
 ## 3. Sukatan hafazan
 
@@ -130,7 +138,11 @@ seperti di atas dan buka `http://<alamat-IP-komputer>:8080` pada telefon.
 |---|---|---|
 | Murid, kehadiran, rekod, nota, acara, pasukan, tetapan | `localStorage` (awalan `classtrack.v1.`) | tarikh `YYYY-MM-DD` untuk kehadiran & rekod |
 | Cache cuti umum | `localStorage` | `classtrack.v1.cuti.<tahun>` |
-| PDF juz Al-Quran, logo | `IndexedDB` (`classtrack-fail`) | `juz-1` … `juz-30`, `logo` |
+| PDF juz Al-Quran | `IndexedDB` (`classtrack-fail`) | `juz-1` … `juz-30` |
+
+Logo rasmi **tidak** disimpan sebagai data pengguna — ia sebahagian daripada
+fail aplikasi, jadi ia sama bagi semua guru dan tidak boleh diubah dari dalam
+aplikasi.
 
 Setiap tarikh disimpan berasingan — mengemas kini rekod satu tarikh tidak
 menyentuh tarikh lain. Data kekal selepas halaman dimuat semula dan tidak

@@ -29,6 +29,14 @@ window.CT = window.CT || {};
       var senarai = CT.store.senaraiPasukan();
       if (senarai.length) { CT.store.simpanTetapan({ guruAktifId: senarai[0].id }); }
     }
+
+    /* Logo rasmi kini tetap dan datang daripada fail aplikasi sahaja. Buang
+       sebarang logo lama yang pernah dimasukkan pengguna pada peranti ini. */
+    if (!CT.store.tetapan().logoDikunci) {
+      CT.store.padamFail('logo').catch(function () { }).then(function () {
+        CT.store.simpanTetapan({ logoDikunci: true });
+      });
+    }
   }
 
   /* ---------- Navigasi ---------- */
