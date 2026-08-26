@@ -2,7 +2,7 @@
    PENTING: naikkan VERSI setiap kali fail aplikasi diubah supaya cache lama
    digantikan. Data guru (localStorage / IndexedDB) tidak pernah disentuh di sini. */
 
-var VERSI = 'classtrack-v1.0.0';
+var VERSI = 'classtrack-v1.1.0';
 
 var FAIL_TERAS = [
   './',
@@ -12,6 +12,7 @@ var FAIL_TERAS = [
   './js/util.js',
   './js/store.js',
   './js/cuti.js',
+  './js/sukatan.js',
   './js/ui.js',
   './js/app.js',
   './js/views/utama.js',
@@ -19,6 +20,7 @@ var FAIL_TERAS = [
   './js/views/kehadiran.js',
   './js/views/kalendar.js',
   './js/views/rekod.js',
+  './js/views/sukatan.js',
   './js/views/quran.js',
   './js/views/nota.js',
   './js/views/pasukan.js',

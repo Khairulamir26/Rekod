@@ -213,7 +213,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   left: 0; right: 0; bottom: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
   background: rgba(255, 255, 255, .97);
@@ -233,8 +233,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   justify-content: center;
   gap: 3px;
   color: var(--teks-lembut);
-  font-size: .68rem;
+  font-size: .62rem;
   font-weight: 600;
+  line-height: 1.15;
   cursor: pointer;
 }
 .nav-butang svg {
@@ -250,7 +251,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 @media (min-width: 620px) {
   :root { --nav-tinggi: 68px; }
-  .nav-bawah { grid-template-columns: repeat(8, 1fr); max-width: 780px; margin: 0 auto; border-radius: 18px 18px 0 0; }
+  .nav-bawah {
+    grid-template-columns: repeat(9, 1fr);
+    max-width: 860px;
+    margin: 0 auto;
+    border-radius: 18px 18px 0 0;
+  }
+  .nav-butang { font-size: .68rem; }
 }
 
 /* ---------- Halaman Utama ---------- */
@@ -517,6 +524,66 @@ button, input, select, textarea { font: inherit; color: inherit; }
   cursor: pointer;
 }
 .tapis button.aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+
+/* ---------- Sukatan (carta bar mendatar) ---------- */
+.sk-senarai { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+.sk-baris {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  color: inherit;
+}
+.sk-kepala { display: flex; align-items: center; gap: 8px; }
+.sk-trek {
+  display: flex;
+  gap: 2px;                   /* pemisah nipis antara segmen */
+  height: 18px;
+  overflow: hidden;
+  background: transparent;
+}
+.sk-sudah { flex: 0 0 auto; background: var(--hijau); }
+.sk-baki { flex: 1 1 0; min-width: 0; background: #c6d3cb; }
+.sk-trek > :first-child { border-radius: 4px 0 0 4px; }
+.sk-trek > :last-child { border-radius: 0 4px 4px 0; }
+.sk-trek > :only-child { border-radius: 4px; }
+.sk-angka {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: .8rem;
+  color: var(--teks-lembut);
+  font-variant-numeric: tabular-nums;
+}
+.sk-angka b { color: var(--teks); font-size: .92rem; }
+.sk-petunjuk { display: flex; flex-wrap: wrap; gap: 14px; font-size: .75rem; color: var(--teks-lembut); }
+.sk-petunjuk span { display: inline-flex; align-items: center; gap: 6px; }
+.sk-petunjuk i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.sk-warna-sudah { background: var(--hijau); }
+.sk-warna-baki { background: #c6d3cb; }
+.sk-skala {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--garis);
+  padding-top: 6px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.jadual-kotak { overflow-x: auto; }
+table.jadual { width: 100%; border-collapse: collapse; font-size: .82rem; }
+table.jadual th, table.jadual td { padding: 8px 6px; border-bottom: 1px solid var(--garis); text-align: left; }
+table.jadual th { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--teks-lembut); }
+table.jadual td.angka, table.jadual th.angka { text-align: right; font-variant-numeric: tabular-nums; }
+table.jadual tr:last-child td { border-bottom: 0; }
 
 /* ---------- Lapisan (modal) ---------- */
 .lapisan {

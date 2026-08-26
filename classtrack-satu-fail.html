@@ -220,7 +220,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   left: 0; right: 0; bottom: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
   background: rgba(255, 255, 255, .97);
@@ -240,8 +240,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   justify-content: center;
   gap: 3px;
   color: var(--teks-lembut);
-  font-size: .68rem;
+  font-size: .62rem;
   font-weight: 600;
+  line-height: 1.15;
   cursor: pointer;
 }
 .nav-butang svg {
@@ -257,7 +258,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 @media (min-width: 620px) {
   :root { --nav-tinggi: 68px; }
-  .nav-bawah { grid-template-columns: repeat(8, 1fr); max-width: 780px; margin: 0 auto; border-radius: 18px 18px 0 0; }
+  .nav-bawah {
+    grid-template-columns: repeat(9, 1fr);
+    max-width: 860px;
+    margin: 0 auto;
+    border-radius: 18px 18px 0 0;
+  }
+  .nav-butang { font-size: .68rem; }
 }
 
 /* ---------- Halaman Utama ---------- */
@@ -525,6 +532,66 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .tapis button.aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; }
 
+/* ---------- Sukatan (carta bar mendatar) ---------- */
+.sk-senarai { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+.sk-baris {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  color: inherit;
+}
+.sk-kepala { display: flex; align-items: center; gap: 8px; }
+.sk-trek {
+  display: flex;
+  gap: 2px;                   /* pemisah nipis antara segmen */
+  height: 18px;
+  overflow: hidden;
+  background: transparent;
+}
+.sk-sudah { flex: 0 0 auto; background: var(--hijau); }
+.sk-baki { flex: 1 1 0; min-width: 0; background: #c6d3cb; }
+.sk-trek > :first-child { border-radius: 4px 0 0 4px; }
+.sk-trek > :last-child { border-radius: 0 4px 4px 0; }
+.sk-trek > :only-child { border-radius: 4px; }
+.sk-angka {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: .8rem;
+  color: var(--teks-lembut);
+  font-variant-numeric: tabular-nums;
+}
+.sk-angka b { color: var(--teks); font-size: .92rem; }
+.sk-petunjuk { display: flex; flex-wrap: wrap; gap: 14px; font-size: .75rem; color: var(--teks-lembut); }
+.sk-petunjuk span { display: inline-flex; align-items: center; gap: 6px; }
+.sk-petunjuk i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
+.sk-warna-sudah { background: var(--hijau); }
+.sk-warna-baki { background: #c6d3cb; }
+.sk-skala {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid var(--garis);
+  padding-top: 6px;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.jadual-kotak { overflow-x: auto; }
+table.jadual { width: 100%; border-collapse: collapse; font-size: .82rem; }
+table.jadual th, table.jadual td { padding: 8px 6px; border-bottom: 1px solid var(--garis); text-align: left; }
+table.jadual th { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--teks-lembut); }
+table.jadual td.angka, table.jadual th.angka { text-align: right; font-variant-numeric: tabular-nums; }
+table.jadual tr:last-child td { border-bottom: 0; }
+
 /* ---------- Lapisan (modal) ---------- */
 .lapisan {
   position: fixed;
@@ -628,6 +695,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   <button class="nav-butang" data-tab="rekod" type="button">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l4 4V20a1 1 0 01-1 1H6a1 1 0 01-1-1V4.5a1 1 0 011-1z"/><path d="M14.5 3.5V8H19"/><path d="M8.5 12.5h7"/><path d="M8.5 16.5h4.5"/></svg>
     <span>Rekod</span>
+  </button>
+  <button class="nav-butang" data-tab="sukatan" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M3 20h18"/></svg>
+    <span>Sukatan</span>
   </button>
   <button class="nav-butang" data-tab="quran" type="button">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 016.5 3H12v17H6.5A2.5 2.5 0 004 22.5z"/><path d="M20 5.5A2.5 2.5 0 0017.5 3H12v17h5.5a2.5 2.5 0 012.5 2.5z"/></svg>
@@ -1436,6 +1507,211 @@ window.CT = window.CT || {};
 </script>
 
 <script>
+/* js/sukatan.js */
+/* ClassTrack — sukatan hafazan mengikut program dan tahap.
+
+   Muka surat mengikut susun atur mushaf 604 halaman (Madani / Dar Al-Ma'rifah).
+   Nombor halaman yang direkodkan guru dalam tab Rekod ialah nombor halaman
+   MUTLAK dalam mushaf (1-604), bukan halaman dalam juz. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var JUMLAH_HALAMAN = 604;
+
+  /* Halaman pertama bagi setiap juz. */
+  var JUZ_MULA = {
+    1: 1, 2: 22, 3: 42, 4: 62, 5: 82, 6: 102, 7: 121, 8: 142, 9: 162, 10: 182,
+    11: 201, 12: 222, 13: 242, 14: 262, 15: 282, 16: 302, 17: 322, 18: 342,
+    19: 362, 20: 382, 21: 402, 22: 422, 23: 442, 24: 462, 25: 482, 26: 502,
+    27: 522, 28: 542, 29: 562, 30: 582
+  };
+
+  var PROGRAM = {
+    diploma: {
+      nama: 'Diploma',
+      label: 'Hifz',
+      tahap: {
+        1: [1, 4], 2: [5, 9], 3: [10, 14], 4: [15, 20], 5: [21, 25], 6: [26, 30]
+      }
+    },
+    ijazah: {
+      nama: 'Ijazah',
+      label: "I'adah",
+      tahap: {
+        1: [1, 4], 2: [5, 8], 3: [9, 12], 4: [13, 16],
+        5: [17, 20], 6: [21, 24], 7: [25, 26], 8: [27, 30]
+      }
+    }
+  };
+
+  var TARIKH_AKHIR_LALAI = '2026-09-25';
+
+  function program(kunci) {
+    return PROGRAM[kunci] || PROGRAM.diploma;
+  }
+
+  function namaTahap(kunciProgram, tahap) {
+    return program(kunciProgram).label + ' ' + tahap;
+  }
+
+  /* Julat juz bagi tahap tertentu, atau null jika tahap itu tiada sukatan. */
+  function julatJuz(kunciProgram, tahap) {
+    var julat = program(kunciProgram).tahap[tahap];
+    if (!julat) { return null; }
+    return { mula: julat[0], habis: julat[1] };
+  }
+
+  /* Julat halaman mutlak bagi tahap tertentu. */
+  function julatHalaman(kunciProgram, tahap) {
+    var juz = julatJuz(kunciProgram, tahap);
+    if (!juz) { return null; }
+    var mula = JUZ_MULA[juz.mula];
+    var habis = juz.habis >= 30 ? JUMLAH_HALAMAN : JUZ_MULA[juz.habis + 1] - 1;
+    return {
+      juzMula: juz.mula,
+      juzHabis: juz.habis,
+      mula: mula,
+      habis: habis,
+      jumlah: habis - mula + 1
+    };
+  }
+
+  /* Halaman terjauh yang pernah dihantar murid, berserta tarikh rekod pertama. */
+  function rekodHafazan(muridId) {
+    var semua = CT.store.baca('rekod', {});
+    var terjauh = 0;
+    var tarikhTerjauh = null;
+    var tarikhPertama = null;
+    var bilanganHari = 0;
+
+    Object.keys(semua).forEach(function (tarikh) {
+      var r = semua[tarikh][muridId];
+      if (!r) { return; }
+      var halaman = Math.max(+r.mukaHabis || 0, +r.mukaMula || 0);
+      if (!halaman) { return; }
+
+      bilanganHari++;
+      if (!tarikhPertama || tarikh < tarikhPertama) { tarikhPertama = tarikh; }
+      if (halaman > terjauh) { terjauh = halaman; tarikhTerjauh = tarikh; }
+    });
+
+    return {
+      halaman: terjauh,
+      tarikh: tarikhTerjauh,
+      tarikhPertama: tarikhPertama,
+      bilanganHari: bilanganHari
+    };
+  }
+
+  function bezaHari(dari, hingga) {
+    if (!CT.util.sahKunci(dari) || !CT.util.sahKunci(hingga)) { return 0; }
+    var a = CT.util.pecah(dari);
+    var b = CT.util.pecah(hingga);
+    var ms = Date.UTC(b.tahun, b.bulan - 1, b.hari) - Date.UTC(a.tahun, a.bulan - 1, a.hari);
+    return Math.round(ms / 86400000);
+  }
+
+  function tarikhAkhir() {
+    return CT.store.tetapan().tarikhAkhirSemester || TARIKH_AKHIR_LALAI;
+  }
+
+  /* Kiraan penuh sukatan bagi seorang murid. */
+  function kira(murid, hariIni) {
+    hariIni = hariIni || CT.util.hariIni();
+
+    var kunciProgram = murid.program || 'diploma';
+    var tahap = +murid.hifz || 0;
+    var halaman = julatHalaman(kunciProgram, tahap);
+
+    var hasil = {
+      muridId: murid.id,
+      nama: murid.nama,
+      program: kunciProgram,
+      namaProgram: program(kunciProgram).nama,
+      tahap: tahap,
+      namaTahap: namaTahap(kunciProgram, tahap),
+      adaSukatan: !!halaman,
+      hariBaki: Math.max(0, bezaHari(hariIni, tarikhAkhir())),
+      semesterTamat: bezaHari(hariIni, tarikhAkhir()) < 0
+    };
+
+    if (!halaman) { return hasil; }
+
+    var rekod = rekodHafazan(murid.id);
+    var dihantar = Math.min(Math.max(rekod.halaman, halaman.mula - 1), halaman.habis);
+    var sudah = Math.max(0, dihantar - halaman.mula + 1);
+
+    hasil.juzMula = halaman.juzMula;
+    hasil.juzHabis = halaman.juzHabis;
+    hasil.halamanMula = halaman.mula;
+    hasil.halamanHabis = halaman.habis;
+    hasil.jumlah = halaman.jumlah;
+    hasil.halamanDihantar = rekod.halaman;
+    hasil.tarikhDihantar = rekod.tarikh;
+    hasil.sudah = sudah;
+    hasil.baki = halaman.jumlah - sudah;
+    hasil.peratus = CT.util.peratus(sudah, halaman.jumlah);
+    hasil.luarJulat = rekod.halaman > 0 &&
+      (rekod.halaman < halaman.mula || rekod.halaman > halaman.habis);
+
+    // Kadar diperlukan bagi baki hari.
+    hasil.kadarPerlu = hasil.hariBaki > 0 ? hasil.baki / hasil.hariBaki : null;
+
+    /* Kadar sebenar setakat ini. Hanya bermakna apabila murid mempunyai
+       sekurang-kurangnya dua hari rekod berlainan — satu hari sahaja akan
+       memberi angka yang mengelirukan. */
+    var hariBerlalu = rekod.tarikhPertama ? bezaHari(rekod.tarikhPertama, hariIni) + 1 : 0;
+    hasil.hariRekod = rekod.bilanganHari;
+    hasil.hariBerlalu = hariBerlalu;
+    hasil.kadarSemasa = (rekod.bilanganHari >= 2 && hariBerlalu > 1 && sudah > 0)
+      ? sudah / hariBerlalu
+      : null;
+
+    hasil.status = nilaiStatus(hasil);
+    return hasil;
+  }
+
+  /* Ambang kadar: 1 halaman sehari dianggap kadar biasa hafazan harian,
+     lebih 2 halaman sehari dianggap terlalu berat untuk baki hari yang ada. */
+  var AMBANG_SELESA = 1;
+  var AMBANG_BERAT = 2;
+
+  function nilaiStatus(d) {
+    if (d.baki <= 0) { return { kunci: 'cukup', teks: 'Sukatan cukup' }; }
+    if (d.semesterTamat) { return { kunci: 'tamat', teks: 'Semester tamat' }; }
+    if (d.hariBaki <= 0) { return { kunci: 'genting', teks: 'Hari terakhir' }; }
+    if (d.kadarPerlu <= AMBANG_SELESA) { return { kunci: 'ikut', teks: 'Ikut jadual' }; }
+    if (d.kadarPerlu <= AMBANG_BERAT) { return { kunci: 'pantau', teks: 'Perlu dipantau' }; }
+    return { kunci: 'kejar', teks: 'Perlu dikejar' };
+  }
+
+  function kiraSemua(hariIni) {
+    return CT.store.senaraiMurid().map(function (m) { return kira(m, hariIni); });
+  }
+
+  CT.sukatan = {
+    JUMLAH_HALAMAN: JUMLAH_HALAMAN,
+    JUZ_MULA: JUZ_MULA,
+    PROGRAM: PROGRAM,
+    TARIKH_AKHIR_LALAI: TARIKH_AKHIR_LALAI,
+    program: program,
+    namaTahap: namaTahap,
+    julatJuz: julatJuz,
+    julatHalaman: julatHalaman,
+    rekodHafazan: rekodHafazan,
+    bezaHari: bezaHari,
+    tarikhAkhir: tarikhAkhir,
+    kira: kira,
+    kiraSemua: kiraSemua
+  };
+})();
+
+</script>
+
+<script>
 /* js/ui.js */
 /* ClassTrack — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
 
@@ -1791,7 +2067,8 @@ CT.views.murid = (function () {
       '</span>' +
       '<span class="baris-lipat" style="flex:0 0 auto;justify-content:flex-end">' +
       '<span class="lencana">Sem ' + u.selamat(m.semester || '-') + '</span>' +
-      '<span class="lencana lencana-biru">Hifz ' + u.selamat(m.hifz || '-') + '</span>' +
+      '<span class="lencana lencana-biru">' +
+      u.selamat(CT.sukatan.namaTahap(m.program, m.hifz || '-')) + '</span>' +
       '</span>';
     butang.addEventListener('click', function () { bukaProfil(m.id); });
     return butang;
@@ -1814,6 +2091,14 @@ CT.views.murid = (function () {
       '<input id="m-telefon" type="tel" value="' + u.selamat(m.telefon || '') +
       '" placeholder="Contoh: 012-3456789" autocomplete="off"></div>' +
 
+      '<div class="medan"><label for="m-program">Program</label>' +
+      '<select id="m-program">' +
+      '<option value="diploma"' + (m.program !== 'ijazah' ? ' selected' : '') +
+      '>Diploma (Hifz 1-6)</option>' +
+      '<option value="ijazah"' + (m.program === 'ijazah' ? ' selected' : '') +
+      '>Ijazah (I\'adah 1-8)</option>' +
+      '</select></div>' +
+
       '<div class="medan-dua">' +
       '<div class="medan"><label for="m-semester">Semester</label>' +
       '<select id="m-semester">' + CT.ui.pilihanNombor(1, 8, m.semester || 1) + '</select></div>' +
@@ -1833,6 +2118,7 @@ CT.views.murid = (function () {
         nama: nama,
         matrik: kotak.querySelector('#m-matrik').value.trim(),
         telefon: kotak.querySelector('#m-telefon').value.trim(),
+        program: kotak.querySelector('#m-program').value,
         semester: +kotak.querySelector('#m-semester').value,
         hifz: +kotak.querySelector('#m-hifz').value
       });
@@ -1861,6 +2147,7 @@ CT.views.murid = (function () {
       '<div class="rekod-medan">' +
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
       '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
+      '<div><b>Program</b>' + u.selamat(CT.sukatan.program(m.program).nama) + '</div>' +
       '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
       '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +
       '</div></div>' +
@@ -1896,11 +2183,11 @@ CT.views.murid = (function () {
   /* ---------- Data contoh (pilihan guru) ---------- */
   function muatContoh() {
     var contoh = [
-      { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', semester: 1, hifz: 1 },
-      { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', semester: 2, hifz: 3 },
-      { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', semester: 3, hifz: 2 },
-      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', semester: 4, hifz: 5 },
-      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', semester: 5, hifz: 4 }
+      { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', program: 'diploma', semester: 1, hifz: 1 },
+      { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', program: 'diploma', semester: 2, hifz: 3 },
+      { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', program: 'diploma', semester: 3, hifz: 2 },
+      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', program: 'ijazah', semester: 4, hifz: 5 },
+      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', program: 'ijazah', semester: 5, hifz: 4 }
     ];
     contoh.forEach(function (m) { CT.store.simpanMurid(m); });
     CT.ui.toast('5 murid contoh ditambah.');
@@ -2632,6 +2919,278 @@ CT.views.rekod = (function () {
 </script>
 
 <script>
+/* js/views/sukatan.js */
+/* Tab Sukatan — berapa banyak lagi setiap murid perlu hantar untuk cukup
+   sukatan semester, dipaparkan sebagai carta bar mendatar.
+
+   Bar dilukis pada skala halaman yang sama bagi semua murid, jadi panjang bar
+   boleh dibandingkan terus antara murid. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.sukatan = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var tapisProgram = 'semua';
+  var paparJadual = false;
+
+  function lencanaStatus(status) {
+    var kelas = {
+      cukup: 'lencana',
+      ikut: 'lencana',
+      pantau: 'lencana lencana-emas',
+      kejar: 'lencana lencana-merah',
+      genting: 'lencana lencana-merah',
+      tamat: 'lencana lencana-kelabu',
+      belum: 'lencana lencana-kelabu'
+    }[status.kunci] || 'lencana lencana-kelabu';
+    return '<span class="' + kelas + '">' + u.selamat(status.teks) + '</span>';
+  }
+
+  function nombor(n, titik) {
+    if (n === null || n === undefined) { return '-'; }
+    return (Math.round(n * Math.pow(10, titik || 0)) / Math.pow(10, titik || 0)).toString();
+  }
+
+  /* ---------- Butiran seorang murid ---------- */
+  function bukaButiran(d) {
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<p class="tebal" style="margin-bottom:4px">' + u.selamat(d.nama) + '</p>' +
+      '<p class="kecil" style="margin-bottom:14px">' +
+      u.selamat(d.namaProgram + ' — ' + d.namaTahap) + '</p>' +
+      '<div class="rekod-medan">' +
+      '<div><b>Sukatan</b>Juz ' + d.juzMula + ' &ndash; Juz ' + d.juzHabis + '</div>' +
+      '<div><b>Muka surat</b>' + d.halamanMula + ' &ndash; ' + d.halamanHabis + '</div>' +
+      '<div><b>Jumlah sukatan</b>' + d.jumlah + ' halaman</div>' +
+      '<div><b>Sudah dihantar</b>' + d.sudah + ' halaman</div>' +
+      '<div><b>Baki sukatan</b>' + d.baki + ' halaman</div>' +
+      '<div><b>Halaman terakhir</b>' + (d.halamanDihantar || '-') +
+      (d.tarikhDihantar ? ' (' + u.tarikhRingkas(d.tarikhDihantar) + ')' : '') + '</div>' +
+      '<div><b>Baki hari</b>' + d.hariBaki + ' hari</div>' +
+      '<div><b>Perlu sehari</b>' + (d.kadarPerlu === null ? '-' : nombor(d.kadarPerlu, 2) + ' halaman') + '</div>' +
+      '<div><b>Kadar semasa</b>' + (d.kadarSemasa === null
+        ? 'Belum cukup data (' + (d.hariRekod || 0) + ' hari rekod)'
+        : nombor(d.kadarSemasa, 2) + ' halaman/hari') + '</div>' +
+      '<div><b>Status</b>' + u.selamat(d.status.teks) + '</div>' +
+      '</div>' +
+      (d.luarJulat
+        ? '<div class="notis notis-info jarak-atas">Halaman terakhir yang direkodkan (' +
+          d.halamanDihantar + ') berada di luar julat sukatan tahap ini. ' +
+          'Semak semula nombor muka surat dalam tab Rekod.</div>'
+        : '') +
+      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
+      'Buka Rekod hari ini</button>';
+
+    kotak.querySelector('[data-rekod]').addEventListener('click', function () {
+      CT.ui.tutupLapisan();
+      CT.app.pergi('rekod', { tarikh: u.hariIni() });
+    });
+    CT.ui.bukaLapisan('Butiran Sukatan', kotak);
+  }
+
+  /* ---------- Satu bar ---------- */
+  function barMurid(d, skalaMaks) {
+    var baris = document.createElement('button');
+    baris.type = 'button';
+    baris.className = 'sk-baris';
+
+    var lebarBar = Math.max(6, (d.jumlah / skalaMaks) * 100);
+    var bahagianSudah = d.jumlah ? (d.sudah / d.jumlah) * 100 : 0;
+
+    // Segmen berukuran sifar ditinggalkan supaya hujung bar kekal kemas.
+    var segmen = '';
+    if (bahagianSudah > 0) {
+      segmen += '<span class="sk-sudah" style="width:' + bahagianSudah.toFixed(2) + '%"></span>';
+    }
+    if (d.baki > 0) { segmen += '<span class="sk-baki"></span>'; }
+
+    baris.innerHTML =
+      '<span class="sk-kepala">' +
+      '<span class="tumbuh"><span class="murid-nama">' + u.selamat(d.nama) + '</span> ' +
+      '<span class="kecil">' + u.selamat(d.namaTahap) + '</span></span>' +
+      lencanaStatus(d.status) +
+      '</span>' +
+      '<span class="sk-trek" style="width:' + lebarBar.toFixed(2) + '%">' + segmen + '</span>' +
+      '<span class="sk-angka">' +
+      '<span><b>' + d.baki + '</b> halaman lagi</span>' +
+      '<span>' + d.sudah + ' / ' + d.jumlah + ' halaman &middot; ' + d.peratus + '%</span>' +
+      '</span>';
+
+    baris.setAttribute('aria-label', d.nama + ', ' + d.namaTahap + ': sudah ' +
+      d.sudah + ' halaman daripada ' + d.jumlah + ', baki ' + d.baki + ' halaman.');
+    baris.addEventListener('click', function () { bukaButiran(d); });
+    return baris;
+  }
+
+  /* ---------- Jadual data ---------- */
+  function jadual(senarai) {
+    var kotak = document.createElement('div');
+    kotak.className = 'kad jadual-kotak jarak-atas';
+    kotak.innerHTML =
+      '<table class="jadual"><thead><tr>' +
+      '<th>Murid</th><th>Tahap</th><th class="angka">Sukatan</th>' +
+      '<th class="angka">Sudah</th><th class="angka">Baki</th><th class="angka">Perlu/hari</th>' +
+      '</tr></thead><tbody>' +
+      senarai.map(function (d) {
+        return '<tr><td>' + u.selamat(d.nama) + '</td><td>' + u.selamat(d.namaTahap) + '</td>' +
+          '<td class="angka">' + d.jumlah + '</td>' +
+          '<td class="angka">' + d.sudah + '</td>' +
+          '<td class="angka">' + d.baki + '</td>' +
+          '<td class="angka">' + (d.kadarPerlu === null ? '-' : nombor(d.kadarPerlu, 2)) + '</td></tr>';
+      }).join('') +
+      '</tbody></table>';
+    return kotak;
+  }
+
+  /* ---------- Halaman ---------- */
+  function render(skrin) {
+    var hariIni = u.hariIni();
+    var akhir = CT.sukatan.tarikhAkhir();
+    var hariBaki = Math.max(0, CT.sukatan.bezaHari(hariIni, akhir));
+
+    /* Tetapan semester */
+    var kadSemester = document.createElement('div');
+    kadSemester.className = 'kad';
+    kadSemester.innerHTML =
+      '<p class="seksyen-tajuk">Hari terakhir semester</p>' +
+      '<div class="medan" style="margin-bottom:8px">' +
+      '<input type="date" id="sk-akhir" value="' + u.selamat(akhir) + '" aria-label="Hari terakhir semester">' +
+      '</div>' +
+      '<p class="kecil">' + u.selamat(u.tarikhPenuh(akhir)) + ' &middot; <b>' +
+      hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>';
+
+    var medanAkhir = kadSemester.querySelector('#sk-akhir');
+    CT.ui.hiasTarikh(medanAkhir);      // paparkan format tarikh Malaysia
+    medanAkhir.addEventListener('change', function () {
+      if (u.sahKunci(medanAkhir.value)) {
+        CT.store.simpanTetapan({ tarikhAkhirSemester: medanAkhir.value });
+        CT.ui.toast('Hari terakhir semester dikemas kini.');
+        CT.app.segarSemula();
+      }
+    });
+    skrin.appendChild(kadSemester);
+
+    /* Tapis program */
+    var tapis = document.createElement('div');
+    tapis.className = 'tapis jarak-atas';
+    [['semua', 'Semua program'], ['diploma', 'Diploma'], ['ijazah', 'Ijazah']].forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = p[1];
+      b.className = tapisProgram === p[0] ? 'aktif' : '';
+      b.addEventListener('click', function () {
+        tapisProgram = p[0];
+        CT.app.segarSemula();
+      });
+      tapis.appendChild(b);
+    });
+    skrin.appendChild(tapis);
+
+    /* Data */
+    var semua = CT.sukatan.kiraSemua(hariIni);
+    var senarai = semua.filter(function (d) {
+      return d.adaSukatan && (tapisProgram === 'semua' || d.program === tapisProgram);
+    }).sort(function (a, b) { return b.baki - a.baki; });
+
+    var tiadaSukatan = semua.filter(function (d) { return !d.adaSukatan; });
+
+    if (!semua.length) {
+      var kosong = CT.ui.kosong('Belum ada murid',
+        'Tambah murid dalam tab Murid untuk melihat kemajuan sukatan.');
+      kosong.classList.add('jarak-atas');
+      skrin.appendChild(kosong);
+      return;
+    }
+
+    /* Ringkasan */
+    var belumCukup = senarai.filter(function (d) { return d.baki > 0; });
+    var jumlahBaki = senarai.reduce(function (n, d) { return n + d.baki; }, 0);
+
+    var statistik = document.createElement('div');
+    statistik.className = 'statistik jarak-atas';
+    statistik.innerHTML =
+      '<div class="stat"><b>' + senarai.length + '</b><span>Murid</span></div>' +
+      '<div class="stat"><b style="color:var(--merah)">' + belumCukup.length +
+      '</b><span>Belum cukup</span></div>' +
+      '<div class="stat"><b>' + jumlahBaki + '</b><span>Baki halaman</span></div>';
+    skrin.appendChild(statistik);
+
+    if (!senarai.length) {
+      var takde = CT.ui.kosong('Tiada murid dalam tapisan ini',
+        'Tukar tapisan program untuk melihat murid lain.');
+      takde.classList.add('jarak-atas');
+      skrin.appendChild(takde);
+      return;
+    }
+
+    /* Carta */
+    var skalaMaks = senarai.reduce(function (n, d) { return Math.max(n, d.jumlah); }, 1);
+
+    var carta = document.createElement('div');
+    carta.className = 'kad jarak-atas';
+    carta.innerHTML =
+      '<p class="seksyen-tajuk">Baki sukatan setiap murid</p>' +
+      '<div class="sk-petunjuk">' +
+      '<span><i class="sk-warna-sudah"></i> Sudah dihantar</span>' +
+      '<span><i class="sk-warna-baki"></i> Baki sukatan</span>' +
+      '</div>';
+
+    var senaraiBar = document.createElement('div');
+    senaraiBar.className = 'sk-senarai';
+    senarai.forEach(function (d) { senaraiBar.appendChild(barMurid(d, skalaMaks)); });
+    carta.appendChild(senaraiBar);
+
+    var skala = document.createElement('p');
+    skala.className = 'kecil sk-skala';
+    skala.innerHTML = '<span>0</span><span>Skala halaman &middot; bar penuh = ' +
+      skalaMaks + ' halaman</span>';
+    carta.appendChild(skala);
+
+    var togol = document.createElement('button');
+    togol.type = 'button';
+    togol.className = 'butang butang-luar butang-kecil jarak-atas';
+    togol.textContent = paparJadual ? 'Sembunyikan jadual' : 'Lihat jadual';
+    togol.addEventListener('click', function () {
+      paparJadual = !paparJadual;
+      CT.app.segarSemula();
+    });
+    carta.appendChild(togol);
+
+    skrin.appendChild(carta);
+
+    if (paparJadual) { skrin.appendChild(jadual(senarai)); }
+
+    if (tiadaSukatan.length) {
+      var notis = document.createElement('div');
+      notis.className = 'notis notis-info jarak-atas';
+      notis.innerHTML = '<b>' + tiadaSukatan.length + ' murid tiada sukatan:</b> ' +
+        tiadaSukatan.map(function (d) {
+          return u.selamat(d.nama) + ' (' + u.selamat(d.namaProgram + ' ' + d.namaTahap) + ')';
+        }).join(', ') +
+        '. Program Diploma mempunyai Hifz 1 hingga 6 sahaja. Semak program dan tahap ' +
+        'dalam profil murid.';
+      skrin.appendChild(notis);
+    }
+
+    var nota = document.createElement('p');
+    nota.className = 'kecil jarak-atas';
+    nota.innerHTML = 'Kiraan menggunakan halaman terjauh yang direkodkan dalam tab ' +
+      'Rekod (nombor halaman mushaf 604 halaman). Status ditentukan oleh kadar yang ' +
+      'diperlukan bagi baki hari: <b>Ikut jadual</b> 1 halaman sehari atau kurang, ' +
+      '<b>Perlu dipantau</b> sehingga 2 halaman sehari, <b>Perlu dikejar</b> lebih ' +
+      'daripada itu.';
+    skrin.appendChild(nota);
+  }
+
+  return { tajuk: 'Sukatan', render: render };
+})();
+
+</script>
+
+<script>
 /* js/views/quran.js */
 /* Tab Al-Quran — 30 juz.
    Aplikasi ini TIDAK disertakan dengan kandungan mushaf. Guru memasukkan sendiri
@@ -3173,7 +3732,8 @@ window.CT = window.CT || {};
   'use strict';
 
   var u = CT.util;
-  var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'quran', 'nota', 'pasukan'];
+  var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
+    'quran', 'nota', 'pasukan'];
   var tabSemasa = 'utama';
   var paramSemasa = null;
 

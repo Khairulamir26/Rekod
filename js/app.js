@@ -6,7 +6,8 @@ window.CT = window.CT || {};
   'use strict';
 
   var u = CT.util;
-  var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'quran', 'nota', 'pasukan'];
+  var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
+    'quran', 'nota', 'pasukan'];
   var tabSemasa = 'utama';
   var paramSemasa = null;
 

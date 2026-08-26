@@ -34,7 +34,8 @@ CT.views.murid = (function () {
       '</span>' +
       '<span class="baris-lipat" style="flex:0 0 auto;justify-content:flex-end">' +
       '<span class="lencana">Sem ' + u.selamat(m.semester || '-') + '</span>' +
-      '<span class="lencana lencana-biru">Hifz ' + u.selamat(m.hifz || '-') + '</span>' +
+      '<span class="lencana lencana-biru">' +
+      u.selamat(CT.sukatan.namaTahap(m.program, m.hifz || '-')) + '</span>' +
       '</span>';
     butang.addEventListener('click', function () { bukaProfil(m.id); });
     return butang;
@@ -57,6 +58,14 @@ CT.views.murid = (function () {
       '<input id="m-telefon" type="tel" value="' + u.selamat(m.telefon || '') +
       '" placeholder="Contoh: 012-3456789" autocomplete="off"></div>' +
 
+      '<div class="medan"><label for="m-program">Program</label>' +
+      '<select id="m-program">' +
+      '<option value="diploma"' + (m.program !== 'ijazah' ? ' selected' : '') +
+      '>Diploma (Hifz 1-6)</option>' +
+      '<option value="ijazah"' + (m.program === 'ijazah' ? ' selected' : '') +
+      '>Ijazah (I\'adah 1-8)</option>' +
+      '</select></div>' +
+
       '<div class="medan-dua">' +
       '<div class="medan"><label for="m-semester">Semester</label>' +
       '<select id="m-semester">' + CT.ui.pilihanNombor(1, 8, m.semester || 1) + '</select></div>' +
@@ -76,6 +85,7 @@ CT.views.murid = (function () {
         nama: nama,
         matrik: kotak.querySelector('#m-matrik').value.trim(),
         telefon: kotak.querySelector('#m-telefon').value.trim(),
+        program: kotak.querySelector('#m-program').value,
         semester: +kotak.querySelector('#m-semester').value,
         hifz: +kotak.querySelector('#m-hifz').value
       });
@@ -104,6 +114,7 @@ CT.views.murid = (function () {
       '<div class="rekod-medan">' +
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
       '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
+      '<div><b>Program</b>' + u.selamat(CT.sukatan.program(m.program).nama) + '</div>' +
       '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
       '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +
       '</div></div>' +
@@ -139,11 +150,11 @@ CT.views.murid = (function () {
   /* ---------- Data contoh (pilihan guru) ---------- */
   function muatContoh() {
     var contoh = [
-      { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', semester: 1, hifz: 1 },
-      { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', semester: 2, hifz: 3 },
-      { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', semester: 3, hifz: 2 },
-      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', semester: 4, hifz: 5 },
-      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', semester: 5, hifz: 4 }
+      { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', program: 'diploma', semester: 1, hifz: 1 },
+      { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', program: 'diploma', semester: 2, hifz: 3 },
+      { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', program: 'diploma', semester: 3, hifz: 2 },
+      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', program: 'ijazah', semester: 4, hifz: 5 },
+      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', program: 'ijazah', semester: 5, hifz: 4 }
     ];
     contoh.forEach(function (m) { CT.store.simpanMurid(m); });
     CT.ui.toast('5 murid contoh ditambah.');
