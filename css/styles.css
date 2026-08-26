@@ -440,6 +440,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .t-acara { background: var(--biru); }
 .t-cuti { background: var(--emas); }
 .kal-sel.pilih .t-rekod, .kal-sel.pilih .t-acara, .kal-sel.pilih .t-cuti { background: #fff; }
+/* Pada skrin lebar, sel kalendar tidak perlu setinggi lebarnya. */
+@media (min-width: 620px) {
+  .kal-sel { aspect-ratio: auto; min-height: 56px; }
+}
+
 .petunjuk { display: flex; flex-wrap: wrap; gap: 12px; font-size: .74rem; color: var(--teks-lembut); margin-top: 10px; }
 .petunjuk span { display: inline-flex; align-items: center; gap: 5px; }
 .petunjuk i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }

@@ -26,19 +26,15 @@ CT.views.utama = (function () {
     imej.addEventListener('click', function (e) { e.preventDefault(); });
     imej.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
+    // Versi satu fail (pratonton) tiada folder assets — terus cuba simpanan peranti.
+    var senarai = window.CT_TIADA_FAIL_LOGO ? [] : FAIL_LOGO;
     var cubaan = 0;
     var cubaBlob = false;
 
-    imej.addEventListener('error', function () {
-      cubaan++;
-      if (cubaan < FAIL_LOGO.length) {
-        imej.src = FAIL_LOGO[cubaan];
-        return;
-      }
+    // Logo yang disimpan pada peranti oleh guru.
+    function cubaLogoPeranti() {
       if (cubaBlob) { bingkai.replaceWith(kotakMasukLogo()); return; }
       cubaBlob = true;
-
-      // Tiada fail dalam folder assets: cuba logo yang disimpan pada peranti.
       CT.store.ambilFail('logo').then(function (rekod) {
         if (rekod && rekod.blob) {
           if (urlLogo) { URL.revokeObjectURL(urlLogo); }
@@ -50,9 +46,19 @@ CT.views.utama = (function () {
       }).catch(function () {
         bingkai.replaceWith(kotakMasukLogo());
       });
+    }
+
+    imej.addEventListener('error', function () {
+      cubaan++;
+      if (cubaan < senarai.length) {
+        imej.src = senarai[cubaan];
+        return;
+      }
+      cubaLogoPeranti();
     });
 
-    imej.src = FAIL_LOGO[0];
+    if (senarai.length) { imej.src = senarai[0]; }
+    else { cubaLogoPeranti(); }
     return bingkai;
   }
 

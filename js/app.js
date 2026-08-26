@@ -88,6 +88,7 @@ window.CT = window.CT || {};
 
   /* ---------- Service worker ---------- */
   function daftarServiceWorker() {
+    if (window.CT_SATU_FAIL) { return; }   // versi pratonton satu fail
     if (!('serviceWorker' in navigator)) { return; }
     if (location.protocol === 'file:') {
       console.info('Service worker memerlukan http/https. Buka melalui pelayan tempatan.');

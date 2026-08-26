@@ -1,0 +1,3313 @@
+<meta charset="utf-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<title>ClassTrack UIS</title>
+
+<style>
+/* ClassTrack — Universiti Islam Selangor
+   Reka bentuk mudah alih dahulu (mobile-first). */
+
+:root {
+  --hijau: #0b5d2a;
+  --hijau-gelap: #084521;
+  --hijau-muda: #e7f2ea;
+  --emas: #f5b301;
+  --merah: #d92b3d;
+  --merah-muda: #fdecee;
+  --biru: #1d5fb4;
+  --biru-muda: #e9f0fb;
+
+  --teks: #16241c;
+  --teks-lembut: #5d6b63;
+  --garis: #dfe6e1;
+  --latar: #f4f7f5;
+  --kad: #ffffff;
+
+  --r-kecil: 10px;
+  --r: 14px;
+  --r-besar: 20px;
+  --bayang: 0 1px 2px rgba(16, 40, 25, .06), 0 6px 18px rgba(16, 40, 25, .07);
+  --nav-tinggi: 108px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--latar);
+  color: var(--teks);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-tinggi) + env(safe-area-inset-bottom));
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -.01em; }
+a { color: var(--hijau); font-weight: 600; }
+p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* ---------- Tajuk utama ---------- */
+.tajuk-utama {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(env(safe-area-inset-top) + 12px) 16px 12px;
+  background: linear-gradient(135deg, var(--hijau) 0%, var(--hijau-gelap) 100%);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(8, 69, 33, .25);
+}
+.tajuk-teks h1 { font-size: 1.15rem; line-height: 1.2; }
+.tajuk-teks p { font-size: .8rem; opacity: .85; margin-top: 2px; }
+.tajuk-status .lencana-kecil { background: rgba(255, 255, 255, .18); color: #fff; }
+
+/* ---------- Skrin ---------- */
+.skrin { padding: 16px 16px 8px; outline: none; max-width: 780px; margin: 0 auto; }
+.seksyen { margin-bottom: 16px; }
+.seksyen-tajuk {
+  font-size: .78rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--teks-lembut);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.kad {
+  background: var(--kad);
+  border: 1px solid var(--garis);
+  border-radius: var(--r);
+  padding: 14px;
+  box-shadow: var(--bayang);
+}
+.kad + .kad { margin-top: 10px; }
+.kad-rapat { padding: 12px; }
+
+.baris { display: flex; align-items: center; gap: 10px; }
+.baris-antara { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.baris-lipat { display: flex; flex-wrap: wrap; gap: 8px; }
+.tumbuh { flex: 1 1 auto; min-width: 0; }
+.kecil { font-size: .82rem; color: var(--teks-lembut); }
+.tebal { font-weight: 700; }
+.tengah { text-align: center; }
+.jarak-atas { margin-top: 12px; }
+.tersembunyi { display: none !important; }
+
+/* ---------- Butang ---------- */
+.butang {
+  appearance: none;
+  border: 1px solid transparent;
+  background: var(--hijau);
+  color: #fff;
+  border-radius: var(--r-kecil);
+  padding: 11px 14px;
+  font-weight: 600;
+  font-size: .92rem;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform .06s ease, background .15s ease;
+}
+.butang:active { transform: scale(.985); }
+.butang-luar { background: #fff; color: var(--hijau); border-color: var(--garis); }
+.butang-lembut { background: var(--hijau-muda); color: var(--hijau-gelap); }
+.butang-bahaya { background: var(--merah-muda); color: var(--merah); }
+.butang-penuh { width: 100%; }
+.butang-kecil { min-height: 38px; padding: 8px 12px; font-size: .85rem; }
+.butang:disabled { opacity: .5; cursor: not-allowed; }
+
+.butang-ikon {
+  appearance: none;
+  border: 1px solid var(--garis);
+  background: #fff;
+  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--teks);
+}
+
+/* ---------- Medan borang ---------- */
+.medan { margin-bottom: 12px; }
+.medan label { display: block; font-size: .82rem; font-weight: 600; color: var(--teks-lembut); margin-bottom: 5px; }
+.medan input, .medan select, .medan textarea {
+  width: 100%;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-kecil);
+  padding: 11px 12px;
+  background: #fff;
+  min-height: 44px;
+}
+.medan textarea { min-height: 88px; resize: vertical; }
+.medan input:focus, .medan select:focus, .medan textarea:focus {
+  outline: 2px solid rgba(11, 93, 42, .35);
+  outline-offset: 1px;
+  border-color: var(--hijau);
+}
+.medan-dua { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Paparan tarikh/masa mengikut format Malaysia di atas medan asli peranti. */
+.medan-hias { position: relative; display: block; width: 100%; }
+.medan-hias input {
+  position: relative;
+  z-index: 2;
+  opacity: 0;
+  width: 100%;
+  min-height: 44px;
+}
+.medan-papar {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-kecil);
+  background: #fff;
+  font-weight: 600;
+  pointer-events: none;
+}
+.medan-hias input:focus + .medan-papar {
+  border-color: var(--hijau);
+  box-shadow: 0 0 0 2px rgba(11, 93, 42, .25);
+}
+.semak { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.semak input { width: 20px; height: 20px; min-height: 20px; accent-color: var(--hijau); }
+.semak label { margin: 0; font-size: .9rem; color: var(--teks); font-weight: 500; }
+
+/* ---------- Lencana ---------- */
+.lencana {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: .74rem;
+  font-weight: 700;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  white-space: nowrap;
+}
+.lencana-kelabu { background: #eef1ef; color: var(--teks-lembut); }
+.lencana-merah { background: var(--merah-muda); color: var(--merah); }
+.lencana-emas { background: #fdf3d8; color: #8a6300; }
+.lencana-biru { background: var(--biru-muda); color: var(--biru); }
+
+/* ---------- Navigasi bawah ---------- */
+.nav-bawah {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, .97);
+  border-top: 1px solid var(--garis);
+  backdrop-filter: blur(8px);
+}
+.nav-butang {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  border-radius: 12px;
+  padding: 6px 2px;
+  min-height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: var(--teks-lembut);
+  font-size: .68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nav-butang svg {
+  width: 21px; height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-butang.aktif { background: var(--hijau-muda); color: var(--hijau-gelap); }
+.nav-butang:active { background: #eef1ef; }
+
+@media (min-width: 620px) {
+  :root { --nav-tinggi: 68px; }
+  .nav-bawah { grid-template-columns: repeat(8, 1fr); max-width: 780px; margin: 0 auto; border-radius: 18px 18px 0 0; }
+}
+
+/* ---------- Halaman Utama ---------- */
+.utama-kotak {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  min-height: calc(100vh - var(--nav-tinggi) - 150px);
+  text-align: center;
+  padding: 10px 0 20px;
+}
+.logo-bingkai {
+  width: 100%;
+  max-width: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-besar);
+  box-shadow: var(--bayang);
+}
+.logo-uis {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 190px;
+  object-fit: contain;
+  /* Logo rasmi: paparan sahaja, tidak boleh ditekan atau diseret. */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.logo-ganti {
+  width: 100%;
+  padding: 26px 16px;
+  border: 1px dashed var(--garis);
+  border-radius: var(--r-besar);
+  background: #fff;
+  color: var(--teks-lembut);
+  font-size: .85rem;
+}
+.butang-besar {
+  width: 100%;
+  max-width: 340px;
+  min-height: 76px;
+  font-size: 1.18rem;
+  font-weight: 800;
+  border-radius: var(--r-besar);
+  box-shadow: 0 8px 22px rgba(11, 93, 42, .28);
+  letter-spacing: .01em;
+}
+
+/* ---------- Senarai murid ---------- */
+.senarai { display: flex; flex-direction: column; gap: 10px; }
+.murid-kad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  background: var(--kad);
+  border: 1px solid var(--garis);
+  border-radius: var(--r);
+  padding: 12px;
+  box-shadow: var(--bayang);
+  cursor: pointer;
+}
+.avatar {
+  width: 42px; height: 42px;
+  flex: 0 0 42px;
+  border-radius: 50%;
+  background: var(--hijau-muda);
+  color: var(--hijau-gelap);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: .95rem;
+}
+.murid-nama { font-weight: 700; font-size: .98rem; }
+
+/* ---------- Kehadiran ---------- */
+.pilih-tarikh {
+  display: grid;
+  grid-template-columns: 44px 1fr 44px;
+  gap: 8px;
+  align-items: center;
+}
+.pilih-tarikh input[type="date"] {
+  width: 100%;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-kecil);
+  padding: 10px;
+  min-height: 44px;
+  background: #fff;
+  text-align: center;
+}
+.hadir-baris {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--kad);
+  border: 1px solid var(--garis);
+  border-radius: var(--r);
+}
+.segmen { display: flex; gap: 6px; flex: 0 0 auto; }
+.segmen button {
+  appearance: none;
+  border: 1px solid var(--garis);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--teks-lembut);
+  min-height: 40px;
+  cursor: pointer;
+}
+.segmen button.pilih-hadir { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+.segmen button.pilih-tidak { background: var(--merah); border-color: var(--merah); color: #fff; }
+
+.statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat {
+  background: var(--kad);
+  border: 1px solid var(--garis);
+  border-radius: var(--r);
+  padding: 10px;
+  text-align: center;
+}
+.stat b { display: block; font-size: 1.25rem; line-height: 1.2; }
+.stat span { font-size: .74rem; color: var(--teks-lembut); }
+
+.notis {
+  border-radius: var(--r);
+  padding: 11px 13px;
+  font-size: .87rem;
+  border: 1px solid transparent;
+}
+.notis-cuti { background: #fdf3d8; border-color: #f0d99a; color: #6d4e00; }
+.notis-info { background: var(--biru-muda); border-color: #c9dcf5; color: #14498c; }
+
+.bar-tindakan {
+  position: sticky;
+  bottom: calc(var(--nav-tinggi) + env(safe-area-inset-bottom) - 4px);
+  display: flex;
+  gap: 8px;
+  padding: 10px 0 2px;
+  background: linear-gradient(to top, var(--latar) 72%, rgba(244, 247, 245, 0));
+}
+
+/* ---------- Kalendar ---------- */
+.kal-kepala { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.kal-bulan { font-weight: 800; font-size: 1.02rem; }
+.kal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.kal-nama {
+  text-align: center;
+  font-size: .68rem;
+  font-weight: 700;
+  color: var(--teks-lembut);
+  padding: 4px 0;
+}
+.kal-sel {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 1px solid transparent;
+  background: #fff;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--teks);
+  padding: 0;
+}
+.kal-sel.luar { color: #c2ccc6; background: transparent; }
+.kal-sel.hari-ini { border-color: var(--hijau); color: var(--hijau-gelap); font-weight: 800; }
+.kal-sel.pilih { background: var(--hijau); color: #fff; }
+.kal-sel.cuti:not(.pilih) { background: #fdf3d8; color: #6d4e00; }
+.kal-titik { display: flex; gap: 3px; margin-top: 3px; height: 5px; }
+.kal-titik i { width: 5px; height: 5px; border-radius: 50%; display: block; }
+.t-rekod { background: var(--hijau); }
+.t-acara { background: var(--biru); }
+.t-cuti { background: var(--emas); }
+.kal-sel.pilih .t-rekod, .kal-sel.pilih .t-acara, .kal-sel.pilih .t-cuti { background: #fff; }
+/* Pada skrin lebar, sel kalendar tidak perlu setinggi lebarnya. */
+@media (min-width: 620px) {
+  .kal-sel { aspect-ratio: auto; min-height: 56px; }
+}
+
+.petunjuk { display: flex; flex-wrap: wrap; gap: 12px; font-size: .74rem; color: var(--teks-lembut); margin-top: 10px; }
+.petunjuk span { display: inline-flex; align-items: center; gap: 5px; }
+.petunjuk i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.acara-baris {
+  display: flex;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--garis);
+}
+.acara-baris:last-child { border-bottom: 0; }
+.acara-masa { flex: 0 0 78px; font-size: .8rem; font-weight: 700; color: var(--hijau-gelap); }
+
+/* ---------- Rekod ---------- */
+.rekod-kad { background: var(--kad); border: 1px solid var(--garis); border-radius: var(--r); padding: 12px; box-shadow: var(--bayang); }
+.rekod-medan { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-top: 10px; }
+.rekod-medan div { font-size: .8rem; }
+.rekod-medan div b { display: block; font-size: .72rem; color: var(--teks-lembut); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.kosong { color: var(--teks-lembut); font-style: italic; }
+
+/* ---------- Al-Quran ---------- */
+.quran-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.juz-kad {
+  background: var(--kad);
+  border: 1px solid var(--garis);
+  border-radius: var(--r);
+  padding: 12px;
+  box-shadow: var(--bayang);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.juz-nombor { font-weight: 800; font-size: .95rem; }
+.arab { font-family: "Traditional Arabic", "Amiri", "Scheherazade New", "Segoe UI", serif; font-size: 1.15rem; direction: rtl; }
+
+.pembaca {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #1a1f1c;
+  display: flex;
+  flex-direction: column;
+}
+.pembaca-kepala {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: calc(env(safe-area-inset-top) + 10px) 12px 10px;
+  background: var(--hijau-gelap);
+  color: #fff;
+}
+.pembaca iframe, .pembaca embed { flex: 1; width: 100%; border: 0; background: #fff; }
+
+/* ---------- Nota ---------- */
+.nota-kad { background: var(--kad); border: 1px solid var(--garis); border-radius: var(--r); padding: 12px; box-shadow: var(--bayang); }
+.nota-teks { margin-top: 8px; white-space: pre-wrap; font-size: .92rem; }
+.tapis { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+.tapis button {
+  appearance: none;
+  border: 1px solid var(--garis);
+  background: #fff;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--teks-lembut);
+  white-space: nowrap;
+  min-height: 38px;
+  cursor: pointer;
+}
+.tapis button.aktif { background: var(--hijau); border-color: var(--hijau); color: #fff; }
+
+/* ---------- Lapisan (modal) ---------- */
+.lapisan {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(12, 26, 18, .5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.lapisan-kotak {
+  background: var(--latar);
+  width: 100%;
+  max-width: 620px;
+  max-height: 92vh;
+  border-radius: var(--r-besar) var(--r-besar) 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: naik .18s ease-out;
+}
+@keyframes naik { from { transform: translateY(18px); opacity: .6; } to { transform: none; opacity: 1; } }
+.lapisan-kepala {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--garis);
+  background: #fff;
+  border-radius: var(--r-besar) var(--r-besar) 0 0;
+}
+.lapisan-kepala h2 { font-size: 1.02rem; }
+.lapisan-kandungan { padding: 16px; overflow-y: auto; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+
+@media (min-width: 620px) {
+  .lapisan { align-items: center; padding: 20px; }
+  .lapisan-kotak { border-radius: var(--r-besar); }
+  .lapisan-kepala { border-radius: var(--r-besar) var(--r-besar) 0 0; }
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--nav-tinggi) + env(safe-area-inset-bottom) + 12px);
+  z-index: 80;
+  background: #16241c;
+  color: #fff;
+  padding: 11px 16px;
+  border-radius: 999px;
+  font-size: .87rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  max-width: 88vw;
+  text-align: center;
+}
+
+/* ---------- Keadaan kosong ---------- */
+.kosong-kotak {
+  text-align: center;
+  padding: 28px 16px;
+  background: var(--kad);
+  border: 1px dashed var(--garis);
+  border-radius: var(--r);
+  color: var(--teks-lembut);
+}
+.kosong-kotak b { display: block; color: var(--teks); margin-bottom: 6px; }
+
+</style>
+
+<header class="tajuk-utama">
+  <div class="tajuk-teks">
+    <h1>ClassTrack</h1>
+    <p id="tajuk-halaman">Utama</p>
+  </div>
+  <div class="tajuk-status">
+    <span id="penunjuk-rangkaian" class="lencana lencana-kecil">•</span>
+  </div>
+</header>
+
+<main id="skrin" class="skrin" tabindex="-1"></main>
+
+<nav class="nav-bawah" aria-label="Navigasi utama">
+  <button class="nav-butang" data-tab="utama" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+    <span>Utama</span>
+  </button>
+  <button class="nav-butang" data-tab="murid" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M17 11.5a2.6 2.6 0 100-5.2"/><path d="M18 20c0-2.3-.9-4-2.4-5"/></svg>
+    <span>Murid</span>
+  </button>
+  <button class="nav-butang" data-tab="kehadiran" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h10"/><path d="M4 12h10"/><path d="M4 18h7"/><path d="M16 16.5l2 2 4-4.5"/></svg>
+    <span>Kehadiran</span>
+  </button>
+  <button class="nav-butang" data-tab="kalendar" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17"/><path d="M8 3v4"/><path d="M16 3v4"/></svg>
+    <span>Kalendar</span>
+  </button>
+  <button class="nav-butang" data-tab="rekod" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h9l4 4V20a1 1 0 01-1 1H6a1 1 0 01-1-1V4.5a1 1 0 011-1z"/><path d="M14.5 3.5V8H19"/><path d="M8.5 12.5h7"/><path d="M8.5 16.5h4.5"/></svg>
+    <span>Rekod</span>
+  </button>
+  <button class="nav-butang" data-tab="quran" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 016.5 3H12v17H6.5A2.5 2.5 0 004 22.5z"/><path d="M20 5.5A2.5 2.5 0 0017.5 3H12v17h5.5a2.5 2.5 0 012.5 2.5z"/></svg>
+    <span>Al-Quran</span>
+  </button>
+  <button class="nav-butang" data-tab="nota" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14v15l-4-3-3 2-3-2-4 3z"/><path d="M9 9h6"/><path d="M9 12.5h4"/></svg>
+    <span>Nota</span>
+  </button>
+  <button class="nav-butang" data-tab="pasukan" type="button">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="2.8"/><circle cx="16.5" cy="9.5" r="2.3"/><path d="M2.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M15 14.2c2.7.1 4.5 2 4.5 4.8"/></svg>
+    <span>Pasukan</span>
+  </button>
+</nav>
+
+<div id="lapisan" class="lapisan tersembunyi" role="dialog" aria-modal="true" aria-labelledby="lapisan-tajuk">
+  <div class="lapisan-kotak">
+    <div class="lapisan-kepala">
+      <h2 id="lapisan-tajuk">Tajuk</h2>
+      <button id="lapisan-tutup" class="butang-ikon" type="button" aria-label="Tutup">&times;</button>
+    </div>
+    <div id="lapisan-kandungan" class="lapisan-kandungan"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast tersembunyi" role="status" aria-live="polite"></div>
+
+<script>
+// Penanda binaan satu fail: langkau service worker dan fail logo luaran.
+window.CT_SATU_FAIL = true;
+window.CT_TIADA_FAIL_LOGO = true;
+</script>
+
+<script>
+/* js/util.js */
+/* ClassTrack — fungsi bantuan tarikh, masa dan format Malaysia.
+   Semua pengiraan tarikh menggunakan zon waktu Asia/Kuala_Lumpur. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var ZON = 'Asia/Kuala_Lumpur';
+
+  var BULAN = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun',
+    'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+  var BULAN_PENDEK = ['Jan', 'Feb', 'Mac', 'Apr', 'Mei', 'Jun',
+    'Jul', 'Ogo', 'Sep', 'Okt', 'Nov', 'Dis'];
+  var HARI = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+  var HARI_PENDEK = ['Ah', 'Is', 'Se', 'Ra', 'Kh', 'Ju', 'Sa'];
+
+  // en-CA menghasilkan format YYYY-MM-DD.
+  var fmtKunci = new Intl.DateTimeFormat('en-CA', {
+    timeZone: ZON, year: 'numeric', month: '2-digit', day: '2-digit'
+  });
+  var fmtJam = new Intl.DateTimeFormat('en-US', {
+    timeZone: ZON, hour: 'numeric', minute: '2-digit', hour12: true
+  });
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  /* Kunci tarikh "YYYY-MM-DD" mengikut waktu Malaysia. */
+  function kunciDari(d) {
+    return fmtKunci.format(d || new Date());
+  }
+
+  function hariIni() { return kunciDari(new Date()); }
+
+  /* Pecahkan kunci kepada nombor tahun, bulan (1-12) dan hari. */
+  function pecah(kunci) {
+    var b = String(kunci || '').split('-');
+    return { tahun: +b[0], bulan: +b[1], hari: +b[2] };
+  }
+
+  function bina(tahun, bulan, hari) {
+    return tahun + '-' + pad(bulan) + '-' + pad(hari);
+  }
+
+  /* Guna UTC supaya penambahan hari tidak terjejas oleh zon waktu pelayar. */
+  function tarikhUTC(kunci) {
+    var p = pecah(kunci);
+    return new Date(Date.UTC(p.tahun, p.bulan - 1, p.hari));
+  }
+
+  function tambahHari(kunci, jumlah) {
+    var d = tarikhUTC(kunci);
+    d.setUTCDate(d.getUTCDate() + jumlah);
+    return bina(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+  }
+
+  function hariMinggu(kunci) { return tarikhUTC(kunci).getUTCDay(); }
+
+  function sahKunci(kunci) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(String(kunci || ''));
+  }
+
+  /* "Rabu, 26 Ogos 2026" */
+  function tarikhPenuh(kunci) {
+    if (!sahKunci(kunci)) { return '-'; }
+    var p = pecah(kunci);
+    return HARI[hariMinggu(kunci)] + ', ' + p.hari + ' ' + BULAN[p.bulan - 1] + ' ' + p.tahun;
+  }
+
+  /* "26/08/2026" — format tarikh Malaysia */
+  function tarikhRingkas(kunci) {
+    if (!sahKunci(kunci)) { return '-'; }
+    var p = pecah(kunci);
+    return pad(p.hari) + '/' + pad(p.bulan) + '/' + p.tahun;
+  }
+
+  /* "26 Ogo 2026" */
+  function tarikhSederhana(kunci) {
+    if (!sahKunci(kunci)) { return '-'; }
+    var p = pecah(kunci);
+    return p.hari + ' ' + BULAN_PENDEK[p.bulan - 1] + ' ' + p.tahun;
+  }
+
+  function namaBulan(bulan) { return BULAN[bulan - 1] || ''; }
+
+  /* "14:05" -> "2:05 PM" */
+  function masa12(hhmm) {
+    var b = String(hhmm || '').split(':');
+    var jam = parseInt(b[0], 10);
+    var minit = parseInt(b[1], 10);
+    if (isNaN(jam) || isNaN(minit)) { return ''; }
+    var tanda = jam >= 12 ? 'PM' : 'AM';
+    var j12 = jam % 12;
+    if (j12 === 0) { j12 = 12; }
+    return j12 + ':' + pad(minit) + ' ' + tanda;
+  }
+
+  /* Masa semasa di Malaysia dalam format 12 jam, cth "3:42 PM". */
+  function masaSekarang() {
+    return fmtJam.format(new Date()).replace(/[\u202f\u00a0]/g, ' ');
+  }
+
+  function capMasa(iso) {
+    if (!iso) { return ''; }
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) { return ''; }
+    return tarikhRingkas(kunciDari(d)) + ', ' + fmtJam.format(d).replace(/[\u202f\u00a0]/g, ' ');
+  }
+
+  function id(awalan) {
+    return (awalan || 'id') + '-' + Date.now().toString(36) + '-' +
+      Math.random().toString(36).slice(2, 8);
+  }
+
+  function selamat(teks) {
+    return String(teks === null || teks === undefined ? '' : teks)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function huruf(nama) {
+    var b = String(nama || '').trim().split(/\s+/);
+    if (!b[0]) { return '?'; }
+    if (b.length === 1) { return b[0].slice(0, 2).toUpperCase(); }
+    return (b[0][0] + b[1][0]).toUpperCase();
+  }
+
+  function peratus(atas, bawah) {
+    if (!bawah) { return 0; }
+    return Math.round((atas / bawah) * 100);
+  }
+
+  CT.util = {
+    ZON: ZON,
+    BULAN: BULAN,
+    HARI: HARI,
+    HARI_PENDEK: HARI_PENDEK,
+    pad: pad,
+    kunciDari: kunciDari,
+    hariIni: hariIni,
+    pecah: pecah,
+    bina: bina,
+    tambahHari: tambahHari,
+    hariMinggu: hariMinggu,
+    sahKunci: sahKunci,
+    tarikhPenuh: tarikhPenuh,
+    tarikhRingkas: tarikhRingkas,
+    tarikhSederhana: tarikhSederhana,
+    namaBulan: namaBulan,
+    masa12: masa12,
+    masaSekarang: masaSekarang,
+    capMasa: capMasa,
+    id: id,
+    selamat: selamat,
+    huruf: huruf,
+    peratus: peratus
+  };
+})();
+
+</script>
+
+<script>
+/* js/store.js */
+/* ClassTrack — penyimpanan data.
+   Data teks : localStorage (murid, kehadiran, rekod, nota, acara, pasukan, tetapan).
+   Fail besar: IndexedDB (PDF juz Al-Quran dan logo rasmi).
+   Rekod kehadiran dan rekod murid menggunakan tarikh "YYYY-MM-DD" sebagai kunci. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var AWALAN = 'classtrack.v1.';
+  var pendengar = {};
+
+  /* ---------- Pub/sub ringkas supaya semua tab sentiasa terkini ---------- */
+  function dengar(peristiwa, fungsi) {
+    (pendengar[peristiwa] = pendengar[peristiwa] || []).push(fungsi);
+  }
+  function lapor(peristiwa, data) {
+    (pendengar[peristiwa] || []).forEach(function (f) {
+      try { f(data); } catch (e) { console.error(e); }
+    });
+    (pendengar['*'] || []).forEach(function (f) {
+      try { f(peristiwa, data); } catch (e) { console.error(e); }
+    });
+  }
+
+  /* ---------- localStorage ---------- */
+  function baca(kunci, ganti) {
+    try {
+      var mentah = localStorage.getItem(AWALAN + kunci);
+      if (mentah === null) { return ganti; }
+      return JSON.parse(mentah);
+    } catch (e) {
+      console.warn('Gagal membaca', kunci, e);
+      return ganti;
+    }
+  }
+
+  function tulis(kunci, nilai) {
+    try {
+      localStorage.setItem(AWALAN + kunci, JSON.stringify(nilai));
+      return true;
+    } catch (e) {
+      console.error('Gagal menyimpan', kunci, e);
+      CT.ui && CT.ui.toast('Ruang simpanan penuh. Data tidak dapat disimpan.');
+      return false;
+    }
+  }
+
+  /* ---------- Murid ---------- */
+  function senaraiMurid() {
+    var senarai = baca('murid', []);
+    return senarai.slice().sort(function (a, b) {
+      return String(a.nama || '').localeCompare(String(b.nama || ''), 'ms');
+    });
+  }
+
+  function ambilMurid(id) {
+    var senarai = baca('murid', []);
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === id) { return senarai[i]; }
+    }
+    return null;
+  }
+
+  function simpanMurid(murid) {
+    var senarai = baca('murid', []);
+    var jumpa = false;
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === murid.id) { senarai[i] = murid; jumpa = true; break; }
+    }
+    if (!jumpa) {
+      murid.id = murid.id || CT.util.id('murid');
+      murid.dicipta = murid.dicipta || new Date().toISOString();
+      senarai.push(murid);
+    }
+    tulis('murid', senarai);
+    lapor('murid');
+    return murid;
+  }
+
+  function padamMurid(id) {
+    tulis('murid', baca('murid', []).filter(function (m) { return m.id !== id; }));
+
+    // Buang juga rekod berkaitan supaya tiada data yatim.
+    var kehadiran = baca('kehadiran', {});
+    Object.keys(kehadiran).forEach(function (t) { delete kehadiran[t][id]; });
+    tulis('kehadiran', kehadiran);
+
+    var rekod = baca('rekod', {});
+    Object.keys(rekod).forEach(function (t) { delete rekod[t][id]; });
+    tulis('rekod', rekod);
+
+    tulis('nota', baca('nota', []).filter(function (n) { return n.muridId !== id; }));
+
+    lapor('murid');
+    lapor('kehadiran');
+    lapor('rekod');
+    lapor('nota');
+  }
+
+  /* ---------- Kehadiran (kunci: tarikh) ---------- */
+  function kehadiranTarikh(tarikh) {
+    var semua = baca('kehadiran', {});
+    return semua[tarikh] || {};
+  }
+
+  function simpanKehadiran(tarikh, peta) {
+    var semua = baca('kehadiran', {});
+    semua[tarikh] = peta;               // hanya tarikh ini disentuh
+    tulis('kehadiran', semua);
+    lapor('kehadiran', tarikh);
+  }
+
+  function tarikhAdaKehadiran() {
+    return Object.keys(baca('kehadiran', {}));
+  }
+
+  /* ---------- Rekod murid mengikut tarikh ---------- */
+  function rekodTarikh(tarikh) {
+    var semua = baca('rekod', {});
+    return semua[tarikh] || {};
+  }
+
+  function rekodMurid(tarikh, muridId) {
+    return rekodTarikh(tarikh)[muridId] || null;
+  }
+
+  function simpanRekodMurid(tarikh, muridId, data) {
+    var semua = baca('rekod', {});
+    if (!semua[tarikh]) { semua[tarikh] = {}; }
+    semua[tarikh][muridId] = Object.assign({}, semua[tarikh][muridId], data, {
+      dikemaskini: new Date().toISOString()
+    });
+    tulis('rekod', semua);
+    lapor('rekod', tarikh);
+  }
+
+  function tarikhAdaRekod() {
+    var set = {};
+    Object.keys(baca('kehadiran', {})).forEach(function (t) { set[t] = true; });
+    var rekod = baca('rekod', {});
+    Object.keys(rekod).forEach(function (t) {
+      if (Object.keys(rekod[t] || {}).length) { set[t] = true; }
+    });
+    return Object.keys(set);
+  }
+
+  /* ---------- Nota ---------- */
+  function senaraiNota() {
+    return baca('nota', []).slice().sort(function (a, b) {
+      return String(b.tarikh || '').localeCompare(String(a.tarikh || '')) ||
+        String(b.dicipta || '').localeCompare(String(a.dicipta || ''));
+    });
+  }
+
+  function simpanNota(nota) {
+    var senarai = baca('nota', []);
+    var jumpa = false;
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === nota.id) { senarai[i] = nota; jumpa = true; break; }
+    }
+    if (!jumpa) {
+      nota.id = nota.id || CT.util.id('nota');
+      nota.dicipta = nota.dicipta || new Date().toISOString();
+      senarai.push(nota);
+    }
+    tulis('nota', senarai);
+    lapor('nota');
+    return nota;
+  }
+
+  /* Nota harian daripada tab Rekod: satu nota bagi setiap murid + tarikh. */
+  function notaHarian(tarikh, muridId) {
+    var senarai = baca('nota', []);
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].sumber === 'rekod' && senarai[i].tarikh === tarikh &&
+        senarai[i].muridId === muridId) { return senarai[i]; }
+    }
+    return null;
+  }
+
+  function simpanNotaHarian(tarikh, muridId, teks, kongsi, penulisId) {
+    var sedia = notaHarian(tarikh, muridId);
+    var bersih = String(teks || '').trim();
+
+    if (!bersih) {
+      if (sedia) { padamNota(sedia.id); }
+      return null;
+    }
+    var nota = sedia || {
+      id: CT.util.id('nota'),
+      sumber: 'rekod',
+      tarikh: tarikh,
+      muridId: muridId,
+      kategori: 'umum',
+      sulit: false,
+      dicipta: new Date().toISOString()
+    };
+    nota.teks = bersih;
+    nota.kongsi = !!kongsi;
+    nota.penulisId = nota.penulisId || penulisId;
+    nota.dikemaskini = new Date().toISOString();
+    return simpanNota(nota);
+  }
+
+  function padamNota(id) {
+    tulis('nota', baca('nota', []).filter(function (n) { return n.id !== id; }));
+    lapor('nota');
+  }
+
+  /* ---------- Acara kalendar ---------- */
+  function acaraTarikh(tarikh) {
+    var semua = baca('acara', {});
+    return (semua[tarikh] || []).slice().sort(function (a, b) {
+      return String(a.masa || '').localeCompare(String(b.masa || ''));
+    });
+  }
+
+  function simpanAcara(tarikh, acara) {
+    var semua = baca('acara', {});
+    if (!semua[tarikh]) { semua[tarikh] = []; }
+    acara.id = acara.id || CT.util.id('acara');
+    var jumpa = false;
+    for (var i = 0; i < semua[tarikh].length; i++) {
+      if (semua[tarikh][i].id === acara.id) { semua[tarikh][i] = acara; jumpa = true; break; }
+    }
+    if (!jumpa) { semua[tarikh].push(acara); }
+    tulis('acara', semua);
+    lapor('acara', tarikh);
+  }
+
+  function padamAcara(tarikh, id) {
+    var semua = baca('acara', {});
+    semua[tarikh] = (semua[tarikh] || []).filter(function (a) { return a.id !== id; });
+    if (!semua[tarikh].length) { delete semua[tarikh]; }
+    tulis('acara', semua);
+    lapor('acara', tarikh);
+  }
+
+  function tarikhAdaAcara() { return Object.keys(baca('acara', {})); }
+
+  /* ---------- Pasukan / jabatan ---------- */
+  function senaraiPasukan() { return baca('pasukan', []); }
+
+  function simpanAhli(ahli) {
+    var senarai = baca('pasukan', []);
+    var jumpa = false;
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === ahli.id) { senarai[i] = ahli; jumpa = true; break; }
+    }
+    if (!jumpa) {
+      ahli.id = ahli.id || CT.util.id('guru');
+      ahli.dicipta = ahli.dicipta || new Date().toISOString();
+      senarai.push(ahli);
+    }
+    tulis('pasukan', senarai);
+    lapor('pasukan');
+    return ahli;
+  }
+
+  function padamAhli(id) {
+    tulis('pasukan', baca('pasukan', []).filter(function (a) { return a.id !== id; }));
+    lapor('pasukan');
+  }
+
+  function tetapan() {
+    return baca('tetapan', {});
+  }
+
+  function simpanTetapan(ubah) {
+    var t = Object.assign({}, tetapan(), ubah);
+    tulis('tetapan', t);
+    lapor('tetapan');
+    return t;
+  }
+
+  function guruAktif() {
+    var senarai = senaraiPasukan();
+    var t = tetapan();
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === t.guruAktifId) { return senarai[i]; }
+    }
+    return senarai[0] || null;
+  }
+
+  /* ---------- IndexedDB untuk fail ---------- */
+  var DB_NAMA = 'classtrack-fail';
+  var DB_KEDAI = 'fail';
+  var dbJanji = null;
+
+  function db() {
+    if (dbJanji) { return dbJanji; }
+    dbJanji = new Promise(function (terima, tolak) {
+      if (!window.indexedDB) { tolak(new Error('IndexedDB tidak disokong')); return; }
+      var permintaan = indexedDB.open(DB_NAMA, 1);
+      permintaan.onupgradeneeded = function () {
+        var pangkalan = permintaan.result;
+        if (!pangkalan.objectStoreNames.contains(DB_KEDAI)) {
+          pangkalan.createObjectStore(DB_KEDAI, { keyPath: 'kunci' });
+        }
+      };
+      permintaan.onsuccess = function () { terima(permintaan.result); };
+      permintaan.onerror = function () { tolak(permintaan.error); };
+    });
+    return dbJanji;
+  }
+
+  function urusNiaga(mod, kerja) {
+    return db().then(function (pangkalan) {
+      return new Promise(function (terima, tolak) {
+        var tx = pangkalan.transaction(DB_KEDAI, mod);
+        var kedai = tx.objectStore(DB_KEDAI);
+        var hasil;
+        try { hasil = kerja(kedai); } catch (e) { tolak(e); return; }
+        tx.oncomplete = function () {
+          terima(hasil && hasil.result !== undefined ? hasil.result : hasil);
+        };
+        tx.onerror = function () { tolak(tx.error); };
+        tx.onabort = function () { tolak(tx.error); };
+      });
+    });
+  }
+
+  function simpanFail(kunci, blob, meta) {
+    return urusNiaga('readwrite', function (kedai) {
+      return kedai.put({
+        kunci: kunci,
+        blob: blob,
+        nama: (meta && meta.nama) || '',
+        saiz: blob.size,
+        jenis: blob.type || 'application/pdf',
+        disimpan: new Date().toISOString()
+      });
+    }).then(function () { lapor('fail', kunci); });
+  }
+
+  function ambilFail(kunci) {
+    return urusNiaga('readonly', function (kedai) { return kedai.get(kunci); });
+  }
+
+  function padamFail(kunci) {
+    return urusNiaga('readwrite', function (kedai) { return kedai.delete(kunci); })
+      .then(function () { lapor('fail', kunci); });
+  }
+
+  function senaraiFail() {
+    return urusNiaga('readonly', function (kedai) { return kedai.getAllKeys(); })
+      .then(function (kunci) { return kunci || []; });
+  }
+
+  function infoFail() {
+    return urusNiaga('readonly', function (kedai) { return kedai.getAll(); })
+      .then(function (semua) {
+        return (semua || []).map(function (f) {
+          return { kunci: f.kunci, nama: f.nama, saiz: f.saiz, disimpan: f.disimpan };
+        });
+      });
+  }
+
+  CT.store = {
+    dengar: dengar,
+    lapor: lapor,
+    baca: baca,
+    tulis: tulis,
+
+    senaraiMurid: senaraiMurid,
+    ambilMurid: ambilMurid,
+    simpanMurid: simpanMurid,
+    padamMurid: padamMurid,
+
+    kehadiranTarikh: kehadiranTarikh,
+    simpanKehadiran: simpanKehadiran,
+    tarikhAdaKehadiran: tarikhAdaKehadiran,
+
+    rekodTarikh: rekodTarikh,
+    rekodMurid: rekodMurid,
+    simpanRekodMurid: simpanRekodMurid,
+    tarikhAdaRekod: tarikhAdaRekod,
+
+    senaraiNota: senaraiNota,
+    simpanNota: simpanNota,
+    padamNota: padamNota,
+    notaHarian: notaHarian,
+    simpanNotaHarian: simpanNotaHarian,
+
+    acaraTarikh: acaraTarikh,
+    simpanAcara: simpanAcara,
+    padamAcara: padamAcara,
+    tarikhAdaAcara: tarikhAdaAcara,
+
+    senaraiPasukan: senaraiPasukan,
+    simpanAhli: simpanAhli,
+    padamAhli: padamAhli,
+    guruAktif: guruAktif,
+
+    tetapan: tetapan,
+    simpanTetapan: simpanTetapan,
+
+    simpanFail: simpanFail,
+    ambilFail: ambilFail,
+    padamFail: padamFail,
+    senaraiFail: senaraiFail,
+    infoFail: infoFail
+  };
+})();
+
+</script>
+
+<script>
+/* js/cuti.js */
+/* ClassTrack — cuti umum.
+   Gabungan automatik: cuti Persekutuan + Wilayah Persekutuan Kuala Lumpur + Selangor.
+   Tiada pemilih negeri dipaparkan; gabungan ini digunakan di belakang tabir.
+
+   Sumber langsung : API awam Nager.Date (https://date.nager.at) apabila internet ada.
+   Sumber sandaran : senarai terbina di bawah, disimpan dalam fail ini.
+   Cache          : localStorage, supaya kalendar kekal berfungsi tanpa internet. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var WILAYAH = { PERSEKUTUAN: 'MY', KL: 'MY-14', SELANGOR: 'MY-10' };
+
+  /* Senarai sandaran. Tarikh berasaskan kalendar Hijrah/Cina/Tamil ditanda
+     "anggaran" kerana ia tertakluk kepada pengumuman rasmi kerajaan. */
+  var SANDARAN = {
+    2025: [
+      ['2025-01-01', 'Tahun Baharu', false],
+      ['2025-01-29', 'Tahun Baharu Cina', false],
+      ['2025-01-30', 'Tahun Baharu Cina (Hari Kedua)', false],
+      ['2025-02-01', 'Hari Wilayah Persekutuan', false],
+      ['2025-02-11', 'Thaipusam', false],
+      ['2025-03-02', 'Awal Ramadan', false],
+      ['2025-03-18', 'Nuzul Al-Quran', false],
+      ['2025-03-31', 'Hari Raya Aidilfitri', false],
+      ['2025-04-01', 'Hari Raya Aidilfitri (Hari Kedua)', false],
+      ['2025-05-01', 'Hari Pekerja', false],
+      ['2025-05-12', 'Hari Wesak', false],
+      ['2025-06-02', 'Hari Keputeraan Yang di-Pertuan Agong', false],
+      ['2025-06-07', 'Hari Raya Aidiladha', false],
+      ['2025-06-27', 'Awal Muharram', false],
+      ['2025-08-31', 'Hari Kebangsaan', false],
+      ['2025-09-05', 'Maulidur Rasul', false],
+      ['2025-09-16', 'Hari Malaysia', false],
+      ['2025-10-20', 'Deepavali', false],
+      ['2025-12-11', 'Hari Keputeraan Sultan Selangor', false],
+      ['2025-12-25', 'Hari Krismas', false]
+    ],
+    2026: [
+      ['2026-01-01', 'Tahun Baharu', false],
+      ['2026-02-01', 'Hari Wilayah Persekutuan', false],
+      ['2026-02-01', 'Thaipusam', true],
+      ['2026-02-17', 'Tahun Baharu Cina', true],
+      ['2026-02-18', 'Tahun Baharu Cina (Hari Kedua)', true],
+      ['2026-02-19', 'Awal Ramadan', true],
+      ['2026-03-07', 'Nuzul Al-Quran', true],
+      ['2026-03-20', 'Hari Raya Aidilfitri', true],
+      ['2026-03-21', 'Hari Raya Aidilfitri (Hari Kedua)', true],
+      ['2026-05-01', 'Hari Pekerja', false],
+      ['2026-05-27', 'Hari Raya Aidiladha', true],
+      ['2026-05-31', 'Hari Wesak', true],
+      ['2026-06-01', 'Hari Keputeraan Yang di-Pertuan Agong', false],
+      ['2026-06-16', 'Awal Muharram', true],
+      ['2026-08-25', 'Maulidur Rasul', true],
+      ['2026-08-31', 'Hari Kebangsaan', false],
+      ['2026-09-16', 'Hari Malaysia', false],
+      ['2026-11-08', 'Deepavali', true],
+      ['2026-12-11', 'Hari Keputeraan Sultan Selangor', false],
+      ['2026-12-25', 'Hari Krismas', false]
+    ],
+    2027: [
+      ['2027-01-01', 'Tahun Baharu', false],
+      ['2027-02-01', 'Hari Wilayah Persekutuan', false],
+      ['2027-05-01', 'Hari Pekerja', false],
+      ['2027-06-07', 'Hari Keputeraan Yang di-Pertuan Agong', false],
+      ['2027-08-31', 'Hari Kebangsaan', false],
+      ['2027-09-16', 'Hari Malaysia', false],
+      ['2027-12-11', 'Hari Keputeraan Sultan Selangor', false],
+      ['2027-12-25', 'Hari Krismas', false]
+    ]
+  };
+
+  var cacheMemori = {};   // tahun -> { peta, sumber, masa }
+
+  function daripadaSandaran(tahun) {
+    return (SANDARAN[tahun] || []).map(function (b) {
+      return { tarikh: b[0], nama: b[1], anggaran: !!b[2] };
+    });
+  }
+
+  function kunciCache(tahun) { return 'cuti.' + tahun; }
+
+  function bacaCache(tahun) {
+    return CT.store.baca(kunciCache(tahun), null);
+  }
+
+  function tulisCache(tahun, senarai) {
+    CT.store.tulis(kunciCache(tahun), {
+      tahun: tahun,
+      senarai: senarai,
+      disegerak: new Date().toISOString()
+    });
+  }
+
+  function petakan(senarai) {
+    var peta = {};
+    senarai.forEach(function (c) {
+      if (!peta[c.tarikh]) { peta[c.tarikh] = []; }
+      var ulang = peta[c.tarikh].some(function (a) { return a.nama === c.nama; });
+      if (!ulang) { peta[c.tarikh].push(c); }
+    });
+    return peta;
+  }
+
+  /* Kembalikan data segera (cache atau sandaran) tanpa menunggu rangkaian. */
+  function tahunSegera(tahun) {
+    if (cacheMemori[tahun]) { return cacheMemori[tahun]; }
+
+    var simpan = bacaCache(tahun);
+    var hasil;
+    if (simpan && simpan.senarai && simpan.senarai.length) {
+      hasil = { peta: petakan(simpan.senarai), sumber: 'segerak', masa: simpan.disegerak };
+    } else {
+      hasil = { peta: petakan(daripadaSandaran(tahun)), sumber: 'sandaran', masa: null };
+    }
+    cacheMemori[tahun] = hasil;
+    return hasil;
+  }
+
+  function cutiPada(tarikh) {
+    if (!CT.util.sahKunci(tarikh)) { return []; }
+    var tahun = CT.util.pecah(tarikh).tahun;
+    return tahunSegera(tahun).peta[tarikh] || [];
+  }
+
+  function adaCuti(tarikh) { return cutiPada(tarikh).length > 0; }
+
+  function statusSegerak(tahun) {
+    var d = tahunSegera(tahun);
+    return { sumber: d.sumber, masa: d.masa };
+  }
+
+  /* Penyegerakan langsung. Jika gagal, data luar talian terus digunakan. */
+  function segerak(tahun, paksa) {
+    var simpan = bacaCache(tahun);
+    if (!paksa && simpan && simpan.disegerak) {
+      var umur = Date.now() - new Date(simpan.disegerak).getTime();
+      if (umur < 7 * 24 * 60 * 60 * 1000) {
+        return Promise.resolve({ status: 'cache', bilangan: simpan.senarai.length });
+      }
+    }
+    if (!navigator.onLine) {
+      return Promise.resolve({ status: 'luar-talian', bilangan: 0 });
+    }
+
+    var url = 'https://date.nager.at/api/v3/PublicHolidays/' + tahun + '/MY';
+    var pembatal = new AbortController();
+    var masaTamat = setTimeout(function () { pembatal.abort(); }, 12000);
+
+    return fetch(url, { signal: pembatal.signal, cache: 'no-store' })
+      .then(function (jawapan) {
+        if (!jawapan.ok) { throw new Error('HTTP ' + jawapan.status); }
+        return jawapan.json();
+      })
+      .then(function (data) {
+        clearTimeout(masaTamat);
+        if (!Array.isArray(data) || !data.length) { throw new Error('Data kosong'); }
+
+        var ditapis = data.filter(function (c) {
+          if (c.global || !c.counties || !c.counties.length) { return true; }
+          return c.counties.indexOf(WILAYAH.KL) !== -1 ||
+            c.counties.indexOf(WILAYAH.SELANGOR) !== -1;
+        }).map(function (c) {
+          return { tarikh: c.date, nama: c.localName || c.name, anggaran: false };
+        });
+
+        if (!ditapis.length) { throw new Error('Tiada cuti berkaitan'); }
+
+        tulisCache(tahun, ditapis);
+        cacheMemori[tahun] = {
+          peta: petakan(ditapis), sumber: 'segerak', masa: new Date().toISOString()
+        };
+        CT.store.lapor('cuti', tahun);
+        return { status: 'ok', bilangan: ditapis.length };
+      })
+      .catch(function (ralat) {
+        clearTimeout(masaTamat);
+        console.warn('Penyegerakan cuti gagal:', ralat.message);
+        return { status: 'gagal', ralat: ralat.message, bilangan: 0 };
+      });
+  }
+
+  CT.cuti = {
+    cutiPada: cutiPada,
+    adaCuti: adaCuti,
+    tahunSegera: tahunSegera,
+    statusSegerak: statusSegerak,
+    segerak: segerak
+  };
+})();
+
+</script>
+
+<script>
+/* js/ui.js */
+/* ClassTrack — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var u = CT.util;
+  var masaToast = null;
+
+  function toast(mesej) {
+    var kotak = document.getElementById('toast');
+    if (!kotak) { return; }
+    kotak.textContent = mesej;
+    kotak.classList.remove('tersembunyi');
+    clearTimeout(masaToast);
+    masaToast = setTimeout(function () { kotak.classList.add('tersembunyi'); }, 2600);
+  }
+
+  /* ---------- Lapisan (tetingkap bertindan) ---------- */
+  var tutupTerakhir = null;
+
+  function bukaLapisan(tajuk, kandungan, bilaTutup) {
+    var lapisan = document.getElementById('lapisan');
+    document.getElementById('lapisan-tajuk').textContent = tajuk;
+    var kotak = document.getElementById('lapisan-kandungan');
+    kotak.innerHTML = '';
+    if (typeof kandungan === 'string') { kotak.innerHTML = kandungan; }
+    else if (kandungan) { kotak.appendChild(kandungan); }
+    hiasSemua(kotak);
+    lapisan.classList.remove('tersembunyi');
+    tutupTerakhir = bilaTutup || null;
+    kotak.scrollTop = 0;
+    return kotak;
+  }
+
+  function tutupLapisan() {
+    document.getElementById('lapisan').classList.add('tersembunyi');
+    document.getElementById('lapisan-kandungan').innerHTML = '';
+    if (tutupTerakhir) { var f = tutupTerakhir; tutupTerakhir = null; f(); }
+  }
+
+  function sahkan(tajuk, mesej, bilaSetuju, labelSetuju) {
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<p class="kecil" style="margin-bottom:16px">' + u.selamat(mesej) + '</p>' +
+      '<div class="baris-lipat">' +
+      '<button class="butang butang-bahaya tumbuh" data-ya>' +
+      u.selamat(labelSetuju || 'Ya, teruskan') + '</button>' +
+      '<button class="butang butang-luar tumbuh" data-tidak>Batal</button>' +
+      '</div>';
+    kotak.querySelector('[data-ya]').addEventListener('click', function () {
+      tutupLapisan();
+      bilaSetuju();
+    });
+    kotak.querySelector('[data-tidak]').addEventListener('click', tutupLapisan);
+    bukaLapisan(tajuk, kotak);
+  }
+
+  /* Pelayar memaparkan <input type="date"> dan <input type="time"> mengikut
+     tetapan tempatan peranti (kadangkala MM/DD/YYYY atau 24 jam). Lapisan ini
+     menutup paparan asal dengan format Malaysia — tarikh DD/MM/YYYY dan masa
+     12 jam AM/PM — sambil mengekalkan pemilih asli peranti. */
+  function hiasMedan(medan, format, kosongTeks) {
+    var bekas = document.createElement('span');
+    bekas.className = 'medan-hias';
+    medan.parentNode.insertBefore(bekas, medan);
+    bekas.appendChild(medan);
+
+    var papar = document.createElement('span');
+    papar.className = 'medan-papar';
+    bekas.appendChild(papar);
+
+    function segar() {
+      papar.textContent = medan.value ? format(medan.value) : (kosongTeks || 'Pilih');
+    }
+    medan.addEventListener('change', segar);
+    medan.addEventListener('input', segar);
+    segar();
+    medan.segarPaparan = segar;
+    return bekas;
+  }
+
+  function hiasTarikh(medan) {
+    return hiasMedan(medan, u.tarikhRingkas, 'Pilih tarikh');
+  }
+
+  function hiasMasa(medan) {
+    return hiasMedan(medan, u.masa12, 'Pilih masa');
+  }
+
+  /* Hias semua medan tarikh/masa dalam sesuatu bekas. */
+  function hiasSemua(bekas) {
+    bekas.querySelectorAll('input[type="date"]').forEach(hiasTarikh);
+    bekas.querySelectorAll('input[type="time"]').forEach(hiasMasa);
+    return bekas;
+  }
+
+  /* ---------- Pemilih tarikh dengan butang hari sebelum / berikutnya ---------- */
+  function pemilihTarikh(tarikh, bilaTukar, pilihan) {
+    pilihan = pilihan || {};
+    var kotak = document.createElement('div');
+    kotak.className = 'kad';
+    kotak.innerHTML =
+      '<div class="pilih-tarikh">' +
+      '<button class="butang-ikon" type="button" data-sebelum aria-label="Hari sebelumnya">&lsaquo;</button>' +
+      '<input type="date" value="' + u.selamat(tarikh) + '" aria-label="Pilih tarikh">' +
+      '<button class="butang-ikon" type="button" data-selepas aria-label="Hari berikutnya">&rsaquo;</button>' +
+      '</div>' +
+      '<div class="baris-antara jarak-atas">' +
+      '<p class="kecil tebal" data-teks-tarikh>' + u.selamat(u.tarikhPenuh(tarikh)) + '</p>' +
+      '<button class="butang butang-lembut butang-kecil" type="button" data-hari-ini>Hari Ini</button>' +
+      '</div>' +
+      (pilihan.tambahan || '');
+
+    var medan = kotak.querySelector('input[type="date"]');
+    hiasTarikh(medan);
+
+    function tukar(baru) {
+      if (!u.sahKunci(baru)) { return; }
+      medan.value = baru;
+      if (medan.segarPaparan) { medan.segarPaparan(); }
+      kotak.querySelector('[data-teks-tarikh]').textContent = u.tarikhPenuh(baru);
+      bilaTukar(baru);
+    }
+
+    kotak.querySelector('[data-sebelum]').addEventListener('click', function () {
+      tukar(u.tambahHari(medan.value || u.hariIni(), -1));
+    });
+    kotak.querySelector('[data-selepas]').addEventListener('click', function () {
+      tukar(u.tambahHari(medan.value || u.hariIni(), 1));
+    });
+    kotak.querySelector('[data-hari-ini]').addEventListener('click', function () {
+      tukar(u.hariIni());
+    });
+    medan.addEventListener('change', function () {
+      if (u.sahKunci(medan.value)) { tukar(medan.value); }
+      else { medan.value = tarikh; }
+    });
+
+    return kotak;
+  }
+
+  /* ---------- Notis cuti ---------- */
+  function notisCuti(tarikh) {
+    var senarai = CT.cuti.cutiPada(tarikh);
+    if (!senarai.length) { return null; }
+    var kotak = document.createElement('div');
+    kotak.className = 'notis notis-cuti';
+    kotak.innerHTML = '<b>Cuti umum:</b> ' + senarai.map(function (c) {
+      return u.selamat(c.nama) + (c.anggaran ? ' <span class="lencana lencana-emas">anggaran</span>' : '');
+    }).join(', ');
+    return kotak;
+  }
+
+  function kosong(tajuk, mesej, butang) {
+    var kotak = document.createElement('div');
+    kotak.className = 'kosong-kotak';
+    kotak.innerHTML = '<b>' + u.selamat(tajuk) + '</b><span class="kecil">' +
+      u.selamat(mesej) + '</span>';
+    if (butang) { kotak.appendChild(butang); }
+    return kotak;
+  }
+
+  function pilihanNombor(dari, hingga, nilai) {
+    var html = '';
+    for (var i = dari; i <= hingga; i++) {
+      html += '<option value="' + i + '"' + (String(nilai) === String(i) ? ' selected' : '') +
+        '>' + i + '</option>';
+    }
+    return html;
+  }
+
+  function el(html) {
+    var bekas = document.createElement('div');
+    bekas.innerHTML = html.trim();
+    return bekas.firstElementChild;
+  }
+
+  CT.ui = {
+    toast: toast,
+    bukaLapisan: bukaLapisan,
+    tutupLapisan: tutupLapisan,
+    sahkan: sahkan,
+    hiasTarikh: hiasTarikh,
+    hiasMasa: hiasMasa,
+    hiasSemua: hiasSemua,
+    pemilihTarikh: pemilihTarikh,
+    notisCuti: notisCuti,
+    kosong: kosong,
+    pilihanNombor: pilihanNombor,
+    el: el
+  };
+})();
+
+</script>
+
+<script>
+/* js/views/utama.js */
+/* Tab Utama — ringkas: logo rasmi UIS dan satu butang besar "Ambil Kehadiran". */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.utama = (function () {
+  'use strict';
+
+  var u = CT.util;
+  // Fail logo rasmi dicari mengikut susunan ini di dalam folder assets.
+  var FAIL_LOGO = ['assets/logo-uis.png', 'assets/logo-uis.jpg', 'assets/logo-uis.svg'];
+  var urlLogo = null;
+
+  function bingkaiLogo() {
+    var bingkai = document.createElement('div');
+    bingkai.className = 'logo-bingkai';
+
+    var imej = document.createElement('img');
+    imej.className = 'logo-uis';
+    imej.alt = 'Logo Universiti Islam Selangor';
+    imej.draggable = false;
+    imej.decoding = 'async';
+    bingkai.appendChild(imej);
+
+    // Logo hanya paparan: tiada pautan, tiada tindakan apabila ditekan.
+    imej.addEventListener('click', function (e) { e.preventDefault(); });
+    imej.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+    // Versi satu fail (pratonton) tiada folder assets — terus cuba simpanan peranti.
+    var senarai = window.CT_TIADA_FAIL_LOGO ? [] : FAIL_LOGO;
+    var cubaan = 0;
+    var cubaBlob = false;
+
+    // Logo yang disimpan pada peranti oleh guru.
+    function cubaLogoPeranti() {
+      if (cubaBlob) { bingkai.replaceWith(kotakMasukLogo()); return; }
+      cubaBlob = true;
+      CT.store.ambilFail('logo').then(function (rekod) {
+        if (rekod && rekod.blob) {
+          if (urlLogo) { URL.revokeObjectURL(urlLogo); }
+          urlLogo = URL.createObjectURL(rekod.blob);
+          imej.src = urlLogo;
+        } else {
+          bingkai.replaceWith(kotakMasukLogo());
+        }
+      }).catch(function () {
+        bingkai.replaceWith(kotakMasukLogo());
+      });
+    }
+
+    imej.addEventListener('error', function () {
+      cubaan++;
+      if (cubaan < senarai.length) {
+        imej.src = senarai[cubaan];
+        return;
+      }
+      cubaLogoPeranti();
+    });
+
+    if (senarai.length) { imej.src = senarai[0]; }
+    else { cubaLogoPeranti(); }
+    return bingkai;
+  }
+
+  /* Dipaparkan hanya jika fail logo rasmi belum diletakkan dalam folder assets.
+     Logo tidak dijana semula; guru memasukkan fail rasmi sendiri. */
+  function kotakMasukLogo() {
+    var kotak = document.createElement('div');
+    kotak.className = 'logo-ganti';
+    kotak.innerHTML =
+      '<p class="tebal" style="color:var(--teks);margin-bottom:6px">Logo rasmi belum dimasukkan</p>' +
+      '<p class="kecil" style="margin-bottom:12px">Letakkan fail logo rasmi UIS sebagai ' +
+      '<code>assets/logo-uis.png</code>, atau masukkan fail itu di sini sekali sahaja.</p>' +
+      '<label class="butang butang-luar butang-kecil" style="cursor:pointer">' +
+      'Masukkan fail logo<input type="file" accept="image/*" hidden></label>';
+
+    kotak.querySelector('input[type="file"]').addEventListener('change', function (e) {
+      var fail = e.target.files && e.target.files[0];
+      if (!fail) { return; }
+      CT.store.simpanFail('logo', fail, { nama: fail.name }).then(function () {
+        CT.ui.toast('Logo disimpan pada peranti.');
+        CT.app.pergi('utama');
+      }).catch(function () {
+        CT.ui.toast('Logo tidak dapat disimpan.');
+      });
+    });
+    return kotak;
+  }
+
+  function render(skrin) {
+    var kotak = document.createElement('div');
+    kotak.className = 'utama-kotak';
+
+    kotak.appendChild(bingkaiLogo());
+
+    var tarikh = document.createElement('p');
+    tarikh.className = 'kecil tebal';
+    tarikh.textContent = u.tarikhPenuh(u.hariIni());
+    kotak.appendChild(tarikh);
+
+    var butang = document.createElement('button');
+    butang.type = 'button';
+    butang.className = 'butang butang-besar';
+    butang.textContent = 'Ambil Kehadiran';
+    butang.addEventListener('click', function () {
+      CT.app.pergi('kehadiran', { tarikh: u.hariIni() });
+    });
+    kotak.appendChild(butang);
+
+    skrin.appendChild(kotak);
+  }
+
+  return { tajuk: 'Utama', render: render };
+})();
+
+</script>
+
+<script>
+/* js/views/murid.js */
+/* Tab Murid — senarai murid, carian, tambah murid dan profil murid.
+   Profil hanya mengandungi: nama penuh, nombor matrik, nombor telefon,
+   semester (1-8) dan Hifz/I'adah (1-8). Juz dan muka surat direkodkan
+   dalam tab Rekod, bukan di sini. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.murid = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var carian = '';
+
+  function tapis(senarai) {
+    var cari = carian.trim().toLowerCase();
+    if (!cari) { return senarai; }
+    return senarai.filter(function (m) {
+      return String(m.nama || '').toLowerCase().indexOf(cari) !== -1 ||
+        String(m.matrik || '').toLowerCase().indexOf(cari) !== -1 ||
+        String(m.telefon || '').toLowerCase().indexOf(cari) !== -1;
+    });
+  }
+
+  function kadMurid(m) {
+    var butang = document.createElement('button');
+    butang.type = 'button';
+    butang.className = 'murid-kad';
+    butang.innerHTML =
+      '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
+      '<span class="tumbuh">' +
+      '<span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(m.matrik || 'Tiada nombor matrik') + '</span>' +
+      '</span>' +
+      '<span class="baris-lipat" style="flex:0 0 auto;justify-content:flex-end">' +
+      '<span class="lencana">Sem ' + u.selamat(m.semester || '-') + '</span>' +
+      '<span class="lencana lencana-biru">Hifz ' + u.selamat(m.hifz || '-') + '</span>' +
+      '</span>';
+    butang.addEventListener('click', function () { bukaProfil(m.id); });
+    return butang;
+  }
+
+  /* ---------- Borang tambah / sunting ---------- */
+  function borang(sedia) {
+    var m = sedia || {};
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<div class="medan"><label for="m-nama">Nama penuh</label>' +
+      '<input id="m-nama" type="text" value="' + u.selamat(m.nama || '') +
+      '" placeholder="Nama penuh murid" autocomplete="off"></div>' +
+
+      '<div class="medan"><label for="m-matrik">Nombor matrik</label>' +
+      '<input id="m-matrik" type="text" value="' + u.selamat(m.matrik || '') +
+      '" placeholder="Contoh: UIS2026001" autocomplete="off"></div>' +
+
+      '<div class="medan"><label for="m-telefon">Nombor telefon</label>' +
+      '<input id="m-telefon" type="tel" value="' + u.selamat(m.telefon || '') +
+      '" placeholder="Contoh: 012-3456789" autocomplete="off"></div>' +
+
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="m-semester">Semester</label>' +
+      '<select id="m-semester">' + CT.ui.pilihanNombor(1, 8, m.semester || 1) + '</select></div>' +
+      '<div class="medan"><label for="m-hifz">Hifz / I\'adah</label>' +
+      '<select id="m-hifz">' + CT.ui.pilihanNombor(1, 8, m.hifz || 1) + '</select></div>' +
+      '</div>' +
+
+      '<button class="butang butang-penuh" type="button" data-simpan>Simpan murid</button>';
+
+    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
+      var nama = kotak.querySelector('#m-nama').value.trim();
+      if (!nama) { CT.ui.toast('Sila isi nama penuh murid.'); return; }
+
+      CT.store.simpanMurid({
+        id: m.id,
+        dicipta: m.dicipta,
+        nama: nama,
+        matrik: kotak.querySelector('#m-matrik').value.trim(),
+        telefon: kotak.querySelector('#m-telefon').value.trim(),
+        semester: +kotak.querySelector('#m-semester').value,
+        hifz: +kotak.querySelector('#m-hifz').value
+      });
+      CT.ui.tutupLapisan();
+      CT.ui.toast(m.id ? 'Profil murid dikemas kini.' : 'Murid baharu ditambah.');
+      CT.app.segarSemula();
+    });
+
+    return kotak;
+  }
+
+  function bukaBorang(sedia) {
+    CT.ui.bukaLapisan(sedia ? 'Sunting Profil Murid' : 'Tambah Murid', borang(sedia));
+  }
+
+  /* ---------- Profil ---------- */
+  function bukaProfil(id) {
+    var m = CT.store.ambilMurid(id);
+    if (!m) { return; }
+
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<div class="kad">' +
+      '<div class="baris"><span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
+      '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span></span></div>' +
+      '<div class="rekod-medan">' +
+      '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
+      '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
+      '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
+      '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +
+      '</div></div>' +
+
+      '<div class="baris-lipat jarak-atas">' +
+      '<button class="butang tumbuh" type="button" data-sunting>Sunting profil</button>' +
+      '<button class="butang butang-luar tumbuh" type="button" data-rekod>Lihat rekod hari ini</button>' +
+      '</div>' +
+      '<button class="butang butang-bahaya butang-penuh jarak-atas" type="button" data-padam>' +
+      'Padam murid</button>';
+
+    kotak.querySelector('[data-sunting]').addEventListener('click', function () {
+      bukaBorang(m);
+    });
+    kotak.querySelector('[data-rekod]').addEventListener('click', function () {
+      CT.ui.tutupLapisan();
+      CT.app.pergi('rekod', { tarikh: u.hariIni() });
+    });
+    kotak.querySelector('[data-padam]').addEventListener('click', function () {
+      CT.ui.sahkan('Padam murid',
+        'Padam ' + m.nama + ' bersama semua kehadiran, rekod dan nota murid ini? ' +
+        'Tindakan ini tidak boleh dibatalkan.',
+        function () {
+          CT.store.padamMurid(m.id);
+          CT.ui.toast('Murid dipadam.');
+          CT.app.segarSemula();
+        }, 'Ya, padam');
+    });
+
+    CT.ui.bukaLapisan('Profil Murid', kotak);
+  }
+
+  /* ---------- Data contoh (pilihan guru) ---------- */
+  function muatContoh() {
+    var contoh = [
+      { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', semester: 1, hifz: 1 },
+      { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', semester: 2, hifz: 3 },
+      { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', semester: 3, hifz: 2 },
+      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', semester: 4, hifz: 5 },
+      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', semester: 5, hifz: 4 }
+    ];
+    contoh.forEach(function (m) { CT.store.simpanMurid(m); });
+    CT.ui.toast('5 murid contoh ditambah.');
+    CT.app.segarSemula();
+  }
+
+  function render(skrin) {
+    var semua = CT.store.senaraiMurid();
+
+    var kepala = document.createElement('div');
+    kepala.className = 'seksyen';
+    kepala.innerHTML =
+      '<div class="medan" style="margin-bottom:10px">' +
+      '<input type="search" id="cari-murid" placeholder="Cari nama, matrik atau telefon" ' +
+      'value="' + u.selamat(carian) + '" aria-label="Cari murid"></div>' +
+      '<button class="butang butang-penuh" type="button" data-tambah>+ Tambah Murid</button>';
+    kepala.querySelector('[data-tambah]').addEventListener('click', function () { bukaBorang(null); });
+
+    var medanCari = kepala.querySelector('#cari-murid');
+    medanCari.addEventListener('input', function () {
+      carian = medanCari.value;
+      lukisSenarai();
+    });
+    skrin.appendChild(kepala);
+
+    var seksyen = document.createElement('div');
+    seksyen.className = 'seksyen';
+    skrin.appendChild(seksyen);
+
+    function lukisSenarai() {
+      seksyen.innerHTML = '';
+      if (!semua.length) {
+        var butang = document.createElement('button');
+        butang.type = 'button';
+        butang.className = 'butang butang-luar butang-kecil jarak-atas';
+        butang.textContent = 'Muat 5 murid contoh';
+        butang.addEventListener('click', muatContoh);
+        seksyen.appendChild(CT.ui.kosong('Belum ada murid',
+          'Tekan "Tambah Murid" untuk memasukkan murid pertama anda.', butang));
+        return;
+      }
+
+      var ditapis = tapis(semua);
+      var kira = document.createElement('p');
+      kira.className = 'seksyen-tajuk';
+      kira.textContent = ditapis.length + ' daripada ' + semua.length + ' murid';
+      seksyen.appendChild(kira);
+
+      if (!ditapis.length) {
+        seksyen.appendChild(CT.ui.kosong('Tiada padanan',
+          'Tiada murid sepadan dengan carian "' + carian + '".'));
+        return;
+      }
+
+      var senarai = document.createElement('div');
+      senarai.className = 'senarai';
+      ditapis.forEach(function (m) { senarai.appendChild(kadMurid(m)); });
+      seksyen.appendChild(senarai);
+    }
+
+    lukisSenarai();
+  }
+
+  return { tajuk: 'Murid', render: render, bukaBorang: bukaBorang };
+})();
+
+</script>
+
+<script>
+/* js/views/kehadiran.js */
+/* Tab Kehadiran — dua pilihan sahaja bagi setiap murid: Hadir atau Tidak hadir.
+   Rekod disimpan mengikut tarikh dan terus dipaparkan dalam tab Kalendar dan Rekod. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.kehadiran = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var tarikh = null;
+  var draf = {};
+  var belumSimpan = false;
+
+  function muatDraf() {
+    draf = Object.assign({}, CT.store.kehadiranTarikh(tarikh));
+    belumSimpan = false;
+  }
+
+  function kiraan(murid) {
+    var hadir = 0, tidak = 0;
+    murid.forEach(function (m) {
+      if (draf[m.id] === 'hadir') { hadir++; }
+      else if (draf[m.id] === 'tidak') { tidak++; }
+    });
+    return { hadir: hadir, tidak: tidak, jumlah: murid.length, belum: murid.length - hadir - tidak };
+  }
+
+  function render(skrin, param) {
+    if (param && param.tarikh && u.sahKunci(param.tarikh)) {
+      tarikh = param.tarikh;
+      muatDraf();
+    } else if (!tarikh) {
+      tarikh = u.hariIni();
+      muatDraf();
+    } else if (!belumSimpan) {
+      muatDraf();
+    }
+
+    var murid = CT.store.senaraiMurid();
+
+    /* Pemilih tarikh */
+    skrin.appendChild(CT.ui.pemilihTarikh(tarikh, function (baru) {
+      tarikh = baru;
+      muatDraf();
+      CT.app.segarSemula();
+    }));
+
+    /* Notis cuti umum */
+    var cuti = CT.ui.notisCuti(tarikh);
+    if (cuti) {
+      cuti.classList.add('jarak-atas');
+      skrin.appendChild(cuti);
+    }
+
+    if (!murid.length) {
+      var kosong = CT.ui.kosong('Belum ada murid',
+        'Tambah murid dalam tab Murid sebelum mengambil kehadiran.');
+      kosong.classList.add('jarak-atas');
+      skrin.appendChild(kosong);
+      return;
+    }
+
+    /* Statistik */
+    var statistik = document.createElement('div');
+    statistik.className = 'statistik jarak-atas';
+    skrin.appendChild(statistik);
+
+    function lukisStatistik() {
+      var k = kiraan(murid);
+      statistik.innerHTML =
+        '<div class="stat"><b style="color:var(--hijau)">' + k.hadir + '</b><span>Hadir</span></div>' +
+        '<div class="stat"><b style="color:var(--merah)">' + k.tidak + '</b><span>Tidak hadir</span></div>' +
+        '<div class="stat"><b>' + u.peratus(k.hadir, k.jumlah) + '%</b><span>Peratus kehadiran</span></div>';
+    }
+
+    /* Senarai murid */
+    var senarai = document.createElement('div');
+    senarai.className = 'senarai jarak-atas';
+    skrin.appendChild(senarai);
+
+    murid.forEach(function (m) {
+      var baris = document.createElement('div');
+      baris.className = 'hadir-baris';
+      baris.innerHTML =
+        '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
+        '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
+        '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
+        '<span class="segmen">' +
+        '<button type="button" data-nilai="hadir">Hadir</button>' +
+        '<button type="button" data-nilai="tidak">Tidak</button>' +
+        '</span>';
+
+      var butangHadir = baris.querySelector('[data-nilai="hadir"]');
+      var butangTidak = baris.querySelector('[data-nilai="tidak"]');
+
+      function segar() {
+        butangHadir.classList.toggle('pilih-hadir', draf[m.id] === 'hadir');
+        butangTidak.classList.toggle('pilih-tidak', draf[m.id] === 'tidak');
+      }
+
+      function pilih(nilai) {
+        draf[m.id] = draf[m.id] === nilai ? undefined : nilai;
+        if (!draf[m.id]) { delete draf[m.id]; }
+        belumSimpan = true;
+        segar();
+        lukisStatistik();
+      }
+
+      butangHadir.addEventListener('click', function () { pilih('hadir'); });
+      butangTidak.addEventListener('click', function () { pilih('tidak'); });
+      baris.segar = segar;
+      segar();
+      senarai.appendChild(baris);
+    });
+
+    lukisStatistik();
+
+    /* Butang tindakan */
+    var bar = document.createElement('div');
+    bar.className = 'bar-tindakan';
+    bar.innerHTML =
+      '<button class="butang butang-luar tumbuh" type="button" data-semua>Semua hadir</button>' +
+      '<button class="butang tumbuh" type="button" data-simpan>Simpan kehadiran</button>';
+
+    bar.querySelector('[data-semua]').addEventListener('click', function () {
+      murid.forEach(function (m) { draf[m.id] = 'hadir'; });
+      belumSimpan = true;
+      Array.prototype.forEach.call(senarai.children, function (b) { b.segar && b.segar(); });
+      lukisStatistik();
+      CT.ui.toast('Semua murid ditanda hadir. Tekan "Simpan kehadiran".');
+    });
+
+    bar.querySelector('[data-simpan]').addEventListener('click', function () {
+      var bersih = {};
+      Object.keys(draf).forEach(function (id) {
+        if (draf[id] === 'hadir' || draf[id] === 'tidak') { bersih[id] = draf[id]; }
+      });
+      CT.store.simpanKehadiran(tarikh, bersih);
+      belumSimpan = false;
+      var k = kiraan(murid);
+      CT.ui.toast('Kehadiran ' + u.tarikhRingkas(tarikh) + ' disimpan (' +
+        k.hadir + ' hadir, ' + k.tidak + ' tidak hadir).');
+    });
+
+    skrin.appendChild(bar);
+
+    var pautan = document.createElement('button');
+    pautan.type = 'button';
+    pautan.className = 'butang butang-lembut butang-penuh jarak-atas';
+    pautan.textContent = 'Buka rekod murid untuk tarikh ini';
+    pautan.addEventListener('click', function () {
+      CT.app.pergi('rekod', { tarikh: tarikh });
+    });
+    skrin.appendChild(pautan);
+  }
+
+  function tetapTarikh(baru) {
+    if (u.sahKunci(baru)) { tarikh = baru; muatDraf(); }
+  }
+
+  return { tajuk: 'Kehadiran', render: render, tetapTarikh: tetapTarikh };
+})();
+
+</script>
+
+<script>
+/* js/views/kalendar.js */
+/* Tab Kalendar — kalendar bulanan aktif.
+   Menggabungkan cuti Persekutuan + Kuala Lumpur + Selangor secara automatik
+   (tiada pemilih negeri dipaparkan). Rekod murid tidak disenaraikan di sini
+   kerana ia mempunyai tab sendiri. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.kalendar = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var pilih = null;   // tarikh dipilih
+  var lihat = null;   // { tahun, bulan }
+
+  function pastikanKeadaan(param) {
+    if (param && param.tarikh && u.sahKunci(param.tarikh)) { pilih = param.tarikh; }
+    if (!pilih) { pilih = u.hariIni(); }
+    var p = u.pecah(pilih);
+    if (!lihat || (param && param.tarikh)) { lihat = { tahun: p.tahun, bulan: p.bulan }; }
+  }
+
+  function tukarBulan(langkah) {
+    var bulan = lihat.bulan + langkah;
+    var tahun = lihat.tahun;
+    while (bulan > 12) { bulan -= 12; tahun++; }
+    while (bulan < 1) { bulan += 12; tahun--; }
+    lihat = { tahun: tahun, bulan: bulan };
+    CT.app.segarSemula();
+  }
+
+  function tandaTarikh() {
+    var tanda = {};
+    CT.store.tarikhAdaRekod().forEach(function (t) {
+      tanda[t] = tanda[t] || {};
+      tanda[t].rekod = true;
+    });
+    CT.store.tarikhAdaAcara().forEach(function (t) {
+      tanda[t] = tanda[t] || {};
+      tanda[t].acara = true;
+    });
+    return tanda;
+  }
+
+  function gridBulan() {
+    var kad = document.createElement('div');
+    kad.className = 'kad';
+
+    var kepala = document.createElement('div');
+    kepala.className = 'kal-kepala';
+    kepala.innerHTML =
+      '<button class="butang-ikon" type="button" data-bulan-sebelum aria-label="Bulan sebelumnya">&lsaquo;</button>' +
+      '<span class="kal-bulan">' + u.namaBulan(lihat.bulan) + ' ' + lihat.tahun + '</span>' +
+      '<button class="butang-ikon" type="button" data-bulan-selepas aria-label="Bulan berikutnya">&rsaquo;</button>';
+    kepala.querySelector('[data-bulan-sebelum]').addEventListener('click', function () { tukarBulan(-1); });
+    kepala.querySelector('[data-bulan-selepas]').addEventListener('click', function () { tukarBulan(1); });
+    kad.appendChild(kepala);
+
+    var grid = document.createElement('div');
+    grid.className = 'kal-grid';
+
+    u.HARI_PENDEK.forEach(function (h) {
+      var sel = document.createElement('div');
+      sel.className = 'kal-nama';
+      sel.textContent = h;
+      grid.appendChild(sel);
+    });
+
+    var pertama = u.bina(lihat.tahun, lihat.bulan, 1);
+    var mula = u.hariMinggu(pertama);
+    var hariDalamBulan = new Date(Date.UTC(lihat.tahun, lihat.bulan, 0)).getUTCDate();
+    var tanda = tandaTarikh();
+    var ini = u.hariIni();
+
+    for (var kosong = 0; kosong < mula; kosong++) {
+      var lompang = document.createElement('div');
+      lompang.className = 'kal-sel luar';
+      grid.appendChild(lompang);
+    }
+
+    for (var hari = 1; hari <= hariDalamBulan; hari++) {
+      (function (hari) {
+        var kunci = u.bina(lihat.tahun, lihat.bulan, hari);
+        var sel = document.createElement('button');
+        sel.type = 'button';
+        sel.className = 'kal-sel';
+        if (kunci === ini) { sel.classList.add('hari-ini'); }
+        if (kunci === pilih) { sel.classList.add('pilih'); }
+        var adaCuti = CT.cuti.adaCuti(kunci);
+        if (adaCuti) { sel.classList.add('cuti'); }
+
+        var titik = '';
+        if (tanda[kunci] && tanda[kunci].rekod) { titik += '<i class="t-rekod"></i>'; }
+        if (tanda[kunci] && tanda[kunci].acara) { titik += '<i class="t-acara"></i>'; }
+        if (adaCuti) { titik += '<i class="t-cuti"></i>'; }
+
+        sel.innerHTML = '<span>' + hari + '</span><span class="kal-titik">' + titik + '</span>';
+        sel.setAttribute('aria-label', u.tarikhPenuh(kunci));
+        sel.addEventListener('click', function () {
+          pilih = kunci;
+          CT.app.segarSemula();
+        });
+        grid.appendChild(sel);
+      })(hari);
+    }
+
+    kad.appendChild(grid);
+
+    var petunjuk = document.createElement('div');
+    petunjuk.className = 'petunjuk';
+    petunjuk.innerHTML =
+      '<span><i class="t-rekod"></i> Ada rekod murid</span>' +
+      '<span><i class="t-acara"></i> Ada acara</span>' +
+      '<span><i class="t-cuti"></i> Cuti umum</span>';
+    kad.appendChild(petunjuk);
+
+    return kad;
+  }
+
+  /* ---------- Borang acara ---------- */
+  function borangAcara(sedia) {
+    var a = sedia || {};
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<p class="kecil tebal" style="margin-bottom:12px">' + u.selamat(u.tarikhPenuh(pilih)) + '</p>' +
+      '<div class="medan"><label for="a-tajuk">Tajuk acara</label>' +
+      '<input id="a-tajuk" type="text" value="' + u.selamat(a.tajuk || '') +
+      '" placeholder="Contoh: Ujian hafazan juz 1"></div>' +
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="a-jenis">Jenis</label><select id="a-jenis">' +
+      ['Aktiviti kelas', 'Tugasan', 'Mesyuarat', 'Lain-lain'].map(function (j) {
+        return '<option' + (a.jenis === j ? ' selected' : '') + '>' + j + '</option>';
+      }).join('') + '</select></div>' +
+      '<div class="medan"><label for="a-masa">Masa</label>' +
+      '<input id="a-masa" type="time" value="' + u.selamat(a.masa || '08:00') + '"></div>' +
+      '</div>' +
+      '<div class="medan"><label for="a-catatan">Catatan</label>' +
+      '<textarea id="a-catatan" placeholder="Butiran tambahan (pilihan)">' +
+      u.selamat(a.catatan || '') + '</textarea></div>' +
+      '<button class="butang butang-penuh" type="button" data-simpan>Simpan acara</button>' +
+      (a.id ? '<button class="butang butang-bahaya butang-penuh jarak-atas" type="button" data-padam>Padam acara</button>' : '');
+
+    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
+      var tajuk = kotak.querySelector('#a-tajuk').value.trim();
+      if (!tajuk) { CT.ui.toast('Sila isi tajuk acara.'); return; }
+      CT.store.simpanAcara(pilih, {
+        id: a.id,
+        tajuk: tajuk,
+        jenis: kotak.querySelector('#a-jenis').value,
+        masa: kotak.querySelector('#a-masa').value,
+        catatan: kotak.querySelector('#a-catatan').value.trim()
+      });
+      CT.ui.tutupLapisan();
+      CT.ui.toast('Acara disimpan.');
+      CT.app.segarSemula();
+    });
+
+    if (a.id) {
+      kotak.querySelector('[data-padam]').addEventListener('click', function () {
+        CT.store.padamAcara(pilih, a.id);
+        CT.ui.tutupLapisan();
+        CT.ui.toast('Acara dipadam.');
+        CT.app.segarSemula();
+      });
+    }
+    return kotak;
+  }
+
+  /* ---------- Panel tarikh dipilih ---------- */
+  function panelTarikh() {
+    var kad = document.createElement('div');
+    kad.className = 'kad jarak-atas';
+
+    var kepala = document.createElement('div');
+    kepala.className = 'baris-antara';
+    kepala.innerHTML =
+      '<span class="tumbuh"><span class="tebal">' + u.selamat(u.tarikhPenuh(pilih)) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(u.tarikhRingkas(pilih)) + '</span></span>' +
+      '<button class="butang butang-lembut butang-kecil" type="button" data-hari-ini>Hari Ini</button>';
+    kepala.querySelector('[data-hari-ini]').addEventListener('click', function () {
+      pilih = u.hariIni();
+      var p = u.pecah(pilih);
+      lihat = { tahun: p.tahun, bulan: p.bulan };
+      CT.app.segarSemula();
+    });
+    kad.appendChild(kepala);
+
+    var cuti = CT.ui.notisCuti(pilih);
+    if (cuti) { cuti.classList.add('jarak-atas'); kad.appendChild(cuti); }
+
+    var acara = CT.store.acaraTarikh(pilih);
+    var senarai = document.createElement('div');
+    senarai.className = 'jarak-atas';
+
+    if (!acara.length) {
+      senarai.innerHTML = '<p class="kecil kosong">Tiada acara pada tarikh ini.</p>';
+    } else {
+      acara.forEach(function (a) {
+        var baris = document.createElement('div');
+        baris.className = 'acara-baris';
+        baris.innerHTML =
+          '<span class="acara-masa">' + u.selamat(u.masa12(a.masa) || '-') + '</span>' +
+          '<span class="tumbuh"><span class="tebal">' + u.selamat(a.tajuk) + '</span><br>' +
+          '<span class="lencana lencana-kelabu">' + u.selamat(a.jenis || 'Lain-lain') + '</span>' +
+          (a.catatan ? '<br><span class="kecil">' + u.selamat(a.catatan) + '</span>' : '') +
+          '</span>' +
+          '<button class="butang butang-luar butang-kecil" type="button" data-sunting>Sunting</button>';
+        baris.querySelector('[data-sunting]').addEventListener('click', function () {
+          CT.ui.bukaLapisan('Sunting Acara', borangAcara(a));
+        });
+        senarai.appendChild(baris);
+      });
+    }
+    kad.appendChild(senarai);
+
+    var tambah = document.createElement('button');
+    tambah.type = 'button';
+    tambah.className = 'butang butang-penuh jarak-atas';
+    tambah.textContent = '+ Tambah Acara';
+    tambah.addEventListener('click', function () {
+      CT.ui.bukaLapisan('Tambah Acara', borangAcara(null));
+    });
+    kad.appendChild(tambah);
+
+    var kePeringkat = document.createElement('div');
+    kePeringkat.className = 'baris-lipat jarak-atas';
+    kePeringkat.innerHTML =
+      '<button class="butang butang-lembut tumbuh" type="button" data-kehadiran>Kehadiran tarikh ini</button>' +
+      '<button class="butang butang-lembut tumbuh" type="button" data-rekod>Rekod tarikh ini</button>';
+    kePeringkat.children[0].addEventListener('click', function () {
+      CT.app.pergi('kehadiran', { tarikh: pilih });
+    });
+    kePeringkat.children[1].addEventListener('click', function () {
+      CT.app.pergi('rekod', { tarikh: pilih });
+    });
+    kad.appendChild(kePeringkat);
+
+    return kad;
+  }
+
+  /* ---------- Bar penyegerakan ---------- */
+  function barSegerak() {
+    var kad = document.createElement('div');
+    kad.className = 'kad kad-rapat jarak-atas';
+
+    var status = CT.cuti.statusSegerak(lihat.tahun);
+    var teks = status.sumber === 'segerak'
+      ? 'Cuti umum disegerakkan pada ' + u.capMasa(status.masa)
+      : 'Menggunakan data cuti luar talian.';
+
+    kad.innerHTML =
+      '<div class="baris-antara">' +
+      '<span class="kecil tumbuh" data-status>' + u.selamat(teks) + '</span>' +
+      '<button class="butang butang-luar butang-kecil" type="button" data-segerak>Segerak</button>' +
+      '</div>';
+
+    var butang = kad.querySelector('[data-segerak]');
+    butang.addEventListener('click', function () {
+      butang.disabled = true;
+      butang.textContent = 'Menyegerak...';
+      CT.cuti.segerak(lihat.tahun, true).then(function (hasil) {
+        if (hasil.status === 'ok') {
+          CT.ui.toast('Kalendar cuti dikemas kini (' + hasil.bilangan + ' cuti).');
+          CT.app.segarSemula();
+        } else if (hasil.status === 'luar-talian') {
+          CT.ui.toast('Tiada internet. Data luar talian digunakan.');
+          butang.disabled = false;
+          butang.textContent = 'Segerak';
+        } else {
+          CT.ui.toast('Penyegerakan gagal. Data luar talian digunakan.');
+          butang.disabled = false;
+          butang.textContent = 'Segerak';
+        }
+      });
+    });
+    return kad;
+  }
+
+  function render(skrin, param) {
+    pastikanKeadaan(param);
+    skrin.appendChild(gridBulan());
+    skrin.appendChild(panelTarikh());
+    skrin.appendChild(barSegerak());
+
+    // Cuba segerak senyap sekali bagi tahun yang dilihat.
+    CT.cuti.segerak(lihat.tahun, false).then(function (hasil) {
+      if (hasil.status === 'ok') { CT.app.segarSemula(); }
+    });
+  }
+
+  return { tajuk: 'Kalendar', render: render };
+})();
+
+</script>
+
+<script>
+/* js/views/rekod.js */
+/* Tab Rekod — lihat dan kemas kini rekod setiap murid mengikut tarikh dipilih.
+   Setiap tarikh disimpan berasingan: mengubah rekod satu tarikh tidak menyentuh
+   rekod tarikh lain. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.rekod = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var tarikh = null;
+
+  function labelKehadiran(nilai) {
+    if (nilai === 'hadir') { return '<span class="lencana">Hadir</span>'; }
+    if (nilai === 'tidak') { return '<span class="lencana lencana-merah">Tidak hadir</span>'; }
+    return '<span class="lencana lencana-kelabu">Belum direkod</span>';
+  }
+
+  /* ---------- Borang kemas kini seorang murid ---------- */
+  function borang(murid) {
+    var r = CT.store.rekodMurid(tarikh, murid.id) || {};
+    var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
+    var nota = CT.store.notaHarian(tarikh, murid.id);
+
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<p class="kecil tebal" style="margin-bottom:4px">' + u.selamat(murid.nama) + '</p>' +
+      '<p class="kecil" style="margin-bottom:14px">' + u.selamat(u.tarikhPenuh(tarikh)) + '</p>' +
+
+      '<div class="medan"><label>Kehadiran</label>' +
+      '<div class="segmen">' +
+      '<button type="button" data-hadir="hadir">Hadir</button>' +
+      '<button type="button" data-hadir="tidak">Tidak hadir</button>' +
+      '</div></div>' +
+
+      '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
+      '<option value="">Juz belum direkod</option>' +
+      CT.ui.pilihanNombor(1, 30, r.juz) + '</select></div>' +
+
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="r-mula">Muka surat hafazan mula</label>' +
+      '<input id="r-mula" type="number" min="1" max="604" inputmode="numeric" value="' +
+      u.selamat(r.mukaMula || '') + '" placeholder="Contoh: 12"></div>' +
+      '<div class="medan"><label for="r-habis">Muka surat hafazan habis</label>' +
+      '<input id="r-habis" type="number" min="1" max="604" inputmode="numeric" value="' +
+      u.selamat(r.mukaHabis || '') + '" placeholder="Contoh: 14"></div>' +
+      '</div>' +
+
+      '<div class="medan"><label for="r-nota">Nota harian</label>' +
+      '<textarea id="r-nota" placeholder="Catatan guru untuk tarikh ini">' +
+      u.selamat(nota ? nota.teks : '') + '</textarea></div>' +
+
+      '<div class="semak"><input type="checkbox" id="r-kongsi"' +
+      (nota && nota.kongsi ? ' checked' : '') + '>' +
+      '<label for="r-kongsi">Kongsi nota ini dengan jabatan</label></div>' +
+
+      '<button class="butang butang-penuh" type="button" data-simpan>Simpan rekod</button>';
+
+    var pilihanHadir = hadir;
+    var butang = kotak.querySelectorAll('[data-hadir]');
+
+    function segarHadir() {
+      Array.prototype.forEach.call(butang, function (b) {
+        var nilai = b.getAttribute('data-hadir');
+        b.classList.toggle('pilih-hadir', pilihanHadir === 'hadir' && nilai === 'hadir');
+        b.classList.toggle('pilih-tidak', pilihanHadir === 'tidak' && nilai === 'tidak');
+      });
+    }
+    Array.prototype.forEach.call(butang, function (b) {
+      b.addEventListener('click', function () {
+        var nilai = b.getAttribute('data-hadir');
+        pilihanHadir = pilihanHadir === nilai ? '' : nilai;
+        segarHadir();
+      });
+    });
+    segarHadir();
+
+    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
+      var mula = kotak.querySelector('#r-mula').value.trim();
+      var habis = kotak.querySelector('#r-habis').value.trim();
+
+      if (mula && habis && +habis < +mula) {
+        CT.ui.toast('Muka surat habis mesti sama atau lebih besar daripada muka surat mula.');
+        return;
+      }
+
+      // Kehadiran: hanya murid ini pada tarikh ini disentuh.
+      var peta = Object.assign({}, CT.store.kehadiranTarikh(tarikh));
+      if (pilihanHadir) { peta[murid.id] = pilihanHadir; }
+      else { delete peta[murid.id]; }
+      CT.store.simpanKehadiran(tarikh, peta);
+
+      CT.store.simpanRekodMurid(tarikh, murid.id, {
+        juz: kotak.querySelector('#r-juz').value ? +kotak.querySelector('#r-juz').value : null,
+        mukaMula: mula ? +mula : null,
+        mukaHabis: habis ? +habis : null
+      });
+
+      var guru = CT.store.guruAktif();
+      CT.store.simpanNotaHarian(tarikh, murid.id,
+        kotak.querySelector('#r-nota').value,
+        kotak.querySelector('#r-kongsi').checked,
+        guru ? guru.id : null);
+
+      CT.ui.tutupLapisan();
+      CT.ui.toast('Rekod ' + u.tarikhRingkas(tarikh) + ' disimpan.');
+      CT.app.segarSemula();
+    });
+
+    return kotak;
+  }
+
+  function kadRekod(murid) {
+    var r = CT.store.rekodMurid(tarikh, murid.id) || {};
+    var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
+    var nota = CT.store.notaHarian(tarikh, murid.id);
+
+    var kad = document.createElement('div');
+    kad.className = 'rekod-kad';
+    kad.innerHTML =
+      '<div class="baris">' +
+      '<span class="avatar">' + u.selamat(u.huruf(murid.nama)) + '</span>' +
+      '<span class="tumbuh"><span class="murid-nama">' + u.selamat(murid.nama) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(murid.matrik || 'Tiada matrik') + '</span></span>' +
+      labelKehadiran(hadir) +
+      '</div>' +
+      '<div class="rekod-medan">' +
+      '<div><b>Juz</b>' + (r.juz ? 'Juz ' + r.juz : '<span class="kosong">Juz belum direkod</span>') + '</div>' +
+      '<div><b>Muka surat hafazan</b>' +
+      (r.mukaMula || r.mukaHabis
+        ? u.selamat((r.mukaMula || '?') + ' - ' + (r.mukaHabis || '?'))
+        : '<span class="kosong">Muka surat belum direkod</span>') + '</div>' +
+      '</div>' +
+      '<div style="margin-top:8px"><span class="kecil tebal">Nota harian</span><br>' +
+      (nota
+        ? '<span class="kecil">' + u.selamat(nota.teks) + '</span>' +
+          (nota.kongsi ? ' <span class="lencana lencana-biru">Dikongsi</span>' : '')
+        : '<span class="kecil kosong">Belum direkod</span>') +
+      '</div>' +
+      '<button class="butang butang-luar butang-penuh jarak-atas" type="button" data-kemaskini>' +
+      'Kemas kini</button>';
+
+    kad.querySelector('[data-kemaskini]').addEventListener('click', function () {
+      CT.ui.bukaLapisan('Kemas Kini Rekod', borang(murid));
+    });
+    return kad;
+  }
+
+  function render(skrin, param) {
+    if (param && param.tarikh && u.sahKunci(param.tarikh)) { tarikh = param.tarikh; }
+    if (!tarikh) { tarikh = u.hariIni(); }
+
+    skrin.appendChild(CT.ui.pemilihTarikh(tarikh, function (baru) {
+      tarikh = baru;
+      CT.app.segarSemula();
+    }));
+
+    var cuti = CT.ui.notisCuti(tarikh);
+    if (cuti) { cuti.classList.add('jarak-atas'); skrin.appendChild(cuti); }
+
+    var kePeringkat = document.createElement('button');
+    kePeringkat.type = 'button';
+    kePeringkat.className = 'butang butang-lembut butang-penuh jarak-atas';
+    kePeringkat.textContent = 'Buka Kehadiran untuk tarikh ini';
+    kePeringkat.addEventListener('click', function () {
+      CT.app.pergi('kehadiran', { tarikh: tarikh });
+    });
+    skrin.appendChild(kePeringkat);
+
+    var murid = CT.store.senaraiMurid();
+    if (!murid.length) {
+      var kosong = CT.ui.kosong('Belum ada murid',
+        'Tambah murid dalam tab Murid untuk mula merekod.');
+      kosong.classList.add('jarak-atas');
+      skrin.appendChild(kosong);
+      return;
+    }
+
+    var tajuk = document.createElement('p');
+    tajuk.className = 'seksyen-tajuk jarak-atas';
+    tajuk.textContent = 'Rekod ' + murid.length + ' murid';
+    skrin.appendChild(tajuk);
+
+    var senarai = document.createElement('div');
+    senarai.className = 'senarai';
+    murid.forEach(function (m) { senarai.appendChild(kadRekod(m)); });
+    skrin.appendChild(senarai);
+  }
+
+  return { tajuk: 'Rekod', render: render };
+})();
+
+</script>
+
+<script>
+/* js/views/quran.js */
+/* Tab Al-Quran — 30 juz.
+   Aplikasi ini TIDAK disertakan dengan kandungan mushaf. Guru memasukkan sendiri
+   fail PDF setiap juz; fail disimpan pada peranti (IndexedDB) dan boleh dibuka
+   tanpa sambungan internet. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.quran = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var adaFail = {};      // "juz-1" -> { nama, saiz }
+  var dimuat = false;
+  var urlPembaca = null;
+
+  function kunciJuz(n) { return 'juz-' + n; }
+
+  function saizMesra(bait) {
+    if (!bait) { return ''; }
+    if (bait < 1024) { return bait + ' bait'; }
+    if (bait < 1024 * 1024) { return Math.max(1, Math.round(bait / 1024)) + ' KB'; }
+    return (bait / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function muatStatus() {
+    return CT.store.infoFail().then(function (semua) {
+      adaFail = {};
+      semua.forEach(function (f) { adaFail[f.kunci] = f; });
+      dimuat = true;
+    }).catch(function () { dimuat = true; });
+  }
+
+  /* ---------- Pembaca mushaf ---------- */
+  function bukaMushaf(nombor) {
+    CT.store.ambilFail(kunciJuz(nombor)).then(function (rekod) {
+      if (!rekod || !rekod.blob) {
+        CT.ui.toast('Juz ' + nombor + ' belum dimasukkan.');
+        return;
+      }
+      if (urlPembaca) { URL.revokeObjectURL(urlPembaca); }
+      urlPembaca = URL.createObjectURL(rekod.blob);
+
+      var pembaca = document.createElement('div');
+      pembaca.className = 'pembaca';
+      pembaca.innerHTML =
+        '<div class="pembaca-kepala">' +
+        '<span class="tebal">Juz ' + nombor + '</span>' +
+        '<span class="baris">' +
+        '<button class="butang butang-luar butang-kecil" type="button" data-tetingkap>Tetingkap baharu</button>' +
+        '<button class="butang-ikon" type="button" data-tutup aria-label="Tutup">&times;</button>' +
+        '</span></div>' +
+        '<iframe title="Mushaf Juz ' + nombor + '" src="' + urlPembaca + '"></iframe>';
+
+      pembaca.querySelector('[data-tutup]').addEventListener('click', function () {
+        pembaca.remove();
+        if (urlPembaca) { URL.revokeObjectURL(urlPembaca); urlPembaca = null; }
+      });
+      pembaca.querySelector('[data-tetingkap]').addEventListener('click', function () {
+        window.open(urlPembaca, '_blank');
+      });
+      document.body.appendChild(pembaca);
+    });
+  }
+
+  function masukkanFail(nombor, fail) {
+    if (!fail) { return; }
+    if (fail.type && fail.type.indexOf('pdf') === -1) {
+      CT.ui.toast('Sila pilih fail PDF.');
+      return;
+    }
+    CT.store.simpanFail(kunciJuz(nombor), fail, { nama: fail.name }).then(function () {
+      CT.ui.toast('Juz ' + nombor + ' disimpan untuk kegunaan luar talian.');
+      return muatStatus();
+    }).then(function () {
+      CT.app.segarSemula();
+    }).catch(function (e) {
+      console.error(e);
+      CT.ui.toast('Fail tidak dapat disimpan pada peranti.');
+    });
+  }
+
+  function kadJuz(nombor) {
+    var info = adaFail[kunciJuz(nombor)];
+    var kad = document.createElement('div');
+    kad.className = 'juz-kad';
+    kad.innerHTML =
+      '<div class="baris-antara">' +
+      '<span class="juz-nombor">Juz ' + nombor + '</span>' +
+      (info ? '<span class="lencana">Luar talian</span>'
+        : '<span class="lencana lencana-kelabu">Belum ada</span>') +
+      '</div>' +
+      '<p class="kecil">' + (info
+        ? u.selamat(info.nama || 'Fail PDF') + '<br>' + saizMesra(info.saiz)
+        : 'PDF belum dimasukkan.') + '</p>' +
+      '<button class="butang butang-kecil" type="button" data-buka' +
+      (info ? '' : ' disabled') + '>Buka mushaf</button>' +
+      '<label class="butang butang-luar butang-kecil" style="cursor:pointer">' +
+      (info ? 'Ganti PDF' : 'Masukkan PDF') +
+      '<input type="file" accept="application/pdf,.pdf" hidden></label>' +
+      (info ? '<button class="butang butang-bahaya butang-kecil" type="button" data-padam>Padam fail</button>' : '');
+
+    kad.querySelector('[data-buka]').addEventListener('click', function () {
+      bukaMushaf(nombor);
+    });
+    kad.querySelector('input[type="file"]').addEventListener('change', function (e) {
+      masukkanFail(nombor, e.target.files && e.target.files[0]);
+    });
+    if (info) {
+      kad.querySelector('[data-padam]').addEventListener('click', function () {
+        CT.ui.sahkan('Padam fail juz', 'Padam fail PDF Juz ' + nombor + ' daripada peranti ini?',
+          function () {
+            CT.store.padamFail(kunciJuz(nombor)).then(muatStatus).then(function () {
+              CT.ui.toast('Fail Juz ' + nombor + ' dipadam.');
+              CT.app.segarSemula();
+            });
+          }, 'Ya, padam');
+      });
+    }
+    return kad;
+  }
+
+  function render(skrin) {
+    var kepala = document.createElement('div');
+    kepala.className = 'kad';
+    kepala.innerHTML =
+      '<p class="tebal">Mushaf Dar Al-Ma\'rifah, Syria</p>' +
+      '<p class="arab">&#1583;&#1575;&#1585; &#1575;&#1604;&#1605;&#1593;&#1585;&#1601;&#1577;</p>' +
+      '<p class="kecil jarak-atas">Aplikasi ini tidak disertakan dengan kandungan mushaf. ' +
+      'Guru perlu memasukkan sendiri fail PDF bagi setiap juz. Setelah dimasukkan, ' +
+      'fail disimpan pada peranti dan boleh dibuka tanpa internet.</p>' +
+      '<p class="kecil jarak-atas">Gunakan hanya salinan yang sah. Sumber rasmi mushaf digital: ' +
+      '<a href="https://qurancomplex.gov.sa/" target="_blank" rel="noopener noreferrer">' +
+      'Kompleks Percetakan Al-Quran Raja Fahd (qurancomplex.gov.sa)</a>.</p>';
+    skrin.appendChild(kepala);
+
+    var jumlah = Object.keys(adaFail).filter(function (k) {
+      return k.indexOf('juz-') === 0;
+    }).length;
+
+    var ringkas = document.createElement('p');
+    ringkas.className = 'seksyen-tajuk jarak-atas';
+    ringkas.textContent = dimuat
+      ? jumlah + ' daripada 30 juz tersedia di luar talian'
+      : 'Memuatkan status fail...';
+    skrin.appendChild(ringkas);
+
+    var grid = document.createElement('div');
+    grid.className = 'quran-grid';
+    for (var i = 1; i <= 30; i++) { grid.appendChild(kadJuz(i)); }
+    skrin.appendChild(grid);
+
+    if (!dimuat) {
+      muatStatus().then(function () { CT.app.segarSemula(); });
+    }
+  }
+
+  function segarStatus() { return muatStatus(); }
+
+  return { tajuk: 'Al-Quran', render: render, segarStatus: segarStatus };
+})();
+
+</script>
+
+<script>
+/* js/views/nota.js */
+/* Tab Nota — nota murid mengikut kategori.
+   Nota sulit hanya kelihatan kepada guru yang menulisnya.
+   Nota yang ditulis melalui tab Rekod turut muncul di sini pada tarikh
+   dan murid yang betul. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.nota = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var KATEGORI = ['umum', 'pencapaian', 'kebimbangan'];
+  var LABEL = { umum: 'Umum', pencapaian: 'Pencapaian', kebimbangan: 'Kebimbangan' };
+  var tapisan = 'semua';
+
+  function namaMurid(id) {
+    var m = CT.store.ambilMurid(id);
+    return m ? m.nama : 'Murid dipadam';
+  }
+
+  function namaGuru(id) {
+    var senarai = CT.store.senaraiPasukan();
+    for (var i = 0; i < senarai.length; i++) {
+      if (senarai[i].id === id) { return senarai[i].nama; }
+    }
+    return 'Guru';
+  }
+
+  function bolehLihat(nota, guru) {
+    if (!nota.sulit) { return true; }
+    return !!guru && nota.penulisId === guru.id;
+  }
+
+  function lencanaKategori(kategori) {
+    var kelas = kategori === 'pencapaian' ? 'lencana'
+      : kategori === 'kebimbangan' ? 'lencana lencana-merah' : 'lencana lencana-kelabu';
+    return '<span class="' + kelas + '">' + u.selamat(LABEL[kategori] || 'Umum') + '</span>';
+  }
+
+  /* ---------- Borang nota ---------- */
+  function borang(sedia) {
+    var n = sedia || {};
+    var murid = CT.store.senaraiMurid();
+    var guru = CT.store.guruAktif();
+
+    var kotak = document.createElement('div');
+    if (!murid.length) {
+      kotak.appendChild(CT.ui.kosong('Belum ada murid',
+        'Tambah murid dalam tab Murid sebelum menulis nota.'));
+      return kotak;
+    }
+
+    kotak.innerHTML =
+      '<div class="medan"><label for="n-murid">Murid</label><select id="n-murid">' +
+      murid.map(function (m) {
+        return '<option value="' + u.selamat(m.id) + '"' +
+          (n.muridId === m.id ? ' selected' : '') + '>' + u.selamat(m.nama) + '</option>';
+      }).join('') + '</select></div>' +
+
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="n-kategori">Kategori</label><select id="n-kategori">' +
+      KATEGORI.map(function (k) {
+        return '<option value="' + k + '"' + (n.kategori === k ? ' selected' : '') + '>' +
+          LABEL[k] + '</option>';
+      }).join('') + '</select></div>' +
+      '<div class="medan"><label for="n-tarikh">Tarikh</label>' +
+      '<input id="n-tarikh" type="date" value="' + u.selamat(n.tarikh || u.hariIni()) + '"></div>' +
+      '</div>' +
+
+      '<div class="medan"><label for="n-teks">Nota</label>' +
+      '<textarea id="n-teks" placeholder="Tulis nota murid di sini">' +
+      u.selamat(n.teks || '') + '</textarea></div>' +
+
+      '<div class="semak"><input type="checkbox" id="n-sulit"' + (n.sulit ? ' checked' : '') + '>' +
+      '<label for="n-sulit">Tandakan sebagai sulit (hanya penulis boleh lihat)</label></div>' +
+      '<div class="semak"><input type="checkbox" id="n-kongsi"' + (n.kongsi ? ' checked' : '') + '>' +
+      '<label for="n-kongsi">Kongsi dengan jabatan</label></div>' +
+
+      '<button class="butang butang-penuh" type="button" data-simpan>Simpan nota</button>' +
+      (n.id ? '<button class="butang butang-bahaya butang-penuh jarak-atas" type="button" data-padam>Padam nota</button>' : '');
+
+    var sulit = kotak.querySelector('#n-sulit');
+    var kongsi = kotak.querySelector('#n-kongsi');
+    sulit.addEventListener('change', function () {
+      if (sulit.checked) { kongsi.checked = false; }
+      kongsi.disabled = sulit.checked;
+    });
+    kongsi.disabled = sulit.checked;
+
+    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
+      var teks = kotak.querySelector('#n-teks').value.trim();
+      if (!teks) { CT.ui.toast('Sila tulis kandungan nota.'); return; }
+
+      CT.store.simpanNota({
+        id: n.id,
+        dicipta: n.dicipta,
+        sumber: n.sumber || 'nota',
+        muridId: kotak.querySelector('#n-murid').value,
+        kategori: kotak.querySelector('#n-kategori').value,
+        tarikh: kotak.querySelector('#n-tarikh').value || u.hariIni(),
+        teks: teks,
+        sulit: sulit.checked,
+        kongsi: sulit.checked ? false : kongsi.checked,
+        penulisId: n.penulisId || (guru ? guru.id : null),
+        dikemaskini: new Date().toISOString()
+      });
+      CT.ui.tutupLapisan();
+      CT.ui.toast(n.id ? 'Nota dikemas kini.' : 'Nota disimpan.');
+      CT.app.segarSemula();
+    });
+
+    if (n.id) {
+      kotak.querySelector('[data-padam]').addEventListener('click', function () {
+        CT.ui.sahkan('Padam nota', 'Padam nota ini secara kekal?', function () {
+          CT.store.padamNota(n.id);
+          CT.ui.toast('Nota dipadam.');
+          CT.app.segarSemula();
+        }, 'Ya, padam');
+      });
+    }
+    return kotak;
+  }
+
+  function kadNota(n, guru) {
+    var kad = document.createElement('div');
+    kad.className = 'nota-kad';
+    kad.innerHTML =
+      '<div class="baris-antara">' +
+      '<span class="tumbuh"><span class="tebal">' + u.selamat(namaMurid(n.muridId)) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(u.tarikhRingkas(n.tarikh)) + ' &middot; ' +
+      u.selamat(namaGuru(n.penulisId)) + '</span></span>' +
+      lencanaKategori(n.kategori) +
+      '</div>' +
+      '<p class="nota-teks">' + u.selamat(n.teks) + '</p>' +
+      '<div class="baris-lipat jarak-atas">' +
+      (n.sulit ? '<span class="lencana lencana-merah">Sulit</span>' : '') +
+      (n.kongsi ? '<span class="lencana lencana-biru">Dikongsi dengan jabatan</span>' : '') +
+      (n.sumber === 'rekod' ? '<span class="lencana lencana-kelabu">Daripada Rekod</span>' : '') +
+      '</div>' +
+      '<button class="butang butang-luar butang-kecil jarak-atas" type="button" data-sunting>Sunting</button>';
+
+    kad.querySelector('[data-sunting]').addEventListener('click', function () {
+      if (n.penulisId && guru && n.penulisId !== guru.id && n.sulit) {
+        CT.ui.toast('Nota sulit hanya boleh disunting oleh penulisnya.');
+        return;
+      }
+      CT.ui.bukaLapisan('Sunting Nota', borang(n));
+    });
+    return kad;
+  }
+
+  function render(skrin) {
+    var guru = CT.store.guruAktif();
+
+    var tambah = document.createElement('button');
+    tambah.type = 'button';
+    tambah.className = 'butang butang-penuh';
+    tambah.textContent = '+ Tambah Nota';
+    tambah.addEventListener('click', function () {
+      CT.ui.bukaLapisan('Tambah Nota', borang(null));
+    });
+    skrin.appendChild(tambah);
+
+    var tapis = document.createElement('div');
+    tapis.className = 'tapis jarak-atas';
+    ['semua'].concat(KATEGORI).forEach(function (k) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = k === 'semua' ? 'Semua' : LABEL[k];
+      b.className = tapisan === k ? 'aktif' : '';
+      b.addEventListener('click', function () {
+        tapisan = k;
+        CT.app.segarSemula();
+      });
+      tapis.appendChild(b);
+    });
+    skrin.appendChild(tapis);
+
+    var semua = CT.store.senaraiNota().filter(function (n) { return bolehLihat(n, guru); });
+    var ditapis = tapisan === 'semua'
+      ? semua
+      : semua.filter(function (n) { return (n.kategori || 'umum') === tapisan; });
+
+    var tajuk = document.createElement('p');
+    tajuk.className = 'seksyen-tajuk jarak-atas';
+    tajuk.textContent = ditapis.length + ' nota' +
+      (guru ? ' — dilihat sebagai ' + guru.nama : '');
+    skrin.appendChild(tajuk);
+
+    if (!ditapis.length) {
+      skrin.appendChild(CT.ui.kosong('Tiada nota',
+        'Nota yang anda tambah di sini atau melalui tab Rekod akan dipaparkan di sini.'));
+      return;
+    }
+
+    var senarai = document.createElement('div');
+    senarai.className = 'senarai';
+    ditapis.forEach(function (n) { senarai.appendChild(kadNota(n, guru)); });
+    skrin.appendChild(senarai);
+  }
+
+  return { tajuk: 'Nota', render: render };
+})();
+
+</script>
+
+<script>
+/* js/views/pasukan.js */
+/* Tab Pasukan — kerjasama jabatan.
+   Prototaip ini menyimpan senarai guru pada peranti sahaja. Struktur data
+   ("id", "peranan", "akses") sudah disediakan supaya log masuk dan pangkalan
+   data awan boleh ditambah kemudian tanpa mengubah antara muka. */
+
+window.CT = window.CT || {};
+CT.views = CT.views || {};
+
+CT.views.pasukan = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var AKSES = ['Akses penuh', 'Boleh sunting', 'Boleh lihat'];
+
+  function lencanaAkses(akses) {
+    var kelas = akses === 'Akses penuh' ? 'lencana'
+      : akses === 'Boleh sunting' ? 'lencana lencana-biru' : 'lencana lencana-kelabu';
+    return '<span class="' + kelas + '">' + u.selamat(akses) + '</span>';
+  }
+
+  function borang(sedia) {
+    var a = sedia || {};
+    var kotak = document.createElement('div');
+    kotak.innerHTML =
+      '<div class="medan"><label for="p-nama">Nama guru</label>' +
+      '<input id="p-nama" type="text" value="' + u.selamat(a.nama || '') +
+      '" placeholder="Nama penuh guru"></div>' +
+      '<div class="medan"><label for="p-peranan">Peranan</label>' +
+      '<input id="p-peranan" type="text" value="' + u.selamat(a.peranan || '') +
+      '" placeholder="Contoh: Guru Tahfiz"></div>' +
+      '<div class="medan"><label for="p-emel">E-mel</label>' +
+      '<input id="p-emel" type="email" value="' + u.selamat(a.emel || '') +
+      '" placeholder="nama@uis.edu.my"></div>' +
+      '<div class="medan"><label for="p-akses">Tahap akses</label><select id="p-akses">' +
+      AKSES.map(function (k) {
+        return '<option' + (a.akses === k ? ' selected' : '') + '>' + k + '</option>';
+      }).join('') + '</select></div>' +
+      '<button class="butang butang-penuh" type="button" data-simpan>' +
+      (a.id ? 'Simpan perubahan' : 'Hantar jemputan') + '</button>' +
+      (a.id ? '<button class="butang butang-bahaya butang-penuh jarak-atas" type="button" data-buang>Buang daripada pasukan</button>' : '');
+
+    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
+      var nama = kotak.querySelector('#p-nama').value.trim();
+      if (!nama) { CT.ui.toast('Sila isi nama guru.'); return; }
+      CT.store.simpanAhli({
+        id: a.id,
+        dicipta: a.dicipta,
+        nama: nama,
+        peranan: kotak.querySelector('#p-peranan').value.trim() || 'Guru',
+        emel: kotak.querySelector('#p-emel').value.trim(),
+        akses: kotak.querySelector('#p-akses').value,
+        status: a.status || (a.id ? 'aktif' : 'dijemput')
+      });
+      CT.ui.tutupLapisan();
+      CT.ui.toast(a.id ? 'Maklumat guru dikemas kini.' : 'Jemputan direkodkan.');
+      CT.app.segarSemula();
+    });
+
+    if (a.id) {
+      kotak.querySelector('[data-buang]').addEventListener('click', function () {
+        if (CT.store.senaraiPasukan().length <= 1) {
+          CT.ui.toast('Sekurang-kurangnya seorang guru mesti kekal dalam pasukan.');
+          return;
+        }
+        CT.ui.sahkan('Buang guru', 'Buang ' + a.nama + ' daripada pasukan jabatan?',
+          function () {
+            var tetapan = CT.store.tetapan();
+            CT.store.padamAhli(a.id);
+            if (tetapan.guruAktifId === a.id) {
+              var baki = CT.store.senaraiPasukan();
+              CT.store.simpanTetapan({ guruAktifId: baki.length ? baki[0].id : null });
+            }
+            CT.ui.toast('Guru dibuang daripada pasukan.');
+            CT.app.segarSemula();
+          }, 'Ya, buang');
+      });
+    }
+    return kotak;
+  }
+
+  function render(skrin) {
+    var senarai = CT.store.senaraiPasukan();
+    var aktif = CT.store.guruAktif();
+
+    /* Guru yang sedang menggunakan aplikasi (menggantikan log masuk buat sementara) */
+    var kotakAktif = document.createElement('div');
+    kotakAktif.className = 'kad';
+    kotakAktif.innerHTML =
+      '<p class="seksyen-tajuk">Guru aktif</p>' +
+      '<div class="medan" style="margin-bottom:0"><select id="guru-aktif">' +
+      senarai.map(function (g) {
+        return '<option value="' + u.selamat(g.id) + '"' +
+          (aktif && aktif.id === g.id ? ' selected' : '') + '>' +
+          u.selamat(g.nama) + ' — ' + u.selamat(g.peranan || 'Guru') + '</option>';
+      }).join('') + '</select></div>' +
+      '<p class="kecil jarak-atas">Nota sulit yang ditulis oleh guru lain tidak dipaparkan ' +
+      'kepada guru aktif. Bahagian ini akan digantikan dengan log masuk sebenar.</p>';
+
+    kotakAktif.querySelector('#guru-aktif').addEventListener('change', function (e) {
+      CT.store.simpanTetapan({ guruAktifId: e.target.value });
+      CT.ui.toast('Guru aktif ditukar.');
+      CT.app.segarSemula();
+    });
+    skrin.appendChild(kotakAktif);
+
+    var jemput = document.createElement('button');
+    jemput.type = 'button';
+    jemput.className = 'butang butang-penuh jarak-atas';
+    jemput.textContent = '+ Jemput Guru';
+    jemput.addEventListener('click', function () {
+      CT.ui.bukaLapisan('Jemput Guru', borang(null));
+    });
+    skrin.appendChild(jemput);
+
+    var tajuk = document.createElement('p');
+    tajuk.className = 'seksyen-tajuk jarak-atas';
+    tajuk.textContent = senarai.length + ' guru dalam jabatan';
+    skrin.appendChild(tajuk);
+
+    var kotakSenarai = document.createElement('div');
+    kotakSenarai.className = 'senarai';
+    senarai.forEach(function (g) {
+      var kad = document.createElement('div');
+      kad.className = 'kad kad-rapat';
+      kad.innerHTML =
+        '<div class="baris">' +
+        '<span class="avatar">' + u.selamat(u.huruf(g.nama)) + '</span>' +
+        '<span class="tumbuh"><span class="murid-nama">' + u.selamat(g.nama) + '</span><br>' +
+        '<span class="kecil">' + u.selamat(g.peranan || 'Guru') +
+        (g.emel ? ' &middot; ' + u.selamat(g.emel) : '') + '</span></span>' +
+        '</div>' +
+        '<div class="baris-lipat jarak-atas">' + lencanaAkses(g.akses || 'Boleh lihat') +
+        (g.status === 'dijemput' ? '<span class="lencana lencana-emas">Jemputan belum diterima</span>' : '') +
+        '<button class="butang butang-luar butang-kecil" type="button" data-sunting>Sunting</button>' +
+        '</div>';
+      kad.querySelector('[data-sunting]').addEventListener('click', function () {
+        CT.ui.bukaLapisan('Sunting Guru', borang(g));
+      });
+      kotakSenarai.appendChild(kad);
+    });
+    skrin.appendChild(kotakSenarai);
+
+    var notis = document.createElement('div');
+    notis.className = 'notis notis-info jarak-atas';
+    notis.innerHTML = '<b>Prototaip:</b> senarai pasukan dan nota dikongsi disimpan pada ' +
+      'peranti ini sahaja. Perkongsian sebenar antara guru memerlukan log masuk dan ' +
+      'pangkalan data awan.';
+    skrin.appendChild(notis);
+  }
+
+  return { tajuk: 'Pasukan', render: render };
+})();
+
+</script>
+
+<script>
+/* js/app.js */
+/* ClassTrack — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var u = CT.util;
+  var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'quran', 'nota', 'pasukan'];
+  var tabSemasa = 'utama';
+  var paramSemasa = null;
+
+  var skrin, tajukHalaman;
+
+  /* ---------- Persediaan kali pertama ---------- */
+  function siapkanData() {
+    if (!CT.store.senaraiPasukan().length) {
+      var guru = CT.store.simpanAhli({
+        nama: 'Guru Utama',
+        peranan: 'Guru Tahfiz',
+        emel: '',
+        akses: 'Akses penuh',
+        status: 'aktif'
+      });
+      CT.store.simpanTetapan({ guruAktifId: guru.id });
+    }
+    if (!CT.store.tetapan().guruAktifId) {
+      var senarai = CT.store.senaraiPasukan();
+      if (senarai.length) { CT.store.simpanTetapan({ guruAktifId: senarai[0].id }); }
+    }
+  }
+
+  /* ---------- Navigasi ---------- */
+  function lukis(kekalkanTatal) {
+    var tatal = window.scrollY;
+    var papar = CT.views[tabSemasa] || CT.views.utama;
+
+    skrin.innerHTML = '';
+    tajukHalaman.textContent = papar.tajuk;
+    document.querySelectorAll('.nav-butang').forEach(function (b) {
+      b.classList.toggle('aktif', b.getAttribute('data-tab') === tabSemasa);
+    });
+
+    try {
+      papar.render(skrin, paramSemasa);
+    } catch (ralat) {
+      console.error('Ralat memaparkan tab', tabSemasa, ralat);
+      skrin.appendChild(CT.ui.kosong('Ralat paparan',
+        'Tab ini tidak dapat dipaparkan. Sila cuba lagi.'));
+    }
+    paramSemasa = null;
+
+    if (kekalkanTatal) { window.scrollTo(0, tatal); }
+    else { window.scrollTo(0, 0); }
+  }
+
+  var abaiHash = false;
+
+  function pergi(tab, param) {
+    if (TAB.indexOf(tab) === -1) { tab = 'utama'; }
+    tabSemasa = tab;
+    paramSemasa = param || null;
+    var hashBaru = '#/' + tab;
+    if (location.hash !== hashBaru) {
+      abaiHash = true;             // elak lukisan berganda daripada hashchange
+      location.hash = hashBaru;
+    }
+    lukis(false);
+  }
+
+  function segarSemula() { lukis(true); }
+
+  function daripadaHash() {
+    var tab = String(location.hash || '').replace('#/', '');
+    return TAB.indexOf(tab) !== -1 ? tab : 'utama';
+  }
+
+  /* ---------- Penunjuk rangkaian ---------- */
+  function segarRangkaian() {
+    var penunjuk = document.getElementById('penunjuk-rangkaian');
+    if (!penunjuk) { return; }
+    if (navigator.onLine) {
+      penunjuk.textContent = 'Dalam talian';
+    } else {
+      penunjuk.textContent = 'Luar talian';
+    }
+  }
+
+  /* ---------- Service worker ---------- */
+  function daftarServiceWorker() {
+    if (window.CT_SATU_FAIL) { return; }   // versi pratonton satu fail
+    if (!('serviceWorker' in navigator)) { return; }
+    if (location.protocol === 'file:') {
+      console.info('Service worker memerlukan http/https. Buka melalui pelayan tempatan.');
+      return;
+    }
+    navigator.serviceWorker.register('sw.js').catch(function (e) {
+      console.warn('Service worker tidak didaftarkan:', e.message);
+    });
+  }
+
+  function mula() {
+    skrin = document.getElementById('skrin');
+    tajukHalaman = document.getElementById('tajuk-halaman');
+
+    siapkanData();
+
+    document.querySelectorAll('.nav-butang').forEach(function (b) {
+      b.addEventListener('click', function () { pergi(b.getAttribute('data-tab')); });
+    });
+
+    document.getElementById('lapisan-tutup').addEventListener('click', CT.ui.tutupLapisan);
+    document.getElementById('lapisan').addEventListener('click', function (e) {
+      if (e.target.id === 'lapisan') { CT.ui.tutupLapisan(); }
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { CT.ui.tutupLapisan(); }
+    });
+
+    window.addEventListener('hashchange', function () {
+      if (abaiHash) { abaiHash = false; return; }
+      tabSemasa = daripadaHash();
+      lukis(false);
+    });
+    window.addEventListener('online', segarRangkaian);
+    window.addEventListener('offline', segarRangkaian);
+
+    tabSemasa = daripadaHash();
+    segarRangkaian();
+    lukis(false);
+    daftarServiceWorker();
+
+    // Segerak cuti secara senyap bagi tahun semasa.
+    CT.cuti.segerak(u.pecah(u.hariIni()).tahun, false);
+  }
+
+  CT.app = { pergi: pergi, segarSemula: segarSemula, TAB: TAB };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mula);
+  } else {
+    mula();
+  }
+})();
+
+</script>
