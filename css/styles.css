@@ -358,13 +358,40 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .hadir-baris {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
   padding: 10px 12px;
   background: var(--kad);
   border: 1px solid var(--garis);
   border-radius: var(--r);
 }
+.hadir-atas { display: flex; align-items: center; gap: 10px; }
+
+/* Dipaparkan hanya apabila murid ditanda tidak hadir. */
+.hadir-butiran {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--garis);
+}
+.hadir-butiran input.nota-tidak-hadir {
+  width: 100%;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-kecil);
+  padding: 9px 11px;
+  min-height: 42px;
+  background: #fff;
+  font-size: .88rem;
+}
+.hadir-butiran input.nota-tidak-hadir:focus {
+  outline: 2px solid rgba(11, 93, 42, .3);
+  outline-offset: 1px;
+  border-color: var(--hijau);
+}
+.segmen-maklum { flex-wrap: wrap; }
+.segmen-maklum button { flex: 1 1 auto; }
+
 .segmen { display: flex; gap: 6px; flex: 0 0 auto; }
 .segmen button {
   appearance: none;
@@ -380,6 +407,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .segmen button.pilih-hadir { background: var(--hijau); border-color: var(--hijau); color: #fff; }
 .segmen button.pilih-tidak { background: var(--merah); border-color: var(--merah); color: #fff; }
+.segmen button.pilih-maklum { background: var(--hijau-gelap); border-color: var(--hijau-gelap); color: #fff; }
 
 .statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat {

@@ -365,13 +365,40 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .hadir-baris {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
   padding: 10px 12px;
   background: var(--kad);
   border: 1px solid var(--garis);
   border-radius: var(--r);
 }
+.hadir-atas { display: flex; align-items: center; gap: 10px; }
+
+/* Dipaparkan hanya apabila murid ditanda tidak hadir. */
+.hadir-butiran {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--garis);
+}
+.hadir-butiran input.nota-tidak-hadir {
+  width: 100%;
+  border: 1px solid var(--garis);
+  border-radius: var(--r-kecil);
+  padding: 9px 11px;
+  min-height: 42px;
+  background: #fff;
+  font-size: .88rem;
+}
+.hadir-butiran input.nota-tidak-hadir:focus {
+  outline: 2px solid rgba(11, 93, 42, .3);
+  outline-offset: 1px;
+  border-color: var(--hijau);
+}
+.segmen-maklum { flex-wrap: wrap; }
+.segmen-maklum button { flex: 1 1 auto; }
+
 .segmen { display: flex; gap: 6px; flex: 0 0 auto; }
 .segmen button {
   appearance: none;
@@ -387,6 +414,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .segmen button.pilih-hadir { background: var(--hijau); border-color: var(--hijau); color: #fff; }
 .segmen button.pilih-tidak { background: var(--merah); border-color: var(--merah); color: #fff; }
+.segmen button.pilih-maklum { background: var(--hijau-gelap); border-color: var(--hijau-gelap); color: #fff; }
 
 .statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .stat {
@@ -990,6 +1018,10 @@ window.CT = window.CT || {};
     Object.keys(kehadiran).forEach(function (t) { delete kehadiran[t][id]; });
     tulis('kehadiran', kehadiran);
 
+    var butiran = baca('hadirButiran', {});
+    Object.keys(butiran).forEach(function (t) { delete butiran[t][id]; });
+    tulis('hadirButiran', butiran);
+
     var rekod = baca('rekod', {});
     Object.keys(rekod).forEach(function (t) { delete rekod[t][id]; });
     tulis('rekod', rekod);
@@ -1017,6 +1049,33 @@ window.CT = window.CT || {};
 
   function tarikhAdaKehadiran() {
     return Object.keys(baca('kehadiran', {}));
+  }
+
+  /* Butiran tambahan bagi murid yang tidak hadir: sama ada ketidakhadiran
+     itu dimaklumkan, dan nota ringkas guru. Disimpan berasingan daripada
+     status hadir/tidak supaya rekod lama kekal sah. */
+  function butiranKehadiran(tarikh) {
+    var semua = baca('hadirButiran', {});
+    return semua[tarikh] || {};
+  }
+
+  function butiranMurid(tarikh, muridId) {
+    return butiranKehadiran(tarikh)[muridId] || null;
+  }
+
+  function simpanButiranKehadiran(tarikh, peta) {
+    var semua = baca('hadirButiran', {});
+    if (peta && Object.keys(peta).length) { semua[tarikh] = peta; }
+    else { delete semua[tarikh]; }
+    tulis('hadirButiran', semua);
+    lapor('kehadiran', tarikh);
+  }
+
+  function simpanButiranMurid(tarikh, muridId, butiran) {
+    var peta = Object.assign({}, butiranKehadiran(tarikh));
+    if (butiran) { peta[muridId] = butiran; }
+    else { delete peta[muridId]; }
+    simpanButiranKehadiran(tarikh, peta);
   }
 
   /* ---------- Rekod murid mengikut tarikh ---------- */
@@ -1275,6 +1334,10 @@ window.CT = window.CT || {};
     kehadiranTarikh: kehadiranTarikh,
     simpanKehadiran: simpanKehadiran,
     tarikhAdaKehadiran: tarikhAdaKehadiran,
+    butiranKehadiran: butiranKehadiran,
+    butiranMurid: butiranMurid,
+    simpanButiranKehadiran: simpanButiranKehadiran,
+    simpanButiranMurid: simpanButiranMurid,
 
     rekodTarikh: rekodTarikh,
     rekodMurid: rekodMurid,
@@ -2239,6 +2302,8 @@ CT.views.murid = (function () {
 <script>
 /* js/views/kehadiran.js */
 /* Tab Kehadiran — dua pilihan sahaja bagi setiap murid: Hadir atau Tidak hadir.
+   Bagi murid yang tidak hadir, guru boleh menanda sama ada ketidakhadiran itu
+   Dimaklum atau Tidak dimaklum, dan menulis nota ringkas.
    Rekod disimpan mengikut tarikh dan terus dipaparkan dalam tab Kalendar dan Rekod. */
 
 window.CT = window.CT || {};
@@ -2250,20 +2315,35 @@ CT.views.kehadiran = (function () {
   var u = CT.util;
   var tarikh = null;
   var draf = {};
+  var drafButiran = {};
   var belumSimpan = false;
 
   function muatDraf() {
     draf = Object.assign({}, CT.store.kehadiranTarikh(tarikh));
+    drafButiran = {};
+    var simpan = CT.store.butiranKehadiran(tarikh);
+    Object.keys(simpan).forEach(function (id) {
+      drafButiran[id] = Object.assign({}, simpan[id]);
+    });
     belumSimpan = false;
   }
 
   function kiraan(murid) {
-    var hadir = 0, tidak = 0;
+    var hadir = 0, tidak = 0, dimaklum = 0, tidakDimaklum = 0;
     murid.forEach(function (m) {
-      if (draf[m.id] === 'hadir') { hadir++; }
-      else if (draf[m.id] === 'tidak') { tidak++; }
+      if (draf[m.id] === 'hadir') { hadir++; return; }
+      if (draf[m.id] !== 'tidak') { return; }
+      tidak++;
+      var b = drafButiran[m.id];
+      if (b && b.maklum === 'dimaklum') { dimaklum++; }
+      else if (b && b.maklum === 'tidak-dimaklum') { tidakDimaklum++; }
     });
-    return { hadir: hadir, tidak: tidak, jumlah: murid.length, belum: murid.length - hadir - tidak };
+    return {
+      hadir: hadir, tidak: tidak, jumlah: murid.length,
+      belum: murid.length - hadir - tidak,
+      dimaklum: dimaklum, tidakDimaklum: tidakDimaklum,
+      belumDitanda: tidak - dimaklum - tidakDimaklum
+    };
   }
 
   function render(skrin, param) {
@@ -2306,12 +2386,24 @@ CT.views.kehadiran = (function () {
     statistik.className = 'statistik jarak-atas';
     skrin.appendChild(statistik);
 
+    var ringkasTidak = document.createElement('p');
+    ringkasTidak.className = 'kecil jarak-atas';
+    skrin.appendChild(ringkasTidak);
+
     function lukisStatistik() {
       var k = kiraan(murid);
       statistik.innerHTML =
         '<div class="stat"><b style="color:var(--hijau)">' + k.hadir + '</b><span>Hadir</span></div>' +
         '<div class="stat"><b style="color:var(--merah)">' + k.tidak + '</b><span>Tidak hadir</span></div>' +
         '<div class="stat"><b>' + u.peratus(k.hadir, k.jumlah) + '%</b><span>Peratus kehadiran</span></div>';
+
+      if (k.tidak) {
+        ringkasTidak.innerHTML = 'Tidak hadir: <b>' + k.dimaklum + '</b> dimaklum &middot; <b>' +
+          k.tidakDimaklum + '</b> tidak dimaklum' +
+          (k.belumDitanda ? ' &middot; <b>' + k.belumDitanda + '</b> belum ditanda' : '');
+      } else {
+        ringkasTidak.textContent = '';
+      }
     }
 
     /* Senarai murid */
@@ -2323,25 +2415,48 @@ CT.views.kehadiran = (function () {
       var baris = document.createElement('div');
       baris.className = 'hadir-baris';
       baris.innerHTML =
+        '<div class="hadir-atas">' +
         '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
         '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
         '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
         '<span class="segmen">' +
         '<button type="button" data-nilai="hadir">Hadir</button>' +
         '<button type="button" data-nilai="tidak">Tidak</button>' +
-        '</span>';
+        '</span>' +
+        '</div>' +
+        '<div class="hadir-butiran tersembunyi">' +
+        '<span class="segmen segmen-maklum">' +
+        '<button type="button" data-maklum="dimaklum">Dimaklum</button>' +
+        '<button type="button" data-maklum="tidak-dimaklum">Tidak dimaklum</button>' +
+        '</span>' +
+        '<input type="text" class="nota-tidak-hadir" maxlength="200" ' +
+        'placeholder="Nota ringkas (pilihan)" aria-label="Nota ketidakhadiran">' +
+        '</div>';
 
       var butangHadir = baris.querySelector('[data-nilai="hadir"]');
       var butangTidak = baris.querySelector('[data-nilai="tidak"]');
+      var butiran = baris.querySelector('.hadir-butiran');
+      var butangMaklum = baris.querySelectorAll('[data-maklum]');
+      var medanNota = baris.querySelector('.nota-tidak-hadir');
 
       function segar() {
+        var tidakHadir = draf[m.id] === 'tidak';
         butangHadir.classList.toggle('pilih-hadir', draf[m.id] === 'hadir');
-        butangTidak.classList.toggle('pilih-tidak', draf[m.id] === 'tidak');
+        butangTidak.classList.toggle('pilih-tidak', tidakHadir);
+        butiran.classList.toggle('tersembunyi', !tidakHadir);
+
+        var b = drafButiran[m.id] || {};
+        Array.prototype.forEach.call(butangMaklum, function (x) {
+          x.classList.toggle('pilih-maklum', b.maklum === x.getAttribute('data-maklum'));
+        });
+        if (medanNota.value !== (b.nota || '')) { medanNota.value = b.nota || ''; }
       }
 
       function pilih(nilai) {
         draf[m.id] = draf[m.id] === nilai ? undefined : nilai;
         if (!draf[m.id]) { delete draf[m.id]; }
+        // Butiran hanya bermakna untuk murid yang tidak hadir.
+        if (draf[m.id] !== 'tidak') { delete drafButiran[m.id]; }
         belumSimpan = true;
         segar();
         lukisStatistik();
@@ -2349,6 +2464,27 @@ CT.views.kehadiran = (function () {
 
       butangHadir.addEventListener('click', function () { pilih('hadir'); });
       butangTidak.addEventListener('click', function () { pilih('tidak'); });
+
+      Array.prototype.forEach.call(butangMaklum, function (x) {
+        x.addEventListener('click', function () {
+          var nilai = x.getAttribute('data-maklum');
+          var b = drafButiran[m.id] || {};
+          b.maklum = b.maklum === nilai ? '' : nilai;
+          if (!b.maklum) { delete b.maklum; }
+          drafButiran[m.id] = b;
+          belumSimpan = true;
+          segar();
+          lukisStatistik();
+        });
+      });
+
+      medanNota.addEventListener('input', function () {
+        var b = drafButiran[m.id] || {};
+        b.nota = medanNota.value;
+        drafButiran[m.id] = b;
+        belumSimpan = true;
+      });
+
       baris.segar = segar;
       segar();
       senarai.appendChild(baris);
@@ -2364,7 +2500,10 @@ CT.views.kehadiran = (function () {
       '<button class="butang tumbuh" type="button" data-simpan>Simpan kehadiran</button>';
 
     bar.querySelector('[data-semua]').addEventListener('click', function () {
-      murid.forEach(function (m) { draf[m.id] = 'hadir'; });
+      murid.forEach(function (m) {
+        draf[m.id] = 'hadir';
+        delete drafButiran[m.id];
+      });
       belumSimpan = true;
       Array.prototype.forEach.call(senarai.children, function (b) { b.segar && b.segar(); });
       lukisStatistik();
@@ -2373,11 +2512,26 @@ CT.views.kehadiran = (function () {
 
     bar.querySelector('[data-simpan]').addEventListener('click', function () {
       var bersih = {};
+      var bersihButiran = {};
+
       Object.keys(draf).forEach(function (id) {
-        if (draf[id] === 'hadir' || draf[id] === 'tidak') { bersih[id] = draf[id]; }
+        if (draf[id] !== 'hadir' && draf[id] !== 'tidak') { return; }
+        bersih[id] = draf[id];
+        if (draf[id] !== 'tidak') { return; }
+
+        var b = drafButiran[id] || {};
+        var nota = String(b.nota || '').trim();
+        if (b.maklum || nota) {
+          bersihButiran[id] = {};
+          if (b.maklum) { bersihButiran[id].maklum = b.maklum; }
+          if (nota) { bersihButiran[id].nota = nota; }
+        }
       });
+
       CT.store.simpanKehadiran(tarikh, bersih);
+      CT.store.simpanButiranKehadiran(tarikh, bersihButiran);
       belumSimpan = false;
+
       var k = kiraan(murid);
       CT.ui.toast('Kehadiran ' + u.tarikhRingkas(tarikh) + ' disimpan (' +
         k.hadir + ' hadir, ' + k.tidak + ' tidak hadir).');
@@ -2722,6 +2876,12 @@ CT.views.rekod = (function () {
     return '<span class="lencana lencana-kelabu">Belum direkod</span>';
   }
 
+  function labelMaklum(maklum) {
+    if (maklum === 'dimaklum') { return '<span class="lencana">Dimaklum</span>'; }
+    if (maklum === 'tidak-dimaklum') { return '<span class="lencana lencana-merah">Tidak dimaklum</span>'; }
+    return '<span class="lencana lencana-kelabu">Maklum belum ditanda</span>';
+  }
+
   /* ---------- Borang kemas kini seorang murid ---------- */
   function borang(murid) {
     var r = CT.store.rekodMurid(tarikh, murid.id) || {};
@@ -2737,6 +2897,14 @@ CT.views.rekod = (function () {
       '<div class="segmen">' +
       '<button type="button" data-hadir="hadir">Hadir</button>' +
       '<button type="button" data-hadir="tidak">Tidak hadir</button>' +
+      '</div>' +
+      '<div class="hadir-butiran tersembunyi" data-butiran>' +
+      '<span class="segmen segmen-maklum">' +
+      '<button type="button" data-maklum="dimaklum">Dimaklum</button>' +
+      '<button type="button" data-maklum="tidak-dimaklum">Tidak dimaklum</button>' +
+      '</span>' +
+      '<input type="text" class="nota-tidak-hadir" id="r-nota-tidak" maxlength="200" ' +
+      'placeholder="Nota ketidakhadiran (pilihan)" aria-label="Nota ketidakhadiran">' +
       '</div></div>' +
 
       '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
@@ -2764,6 +2932,12 @@ CT.views.rekod = (function () {
 
     var pilihanHadir = hadir;
     var butang = kotak.querySelectorAll('[data-hadir]');
+    var butiranSedia = CT.store.butiranMurid(tarikh, murid.id) || {};
+    var pilihanMaklum = butiranSedia.maklum || '';
+    var kotakButiran = kotak.querySelector('[data-butiran]');
+    var butangMaklum = kotak.querySelectorAll('[data-maklum]');
+    var medanNotaTidak = kotak.querySelector('#r-nota-tidak');
+    medanNotaTidak.value = butiranSedia.nota || '';
 
     function segarHadir() {
       Array.prototype.forEach.call(butang, function (b) {
@@ -2771,11 +2945,22 @@ CT.views.rekod = (function () {
         b.classList.toggle('pilih-hadir', pilihanHadir === 'hadir' && nilai === 'hadir');
         b.classList.toggle('pilih-tidak', pilihanHadir === 'tidak' && nilai === 'tidak');
       });
+      kotakButiran.classList.toggle('tersembunyi', pilihanHadir !== 'tidak');
+      Array.prototype.forEach.call(butangMaklum, function (x) {
+        x.classList.toggle('pilih-maklum', pilihanMaklum === x.getAttribute('data-maklum'));
+      });
     }
     Array.prototype.forEach.call(butang, function (b) {
       b.addEventListener('click', function () {
         var nilai = b.getAttribute('data-hadir');
         pilihanHadir = pilihanHadir === nilai ? '' : nilai;
+        segarHadir();
+      });
+    });
+    Array.prototype.forEach.call(butangMaklum, function (x) {
+      x.addEventListener('click', function () {
+        var nilai = x.getAttribute('data-maklum');
+        pilihanMaklum = pilihanMaklum === nilai ? '' : nilai;
         segarHadir();
       });
     });
@@ -2795,6 +2980,17 @@ CT.views.rekod = (function () {
       if (pilihanHadir) { peta[murid.id] = pilihanHadir; }
       else { delete peta[murid.id]; }
       CT.store.simpanKehadiran(tarikh, peta);
+
+      // Butiran dimaklum/nota hanya disimpan untuk murid yang tidak hadir.
+      var notaTidak = medanNotaTidak.value.trim();
+      if (pilihanHadir === 'tidak' && (pilihanMaklum || notaTidak)) {
+        var simpanButiran = {};
+        if (pilihanMaklum) { simpanButiran.maklum = pilihanMaklum; }
+        if (notaTidak) { simpanButiran.nota = notaTidak; }
+        CT.store.simpanButiranMurid(tarikh, murid.id, simpanButiran);
+      } else {
+        CT.store.simpanButiranMurid(tarikh, murid.id, null);
+      }
 
       CT.store.simpanRekodMurid(tarikh, murid.id, {
         juz: kotak.querySelector('#r-juz').value ? +kotak.querySelector('#r-juz').value : null,
@@ -2819,6 +3015,7 @@ CT.views.rekod = (function () {
   function kadRekod(murid) {
     var r = CT.store.rekodMurid(tarikh, murid.id) || {};
     var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
+    var butiran = CT.store.butiranMurid(tarikh, murid.id) || {};
     var nota = CT.store.notaHarian(tarikh, murid.id);
 
     var kad = document.createElement('div');
@@ -2830,6 +3027,12 @@ CT.views.rekod = (function () {
       '<span class="kecil">' + u.selamat(murid.matrik || 'Tiada matrik') + '</span></span>' +
       labelKehadiran(hadir) +
       '</div>' +
+      (hadir === 'tidak'
+        ? '<div class="baris-lipat" style="margin-top:8px">' + labelMaklum(butiran.maklum) +
+          (butiran.nota
+            ? '<span class="kecil">' + u.selamat(butiran.nota) + '</span>'
+            : '') + '</div>'
+        : '') +
       '<div class="rekod-medan">' +
       '<div><b>Juz</b>' + (r.juz ? 'Juz ' + r.juz : '<span class="kosong">Juz belum direkod</span>') + '</div>' +
       '<div><b>Muka surat hafazan</b>' +

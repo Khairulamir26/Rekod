@@ -17,6 +17,12 @@ CT.views.rekod = (function () {
     return '<span class="lencana lencana-kelabu">Belum direkod</span>';
   }
 
+  function labelMaklum(maklum) {
+    if (maklum === 'dimaklum') { return '<span class="lencana">Dimaklum</span>'; }
+    if (maklum === 'tidak-dimaklum') { return '<span class="lencana lencana-merah">Tidak dimaklum</span>'; }
+    return '<span class="lencana lencana-kelabu">Maklum belum ditanda</span>';
+  }
+
   /* ---------- Borang kemas kini seorang murid ---------- */
   function borang(murid) {
     var r = CT.store.rekodMurid(tarikh, murid.id) || {};
@@ -32,6 +38,14 @@ CT.views.rekod = (function () {
       '<div class="segmen">' +
       '<button type="button" data-hadir="hadir">Hadir</button>' +
       '<button type="button" data-hadir="tidak">Tidak hadir</button>' +
+      '</div>' +
+      '<div class="hadir-butiran tersembunyi" data-butiran>' +
+      '<span class="segmen segmen-maklum">' +
+      '<button type="button" data-maklum="dimaklum">Dimaklum</button>' +
+      '<button type="button" data-maklum="tidak-dimaklum">Tidak dimaklum</button>' +
+      '</span>' +
+      '<input type="text" class="nota-tidak-hadir" id="r-nota-tidak" maxlength="200" ' +
+      'placeholder="Nota ketidakhadiran (pilihan)" aria-label="Nota ketidakhadiran">' +
       '</div></div>' +
 
       '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
@@ -59,6 +73,12 @@ CT.views.rekod = (function () {
 
     var pilihanHadir = hadir;
     var butang = kotak.querySelectorAll('[data-hadir]');
+    var butiranSedia = CT.store.butiranMurid(tarikh, murid.id) || {};
+    var pilihanMaklum = butiranSedia.maklum || '';
+    var kotakButiran = kotak.querySelector('[data-butiran]');
+    var butangMaklum = kotak.querySelectorAll('[data-maklum]');
+    var medanNotaTidak = kotak.querySelector('#r-nota-tidak');
+    medanNotaTidak.value = butiranSedia.nota || '';
 
     function segarHadir() {
       Array.prototype.forEach.call(butang, function (b) {
@@ -66,11 +86,22 @@ CT.views.rekod = (function () {
         b.classList.toggle('pilih-hadir', pilihanHadir === 'hadir' && nilai === 'hadir');
         b.classList.toggle('pilih-tidak', pilihanHadir === 'tidak' && nilai === 'tidak');
       });
+      kotakButiran.classList.toggle('tersembunyi', pilihanHadir !== 'tidak');
+      Array.prototype.forEach.call(butangMaklum, function (x) {
+        x.classList.toggle('pilih-maklum', pilihanMaklum === x.getAttribute('data-maklum'));
+      });
     }
     Array.prototype.forEach.call(butang, function (b) {
       b.addEventListener('click', function () {
         var nilai = b.getAttribute('data-hadir');
         pilihanHadir = pilihanHadir === nilai ? '' : nilai;
+        segarHadir();
+      });
+    });
+    Array.prototype.forEach.call(butangMaklum, function (x) {
+      x.addEventListener('click', function () {
+        var nilai = x.getAttribute('data-maklum');
+        pilihanMaklum = pilihanMaklum === nilai ? '' : nilai;
         segarHadir();
       });
     });
@@ -90,6 +121,17 @@ CT.views.rekod = (function () {
       if (pilihanHadir) { peta[murid.id] = pilihanHadir; }
       else { delete peta[murid.id]; }
       CT.store.simpanKehadiran(tarikh, peta);
+
+      // Butiran dimaklum/nota hanya disimpan untuk murid yang tidak hadir.
+      var notaTidak = medanNotaTidak.value.trim();
+      if (pilihanHadir === 'tidak' && (pilihanMaklum || notaTidak)) {
+        var simpanButiran = {};
+        if (pilihanMaklum) { simpanButiran.maklum = pilihanMaklum; }
+        if (notaTidak) { simpanButiran.nota = notaTidak; }
+        CT.store.simpanButiranMurid(tarikh, murid.id, simpanButiran);
+      } else {
+        CT.store.simpanButiranMurid(tarikh, murid.id, null);
+      }
 
       CT.store.simpanRekodMurid(tarikh, murid.id, {
         juz: kotak.querySelector('#r-juz').value ? +kotak.querySelector('#r-juz').value : null,
@@ -114,6 +156,7 @@ CT.views.rekod = (function () {
   function kadRekod(murid) {
     var r = CT.store.rekodMurid(tarikh, murid.id) || {};
     var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
+    var butiran = CT.store.butiranMurid(tarikh, murid.id) || {};
     var nota = CT.store.notaHarian(tarikh, murid.id);
 
     var kad = document.createElement('div');
@@ -125,6 +168,12 @@ CT.views.rekod = (function () {
       '<span class="kecil">' + u.selamat(murid.matrik || 'Tiada matrik') + '</span></span>' +
       labelKehadiran(hadir) +
       '</div>' +
+      (hadir === 'tidak'
+        ? '<div class="baris-lipat" style="margin-top:8px">' + labelMaklum(butiran.maklum) +
+          (butiran.nota
+            ? '<span class="kecil">' + u.selamat(butiran.nota) + '</span>'
+            : '') + '</div>'
+        : '') +
       '<div class="rekod-medan">' +
       '<div><b>Juz</b>' + (r.juz ? 'Juz ' + r.juz : '<span class="kosong">Juz belum direkod</span>') + '</div>' +
       '<div><b>Muka surat hafazan</b>' +

@@ -87,6 +87,10 @@ window.CT = window.CT || {};
     Object.keys(kehadiran).forEach(function (t) { delete kehadiran[t][id]; });
     tulis('kehadiran', kehadiran);
 
+    var butiran = baca('hadirButiran', {});
+    Object.keys(butiran).forEach(function (t) { delete butiran[t][id]; });
+    tulis('hadirButiran', butiran);
+
     var rekod = baca('rekod', {});
     Object.keys(rekod).forEach(function (t) { delete rekod[t][id]; });
     tulis('rekod', rekod);
@@ -114,6 +118,33 @@ window.CT = window.CT || {};
 
   function tarikhAdaKehadiran() {
     return Object.keys(baca('kehadiran', {}));
+  }
+
+  /* Butiran tambahan bagi murid yang tidak hadir: sama ada ketidakhadiran
+     itu dimaklumkan, dan nota ringkas guru. Disimpan berasingan daripada
+     status hadir/tidak supaya rekod lama kekal sah. */
+  function butiranKehadiran(tarikh) {
+    var semua = baca('hadirButiran', {});
+    return semua[tarikh] || {};
+  }
+
+  function butiranMurid(tarikh, muridId) {
+    return butiranKehadiran(tarikh)[muridId] || null;
+  }
+
+  function simpanButiranKehadiran(tarikh, peta) {
+    var semua = baca('hadirButiran', {});
+    if (peta && Object.keys(peta).length) { semua[tarikh] = peta; }
+    else { delete semua[tarikh]; }
+    tulis('hadirButiran', semua);
+    lapor('kehadiran', tarikh);
+  }
+
+  function simpanButiranMurid(tarikh, muridId, butiran) {
+    var peta = Object.assign({}, butiranKehadiran(tarikh));
+    if (butiran) { peta[muridId] = butiran; }
+    else { delete peta[muridId]; }
+    simpanButiranKehadiran(tarikh, peta);
   }
 
   /* ---------- Rekod murid mengikut tarikh ---------- */
@@ -372,6 +403,10 @@ window.CT = window.CT || {};
     kehadiranTarikh: kehadiranTarikh,
     simpanKehadiran: simpanKehadiran,
     tarikhAdaKehadiran: tarikhAdaKehadiran,
+    butiranKehadiran: butiranKehadiran,
+    butiranMurid: butiranMurid,
+    simpanButiranKehadiran: simpanButiranKehadiran,
+    simpanButiranMurid: simpanButiranMurid,
 
     rekodTarikh: rekodTarikh,
     rekodMurid: rekodMurid,
