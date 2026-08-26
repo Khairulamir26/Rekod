@@ -1,0 +1,46 @@
+{
+  "name": "ClassTrack — Universiti Islam Selangor",
+  "short_name": "ClassTrack",
+  "description": "Aplikasi guru UIS untuk kehadiran, hafazan, nota dan rekod murid.",
+  "lang": "ms",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7f5",
+  "theme_color": "#0b5d2a",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "assets/ikon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/ikon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/ikon-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ambil Kehadiran",
+      "short_name": "Kehadiran",
+      "url": "./index.html#/kehadiran"
+    },
+    {
+      "name": "Rekod Murid",
+      "short_name": "Rekod",
+      "url": "./index.html#/rekod"
+    }
+  ]
+}

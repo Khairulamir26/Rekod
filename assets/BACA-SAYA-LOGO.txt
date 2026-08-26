@@ -1,0 +1,23 @@
+LOGO RASMI UNIVERSITI ISLAM SELANGOR (UIS)
+==========================================
+
+Letakkan fail logo rasmi UIS di dalam folder ini dengan salah satu nama berikut:
+
+    logo-uis.png   (disyorkan)
+    logo-uis.jpg
+    logo-uis.svg
+
+Aplikasi akan mencari fail mengikut susunan di atas dan memaparkannya pada
+halaman Utama dengan nisbah asal dikekalkan.
+
+Nota penting:
+- Logo dipaparkan sebagai gambar sahaja. Ia tidak boleh ditekan dan tidak
+  dipautkan ke mana-mana laman web.
+- Jangan ubah warna, bentuk atau susunan logo rasmi.
+- Aplikasi ini tidak menjana semula logo UIS. Gunakan fail rasmi daripada
+  pihak universiti.
+
+Jika fail belum diletakkan di sini, halaman Utama akan memaparkan kotak
+"Logo rasmi belum dimasukkan" berserta butang untuk memasukkan fail logo
+terus daripada telefon. Logo yang dimasukkan melalui butang itu disimpan
+dalam IndexedDB peranti tersebut sahaja.
