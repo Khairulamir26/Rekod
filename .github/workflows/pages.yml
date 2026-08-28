@@ -1,0 +1,41 @@
+name: Terbitkan ClassTrack ke GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Kebenaran yang diperlukan untuk menghidupkan dan menerbitkan Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  terbit:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.terbitkan.outputs.page_url }}
+    steps:
+      - name: Ambil kod
+        uses: actions/checkout@v4
+
+      - name: Sediakan Pages
+        uses: actions/configure-pages@v5
+        with:
+          # Hidupkan GitHub Pages secara automatik jika belum dihidupkan.
+          enablement: true
+
+      - name: Bungkus laman
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Terbitkan
+        id: terbitkan
+        uses: actions/deploy-pages@v4
