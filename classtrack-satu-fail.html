@@ -3131,13 +3131,12 @@ CT.views.rekod = (function () {
             : '') + '</div>'
         : '') +
       '<div class="rekod-medan">' +
+      /* Juz sentiasa dipaparkan sebagai "Juz N" sahaja. Apabila belum
+         direkod, nilainya diambil daripada muka surat sambungan. */
       '<div><b>Juz</b>' +
-      (r.juz
-        ? 'Juz ' + r.juz
-        : '<span class="kosong">Juz belum direkod</span>' +
-          (sambungKad && sambungKad.juz
-            ? '<br><span class="kecil">Sambung Juz ' + sambungKad.juz + '</span>'
-            : '')) +
+      (r.juz ? 'Juz ' + r.juz
+        : sambungKad && sambungKad.juz ? 'Juz ' + sambungKad.juz
+          : '<span class="kosong">Juz belum direkod</span>') +
       '</div>' +
       '<div><b>Muka surat hafazan</b>' +
       (r.mukaMula || r.mukaHabis
@@ -4018,7 +4017,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.4.5';
+  CT.VERSI = '1.4.6';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
