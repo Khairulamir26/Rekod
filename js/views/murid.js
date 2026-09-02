@@ -167,11 +167,9 @@ CT.views.murid = (function () {
     var kepala = document.createElement('div');
     kepala.className = 'seksyen';
     kepala.innerHTML =
-      '<div class="medan" style="margin-bottom:10px">' +
+      '<div class="medan" style="margin-bottom:0">' +
       '<input type="search" id="cari-murid" placeholder="Cari nama, matrik atau telefon" ' +
-      'value="' + u.selamat(carian) + '" aria-label="Cari murid"></div>' +
-      '<button class="butang butang-penuh" type="button" data-tambah>+ Tambah Murid</button>';
-    kepala.querySelector('[data-tambah]').addEventListener('click', function () { bukaBorang(null); });
+      'value="' + u.selamat(carian) + '" aria-label="Cari murid"></div>';
 
     var medanCari = kepala.querySelector('#cari-murid');
     medanCari.addEventListener('input', function () {
@@ -216,6 +214,15 @@ CT.views.murid = (function () {
     }
 
     lukisSenarai();
+
+    /* Butang tambah murid diletakkan di bawah senarai supaya senarai murid
+       kelihatan dahulu apabila tab dibuka. */
+    var tambah = document.createElement('button');
+    tambah.type = 'button';
+    tambah.className = 'butang butang-penuh jarak-atas';
+    tambah.textContent = '+ Tambah Murid';
+    tambah.addEventListener('click', function () { bukaBorang(null); });
+    skrin.appendChild(tambah);
   }
 
   return { tajuk: 'Murid', render: render, bukaBorang: bukaBorang };
