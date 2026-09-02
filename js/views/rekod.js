@@ -217,7 +217,8 @@ CT.views.rekod = (function () {
     var r = CT.store.rekodMurid(tarikh, murid.id) || {};
     var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
     var butiran = CT.store.butiranMurid(tarikh, murid.id) || {};
-    var nota = CT.store.notaHarian(tarikh, murid.id);
+    // Nota harian sengaja tidak dipaparkan di sini; ia hanya dalam borang
+    // "Kemas kini" dan dalam tab Nota.
     var sambungKad = (!r.mukaMula && !r.mukaHabis)
       ? CT.sukatan.cadanganSambungan(murid.id, tarikh)
       : null;
@@ -237,19 +238,20 @@ CT.views.rekod = (function () {
             : '') + '</div>'
         : '') +
       '<div class="rekod-medan">' +
-      '<div><b>Juz</b>' + (r.juz ? 'Juz ' + r.juz : '<span class="kosong">Juz belum direkod</span>') + '</div>' +
+      '<div><b>Juz</b>' +
+      (r.juz
+        ? 'Juz ' + r.juz
+        : '<span class="kosong">Juz belum direkod</span>' +
+          (sambungKad && sambungKad.juz
+            ? '<br><span class="kecil">Sambung Juz ' + sambungKad.juz + '</span>'
+            : '')) +
+      '</div>' +
       '<div><b>Muka surat hafazan</b>' +
       (r.mukaMula || r.mukaHabis
         ? u.selamat((r.mukaMula || '?') + ' - ' + (r.mukaHabis || '?'))
         : '<span class="kosong">Muka surat belum direkod</span>' +
           (sambungKad ? '<br><span class="kecil">Sambung dari ' + sambungKad.mula + '</span>' : '')) +
       '</div>' +
-      '</div>' +
-      '<div style="margin-top:8px"><span class="kecil tebal">Nota harian</span><br>' +
-      (nota
-        ? '<span class="kecil">' + u.selamat(nota.teks) + '</span>' +
-          (nota.kongsi ? ' <span class="lencana lencana-biru">Dikongsi</span>' : '')
-        : '<span class="kecil kosong">Belum direkod</span>') +
       '</div>' +
       '<button class="butang butang-luar butang-penuh jarak-atas" type="button" data-kemaskini>' +
       'Kemas kini</button>';
