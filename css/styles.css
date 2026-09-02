@@ -329,15 +329,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: var(--bayang);
   cursor: pointer;
 }
-.avatar {
-  width: 42px; height: 42px;
-  flex: 0 0 42px;
-  border-radius: 50%;
-  background: var(--hijau-muda);
-  color: var(--hijau-gelap);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: .95rem;
-}
 .murid-nama { font-weight: 700; font-size: .98rem; }
 
 /* ---------- Kehadiran ---------- */

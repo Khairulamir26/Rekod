@@ -113,7 +113,6 @@ CT.views.kehadiran = (function () {
       baris.className = 'hadir-baris';
       baris.innerHTML =
         '<div class="hadir-atas">' +
-        '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
         '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
         '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
         '<span class="segmen">' +

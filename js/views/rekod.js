@@ -226,7 +226,6 @@ CT.views.rekod = (function () {
     kad.className = 'rekod-kad';
     kad.innerHTML =
       '<div class="baris">' +
-      '<span class="avatar">' + u.selamat(u.huruf(murid.nama)) + '</span>' +
       '<span class="tumbuh"><span class="murid-nama">' + u.selamat(murid.nama) + '</span><br>' +
       '<span class="kecil">' + u.selamat(murid.matrik || 'Tiada matrik') + '</span></span>' +
       labelKehadiran(hadir) +

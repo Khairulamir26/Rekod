@@ -121,13 +121,6 @@ window.CT = window.CT || {};
       .replace(/'/g, '&#39;');
   }
 
-  function huruf(nama) {
-    var b = String(nama || '').trim().split(/\s+/);
-    if (!b[0]) { return '?'; }
-    if (b.length === 1) { return b[0].slice(0, 2).toUpperCase(); }
-    return (b[0][0] + b[1][0]).toUpperCase();
-  }
-
   function peratus(atas, bawah) {
     if (!bawah) { return 0; }
     return Math.round((atas / bawah) * 100);
@@ -155,7 +148,6 @@ window.CT = window.CT || {};
     capMasa: capMasa,
     id: id,
     selamat: selamat,
-    huruf: huruf,
     peratus: peratus
   };
 })();

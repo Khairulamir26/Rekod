@@ -27,7 +27,6 @@ CT.views.murid = (function () {
     butang.type = 'button';
     butang.className = 'murid-kad';
     butang.innerHTML =
-      '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
       '<span class="tumbuh">' +
       '<span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
       '<span class="kecil">' + u.selamat(m.matrik || 'Tiada nombor matrik') + '</span>' +
@@ -109,7 +108,7 @@ CT.views.murid = (function () {
     var kotak = document.createElement('div');
     kotak.innerHTML =
       '<div class="kad">' +
-      '<div class="baris"><span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
+      '<div class="baris">' +
       '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span></span></div>' +
       '<div class="rekod-medan">' +
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +

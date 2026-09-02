@@ -336,15 +336,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
   box-shadow: var(--bayang);
   cursor: pointer;
 }
-.avatar {
-  width: 42px; height: 42px;
-  flex: 0 0 42px;
-  border-radius: 50%;
-  background: var(--hijau-muda);
-  color: var(--hijau-gelap);
-  display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: .95rem;
-}
 .murid-nama { font-weight: 700; font-size: .98rem; }
 
 /* ---------- Kehadiran ---------- */
@@ -887,13 +878,6 @@ window.CT = window.CT || {};
       .replace(/'/g, '&#39;');
   }
 
-  function huruf(nama) {
-    var b = String(nama || '').trim().split(/\s+/);
-    if (!b[0]) { return '?'; }
-    if (b.length === 1) { return b[0].slice(0, 2).toUpperCase(); }
-    return (b[0][0] + b[1][0]).toUpperCase();
-  }
-
   function peratus(atas, bawah) {
     if (!bawah) { return 0; }
     return Math.round((atas / bawah) * 100);
@@ -921,7 +905,6 @@ window.CT = window.CT || {};
     capMasa: capMasa,
     id: id,
     selamat: selamat,
-    huruf: huruf,
     peratus: peratus
   };
 })();
@@ -2149,7 +2132,6 @@ CT.views.murid = (function () {
     butang.type = 'button';
     butang.className = 'murid-kad';
     butang.innerHTML =
-      '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
       '<span class="tumbuh">' +
       '<span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
       '<span class="kecil">' + u.selamat(m.matrik || 'Tiada nombor matrik') + '</span>' +
@@ -2231,7 +2213,7 @@ CT.views.murid = (function () {
     var kotak = document.createElement('div');
     kotak.innerHTML =
       '<div class="kad">' +
-      '<div class="baris"><span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
+      '<div class="baris">' +
       '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span></span></div>' +
       '<div class="rekod-medan">' +
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
@@ -2469,7 +2451,6 @@ CT.views.kehadiran = (function () {
       baris.className = 'hadir-baris';
       baris.innerHTML =
         '<div class="hadir-atas">' +
-        '<span class="avatar">' + u.selamat(u.huruf(m.nama)) + '</span>' +
         '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
         '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
         '<span class="segmen">' +
@@ -3138,7 +3119,6 @@ CT.views.rekod = (function () {
     kad.className = 'rekod-kad';
     kad.innerHTML =
       '<div class="baris">' +
-      '<span class="avatar">' + u.selamat(u.huruf(murid.nama)) + '</span>' +
       '<span class="tumbuh"><span class="murid-nama">' + u.selamat(murid.nama) + '</span><br>' +
       '<span class="kecil">' + u.selamat(murid.matrik || 'Tiada matrik') + '</span></span>' +
       labelKehadiran(hadir) +
@@ -3988,7 +3968,6 @@ CT.views.pasukan = (function () {
       kad.className = 'kad kad-rapat';
       kad.innerHTML =
         '<div class="baris">' +
-        '<span class="avatar">' + u.selamat(u.huruf(g.nama)) + '</span>' +
         '<span class="tumbuh"><span class="murid-nama">' + u.selamat(g.nama) + '</span><br>' +
         '<span class="kecil">' + u.selamat(g.peranan || 'Guru') +
         (g.emel ? ' &middot; ' + u.selamat(g.emel) : '') + '</span></span>' +
@@ -4037,7 +4016,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.4.3';
+  CT.VERSI = '1.4.4';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

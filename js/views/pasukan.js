@@ -124,7 +124,6 @@ CT.views.pasukan = (function () {
       kad.className = 'kad kad-rapat';
       kad.innerHTML =
         '<div class="baris">' +
-        '<span class="avatar">' + u.selamat(u.huruf(g.nama)) + '</span>' +
         '<span class="tumbuh"><span class="murid-nama">' + u.selamat(g.nama) + '</span><br>' +
         '<span class="kecil">' + u.selamat(g.peranan || 'Guru') +
         (g.emel ? ' &middot; ' + u.selamat(g.emel) : '') + '</span></span>' +
