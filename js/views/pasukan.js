@@ -146,6 +146,13 @@ CT.views.pasukan = (function () {
       'peranti ini sahaja. Perkongsian sebenar antara guru memerlukan log masuk dan ' +
       'pangkalan data awan.';
     skrin.appendChild(notis);
+
+    /* Nombor versi memudahkan pengesahan sama ada peranti sudah mendapat
+       kemas kini terkini. */
+    var versi = document.createElement('p');
+    versi.className = 'kecil tengah jarak-atas';
+    versi.textContent = 'ClassTrack versi ' + (CT.VERSI || '-');
+    skrin.appendChild(versi);
   }
 
   return { tajuk: 'Pasukan', render: render };

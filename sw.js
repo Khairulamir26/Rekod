@@ -2,7 +2,7 @@
    PENTING: naikkan VERSI setiap kali fail aplikasi diubah supaya cache lama
    digantikan. Data guru (localStorage / IndexedDB) tidak pernah disentuh di sini. */
 
-var VERSI = 'classtrack-v1.3.0';
+var VERSI = 'classtrack-v1.3.1';
 
 var FAIL_TERAS = [
   './',
@@ -81,7 +81,26 @@ self.addEventListener('fetch', function (peristiwa) {
     return;
   }
 
-  // Aset: guna cache dahulu, kemas kini di latar belakang.
+  /* Kod aplikasi (JS, CSS, manifest): rangkaian dahulu.
+     Ini memastikan guru terus mendapat versi terbaharu sebaik ada internet,
+     tanpa perlu muat semula dua kali. Jika tiada internet, salinan cache
+     digunakan seperti biasa. */
+  if (/\.(?:js|css|webmanifest)$/i.test(url.pathname)) {
+    peristiwa.respondWith(
+      fetch(permintaan).then(function (jawapan) {
+        if (jawapan && jawapan.status === 200 && jawapan.type === 'basic') {
+          var salinan = jawapan.clone();
+          caches.open(VERSI).then(function (c) { c.put(permintaan, salinan); });
+        }
+        return jawapan;
+      }).catch(function () {
+        return caches.match(permintaan);
+      })
+    );
+    return;
+  }
+
+  // Aset lain (ikon, logo, gambar): cache dahulu, kemas kini di latar belakang.
   peristiwa.respondWith(
     caches.match(permintaan).then(function (dicache) {
       var rangkaian = fetch(permintaan).then(function (jawapan) {
