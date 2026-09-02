@@ -18,7 +18,6 @@ CT.views.sukatan = (function () {
     var kelas = {
       cukup: 'lencana',
       ikut: 'lencana',
-      pantau: 'lencana lencana-emas',
       kejar: 'lencana lencana-merah',
       genting: 'lencana lencana-merah',
       tamat: 'lencana lencana-kelabu',
@@ -185,15 +184,13 @@ CT.views.sukatan = (function () {
 
     /* Ringkasan */
     var belumCukup = senarai.filter(function (d) { return d.baki > 0; });
-    var jumlahBaki = senarai.reduce(function (n, d) { return n + d.baki; }, 0);
 
     var statistik = document.createElement('div');
-    statistik.className = 'statistik jarak-atas';
+    statistik.className = 'statistik statistik-dua jarak-atas';
     statistik.innerHTML =
       '<div class="stat"><b>' + senarai.length + '</b><span>Murid</span></div>' +
       '<div class="stat"><b style="color:var(--merah)">' + belumCukup.length +
-      '</b><span>Belum cukup</span></div>' +
-      '<div class="stat"><b>' + jumlahBaki + '</b><span>Baki halaman</span></div>';
+      '</b><span>Belum cukup</span></div>';
     skrin.appendChild(statistik);
 
     if (!senarai.length) {
@@ -258,8 +255,7 @@ CT.views.sukatan = (function () {
     nota.innerHTML = 'Kiraan menggunakan halaman terjauh yang direkodkan dalam tab ' +
       'Rekod (nombor halaman mushaf 604 halaman). Status ditentukan oleh kadar yang ' +
       'diperlukan bagi baki hari: <b>Ikut jadual</b> 1 halaman sehari atau kurang, ' +
-      '<b>Perlu dipantau</b> sehingga 2 halaman sehari, <b>Perlu dikejar</b> lebih ' +
-      'daripada itu.';
+      '<b>Perlu dikejar</b> lebih daripada itu.';
     skrin.appendChild(nota);
   }
 

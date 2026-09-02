@@ -92,8 +92,8 @@ dalam tab Rekod. Nombor muka surat yang dimasukkan guru ialah nombor halaman
 Kedua-dua program meliputi kesemua 604 halaman tanpa jurang atau pertindihan.
 
 Status murid ditentukan oleh kadar yang diperlukan bagi baki hari semester:
-**Ikut jadual** (1 halaman sehari atau kurang), **Perlu dipantau** (sehingga
-2 halaman sehari), **Perlu dikejar** (lebih daripada itu). Hari terakhir
+**Ikut jadual** (1 halaman sehari atau kurang) dan **Perlu dikejar** (lebih
+daripada itu). Hari terakhir
 semester boleh ditukar dalam tab Sukatan; nilai lalai ialah 25/09/2026.
 
 Program murid (Diploma atau Ijazah) ditetapkan dalam profil murid. Tahap

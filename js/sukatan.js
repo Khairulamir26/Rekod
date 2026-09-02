@@ -208,17 +208,15 @@ window.CT = window.CT || {};
     return hasil;
   }
 
-  /* Ambang kadar: 1 halaman sehari dianggap kadar biasa hafazan harian,
-     lebih 2 halaman sehari dianggap terlalu berat untuk baki hari yang ada. */
+  /* Ambang kadar: 1 halaman sehari dianggap kadar biasa hafazan harian.
+     Lebih daripada itu bermakna murid perlu dikejar. */
   var AMBANG_SELESA = 1;
-  var AMBANG_BERAT = 2;
 
   function nilaiStatus(d) {
     if (d.baki <= 0) { return { kunci: 'cukup', teks: 'Sukatan cukup' }; }
     if (d.semesterTamat) { return { kunci: 'tamat', teks: 'Semester tamat' }; }
     if (d.hariBaki <= 0) { return { kunci: 'genting', teks: 'Hari terakhir' }; }
     if (d.kadarPerlu <= AMBANG_SELESA) { return { kunci: 'ikut', teks: 'Ikut jadual' }; }
-    if (d.kadarPerlu <= AMBANG_BERAT) { return { kunci: 'pantau', teks: 'Perlu dipantau' }; }
     return { kunci: 'kejar', teks: 'Perlu dikejar' };
   }
 

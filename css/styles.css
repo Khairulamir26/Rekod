@@ -410,6 +410,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .segmen button.pilih-maklum { background: var(--hijau-gelap); border-color: var(--hijau-gelap); color: #fff; }
 
 .statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.statistik-dua { grid-template-columns: repeat(2, 1fr); }
 .stat {
   background: var(--kad);
   border: 1px solid var(--garis);

@@ -417,6 +417,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .segmen button.pilih-maklum { background: var(--hijau-gelap); border-color: var(--hijau-gelap); color: #fff; }
 
 .statistik { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.statistik-dua { grid-template-columns: repeat(2, 1fr); }
 .stat {
   background: var(--kad);
   border: 1px solid var(--garis);
@@ -1782,17 +1783,15 @@ window.CT = window.CT || {};
     return hasil;
   }
 
-  /* Ambang kadar: 1 halaman sehari dianggap kadar biasa hafazan harian,
-     lebih 2 halaman sehari dianggap terlalu berat untuk baki hari yang ada. */
+  /* Ambang kadar: 1 halaman sehari dianggap kadar biasa hafazan harian.
+     Lebih daripada itu bermakna murid perlu dikejar. */
   var AMBANG_SELESA = 1;
-  var AMBANG_BERAT = 2;
 
   function nilaiStatus(d) {
     if (d.baki <= 0) { return { kunci: 'cukup', teks: 'Sukatan cukup' }; }
     if (d.semesterTamat) { return { kunci: 'tamat', teks: 'Semester tamat' }; }
     if (d.hariBaki <= 0) { return { kunci: 'genting', teks: 'Hari terakhir' }; }
     if (d.kadarPerlu <= AMBANG_SELESA) { return { kunci: 'ikut', teks: 'Ikut jadual' }; }
-    if (d.kadarPerlu <= AMBANG_BERAT) { return { kunci: 'pantau', teks: 'Perlu dipantau' }; }
     return { kunci: 'kejar', teks: 'Perlu dikejar' };
   }
 
@@ -3235,7 +3234,6 @@ CT.views.sukatan = (function () {
     var kelas = {
       cukup: 'lencana',
       ikut: 'lencana',
-      pantau: 'lencana lencana-emas',
       kejar: 'lencana lencana-merah',
       genting: 'lencana lencana-merah',
       tamat: 'lencana lencana-kelabu',
@@ -3402,15 +3400,13 @@ CT.views.sukatan = (function () {
 
     /* Ringkasan */
     var belumCukup = senarai.filter(function (d) { return d.baki > 0; });
-    var jumlahBaki = senarai.reduce(function (n, d) { return n + d.baki; }, 0);
 
     var statistik = document.createElement('div');
-    statistik.className = 'statistik jarak-atas';
+    statistik.className = 'statistik statistik-dua jarak-atas';
     statistik.innerHTML =
       '<div class="stat"><b>' + senarai.length + '</b><span>Murid</span></div>' +
       '<div class="stat"><b style="color:var(--merah)">' + belumCukup.length +
-      '</b><span>Belum cukup</span></div>' +
-      '<div class="stat"><b>' + jumlahBaki + '</b><span>Baki halaman</span></div>';
+      '</b><span>Belum cukup</span></div>';
     skrin.appendChild(statistik);
 
     if (!senarai.length) {
@@ -3475,8 +3471,7 @@ CT.views.sukatan = (function () {
     nota.innerHTML = 'Kiraan menggunakan halaman terjauh yang direkodkan dalam tab ' +
       'Rekod (nombor halaman mushaf 604 halaman). Status ditentukan oleh kadar yang ' +
       'diperlukan bagi baki hari: <b>Ikut jadual</b> 1 halaman sehari atau kurang, ' +
-      '<b>Perlu dipantau</b> sehingga 2 halaman sehari, <b>Perlu dikejar</b> lebih ' +
-      'daripada itu.';
+      '<b>Perlu dikejar</b> lebih daripada itu.';
     skrin.appendChild(nota);
   }
 
@@ -4037,7 +4032,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.4.0';
+  CT.VERSI = '1.4.1';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
