@@ -29,6 +29,16 @@ CT.views.rekod = (function () {
     var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
     var nota = CT.store.notaHarian(tarikh, murid.id);
 
+    /* Sambungan hafazan: jika belum ada muka surat direkod pada tarikh ini,
+       teruskan daripada muka surat habis kali terakhir sebelum tarikh ini.
+       Contoh: habis 487 pada 28/08 -> mula 488 pada rekod berikutnya. */
+    var sambung = null;
+    if (!r.mukaMula && !r.mukaHabis) {
+      sambung = CT.sukatan.cadanganSambungan(murid.id, tarikh);
+    }
+    var nilaiMula = r.mukaMula || (sambung ? sambung.mula : '');
+    var nilaiJuz = r.juz || (sambung && sambung.juz ? sambung.juz : '');
+
     var kotak = document.createElement('div');
     kotak.innerHTML =
       '<p class="kecil tebal" style="margin-bottom:4px">' + u.selamat(murid.nama) + '</p>' +
@@ -50,16 +60,25 @@ CT.views.rekod = (function () {
 
       '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
       '<option value="">Juz belum direkod</option>' +
-      CT.ui.pilihanNombor(1, 30, r.juz) + '</select></div>' +
+      CT.ui.pilihanNombor(1, 30, nilaiJuz) + '</select></div>' +
 
       '<div class="medan-dua">' +
       '<div class="medan"><label for="r-mula">Muka surat hafazan mula</label>' +
       '<input id="r-mula" type="number" min="1" max="604" inputmode="numeric" value="' +
-      u.selamat(r.mukaMula || '') + '" placeholder="Contoh: 12"></div>' +
+      u.selamat(nilaiMula) + '" placeholder="Contoh: 12"></div>' +
       '<div class="medan"><label for="r-habis">Muka surat hafazan habis</label>' +
       '<input id="r-habis" type="number" min="1" max="604" inputmode="numeric" value="' +
       u.selamat(r.mukaHabis || '') + '" placeholder="Contoh: 14"></div>' +
       '</div>' +
+
+      (sambung
+        ? '<div class="notis notis-info" style="margin-bottom:12px">' +
+          'Sambungan automatik: kali terakhir habis di muka surat <b>' +
+          sambung.dariHalaman + '</b> pada ' + u.selamat(u.tarikhRingkas(sambung.dariTarikh)) +
+          ', jadi mula diletakkan di <b>' + sambung.mula + '</b>' +
+          (sambung.juz ? ' (Juz ' + sambung.juz + ')' : '') +
+          '. Boleh diubah jika perlu.</div>'
+        : '') +
 
       '<div class="medan"><label for="r-nota">Nota harian</label>' +
       '<textarea id="r-nota" placeholder="Catatan guru untuk tarikh ini">' +
@@ -158,6 +177,9 @@ CT.views.rekod = (function () {
     var hadir = CT.store.kehadiranTarikh(tarikh)[murid.id] || '';
     var butiran = CT.store.butiranMurid(tarikh, murid.id) || {};
     var nota = CT.store.notaHarian(tarikh, murid.id);
+    var sambungKad = (!r.mukaMula && !r.mukaHabis)
+      ? CT.sukatan.cadanganSambungan(murid.id, tarikh)
+      : null;
 
     var kad = document.createElement('div');
     kad.className = 'rekod-kad';
@@ -179,7 +201,9 @@ CT.views.rekod = (function () {
       '<div><b>Muka surat hafazan</b>' +
       (r.mukaMula || r.mukaHabis
         ? u.selamat((r.mukaMula || '?') + ' - ' + (r.mukaHabis || '?'))
-        : '<span class="kosong">Muka surat belum direkod</span>') + '</div>' +
+        : '<span class="kosong">Muka surat belum direkod</span>' +
+          (sambungKad ? '<br><span class="kecil">Sambung dari ' + sambungKad.mula + '</span>' : '')) +
+      '</div>' +
       '</div>' +
       '<div style="margin-top:8px"><span class="kecil tebal">Nota harian</span><br>' +
       (nota

@@ -96,6 +96,50 @@ window.CT = window.CT || {};
     };
   }
 
+  /* Rekod hafazan terakhir SEBELUM tarikh yang diberi.
+     Digunakan untuk menyambung muka surat: jika kali terakhir murid habis di
+     halaman 487, rekod berikutnya bermula di halaman 488. */
+  function rekodTerakhirSebelum(muridId, tarikh) {
+    var semua = CT.store.baca('rekod', {});
+    var terkini = null;
+
+    Object.keys(semua).forEach(function (t) {
+      if (t >= tarikh) { return; }          // kunci "YYYY-MM-DD" boleh dibanding terus
+      var r = semua[t][muridId];
+      if (!r) { return; }
+      var halaman = Math.max(+r.mukaHabis || 0, +r.mukaMula || 0);
+      if (!halaman) { return; }
+      if (!terkini || t > terkini.tarikh) {
+        terkini = { tarikh: t, halaman: halaman, juz: r.juz || null };
+      }
+    });
+
+    return terkini;
+  }
+
+  /* Juz bagi sesuatu nombor halaman mushaf. */
+  function juzUntukHalaman(halaman) {
+    var n = +halaman;
+    if (!n || n < 1 || n > JUMLAH_HALAMAN) { return null; }
+    for (var juz = 30; juz >= 1; juz--) {
+      if (n >= JUZ_MULA[juz]) { return juz; }
+    }
+    return null;
+  }
+
+  /* Cadangan permulaan bagi rekod baharu pada tarikh tertentu. */
+  function cadanganSambungan(muridId, tarikh) {
+    var lepas = rekodTerakhirSebelum(muridId, tarikh);
+    if (!lepas || lepas.halaman >= JUMLAH_HALAMAN) { return null; }
+    var mula = lepas.halaman + 1;
+    return {
+      mula: mula,
+      juz: juzUntukHalaman(mula),
+      dariHalaman: lepas.halaman,
+      dariTarikh: lepas.tarikh
+    };
+  }
+
   function bezaHari(dari, hingga) {
     if (!CT.util.sahKunci(dari) || !CT.util.sahKunci(hingga)) { return 0; }
     var a = CT.util.pecah(dari);
@@ -192,6 +236,9 @@ window.CT = window.CT || {};
     julatJuz: julatJuz,
     julatHalaman: julatHalaman,
     rekodHafazan: rekodHafazan,
+    rekodTerakhirSebelum: rekodTerakhirSebelum,
+    juzUntukHalaman: juzUntukHalaman,
+    cadanganSambungan: cadanganSambungan,
     bezaHari: bezaHari,
     tarikhAkhir: tarikhAkhir,
     kira: kira,

@@ -2,7 +2,7 @@
    PENTING: naikkan VERSI setiap kali fail aplikasi diubah supaya cache lama
    digantikan. Data guru (localStorage / IndexedDB) tidak pernah disentuh di sini. */
 
-var VERSI = 'classtrack-v1.2.0';
+var VERSI = 'classtrack-v1.3.0';
 
 var FAIL_TERAS = [
   './',
