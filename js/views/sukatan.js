@@ -47,7 +47,6 @@ CT.views.sukatan = (function () {
       '<div><b>Halaman terakhir</b>' + (d.halamanDihantar || '-') +
       (d.tarikhDihantar ? ' (' + u.tarikhRingkas(d.tarikhDihantar) + ')' : '') + '</div>' +
       '<div><b>Baki hari</b>' + d.hariBaki + ' hari</div>' +
-      '<div><b>Perlu sehari</b>' + (d.kadarPerlu === null ? '-' : nombor(d.kadarPerlu, 2) + ' halaman') + '</div>' +
       '<div><b>Kadar semasa</b>' + (d.kadarSemasa === null
         ? 'Belum cukup data (' + (d.hariRekod || 0) + ' hari rekod)'
         : nombor(d.kadarSemasa, 2) + ' halaman/hari') + '</div>' +
@@ -109,14 +108,13 @@ CT.views.sukatan = (function () {
     kotak.innerHTML =
       '<table class="jadual"><thead><tr>' +
       '<th>Murid</th><th>Tahap</th><th class="angka">Sukatan</th>' +
-      '<th class="angka">Sudah</th><th class="angka">Baki</th><th class="angka">Perlu/hari</th>' +
+      '<th class="angka">Sudah</th><th class="angka">Baki</th>' +
       '</tr></thead><tbody>' +
       senarai.map(function (d) {
         return '<tr><td>' + u.selamat(d.nama) + '</td><td>' + u.selamat(d.namaTahap) + '</td>' +
           '<td class="angka">' + d.jumlah + '</td>' +
           '<td class="angka">' + d.sudah + '</td>' +
-          '<td class="angka">' + d.baki + '</td>' +
-          '<td class="angka">' + (d.kadarPerlu === null ? '-' : nombor(d.kadarPerlu, 2)) + '</td></tr>';
+          '<td class="angka">' + d.baki + '</td></tr>';
       }).join('') +
       '</tbody></table>';
     return kotak;
