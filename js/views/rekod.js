@@ -37,7 +37,8 @@ CT.views.rekod = (function () {
       sambung = CT.sukatan.cadanganSambungan(murid.id, tarikh);
     }
     var nilaiMula = r.mukaMula || (sambung ? sambung.mula : '');
-    var nilaiJuz = r.juz || (sambung && sambung.juz ? sambung.juz : '');
+    // Juz sentiasa mengikut muka surat mula apabila muka surat itu ada.
+    var nilaiJuz = CT.sukatan.juzUntukHalaman(nilaiMula) || r.juz || '';
 
     var kotak = document.createElement('div');
     kotak.innerHTML =
@@ -58,10 +59,6 @@ CT.views.rekod = (function () {
       'placeholder="Nota ketidakhadiran (pilihan)" aria-label="Nota ketidakhadiran">' +
       '</div></div>' +
 
-      '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
-      '<option value="">Juz belum direkod</option>' +
-      CT.ui.pilihanNombor(1, 30, nilaiJuz) + '</select></div>' +
-
       '<div class="medan-dua">' +
       '<div class="medan"><label for="r-mula">Muka surat hafazan mula</label>' +
       '<input id="r-mula" type="number" min="1" max="604" inputmode="numeric" value="' +
@@ -70,6 +67,13 @@ CT.views.rekod = (function () {
       '<input id="r-habis" type="number" min="1" max="604" inputmode="numeric" value="' +
       u.selamat(r.mukaHabis || '') + '" placeholder="Contoh: 14"></div>' +
       '</div>' +
+
+      /* Juz diletakkan selepas muka surat kerana ia dikira daripada
+         nombor muka surat, bukan dipilih dahulu. */
+      '<div class="medan"><label for="r-juz">Juz</label><select id="r-juz">' +
+      '<option value="">Juz belum direkod</option>' +
+      CT.ui.pilihanNombor(1, 30, nilaiJuz) + '</select>' +
+      '<p class="kecil" data-juz-nota style="margin-top:6px"></p></div>' +
 
       (sambung
         ? '<div class="notis notis-info" style="margin-bottom:12px">' +
@@ -125,6 +129,43 @@ CT.views.rekod = (function () {
       });
     });
     segarHadir();
+
+    /* Juz dikira automatik daripada nombor muka surat: halaman 24 -> Juz 2,
+       halaman 179 -> Juz 9. Guru masih boleh menukarnya secara manual selepas
+       itu; ia hanya dikira semula apabila nombor muka surat diubah. */
+    var medanMula = kotak.querySelector('#r-mula');
+    var medanHabis = kotak.querySelector('#r-habis');
+    var medanJuz = kotak.querySelector('#r-juz');
+    var notaJuz = kotak.querySelector('[data-juz-nota]');
+
+    function kiraJuz() {
+      var mula = +medanMula.value;
+      var habis = +medanHabis.value;
+      var juzMula = CT.sukatan.juzUntukHalaman(mula);
+      var juzHabis = CT.sukatan.juzUntukHalaman(habis);
+
+      if (juzMula) { medanJuz.value = String(juzMula); }
+      else if (juzHabis) { medanJuz.value = String(juzHabis); }
+
+      if (!juzMula && !juzHabis) {
+        notaJuz.textContent = 'Dikira automatik apabila muka surat diisi.';
+      } else if (juzHabis && juzMula && juzHabis !== juzMula) {
+        notaJuz.textContent = 'Bacaan ini merentasi Juz ' + juzMula + ' hingga Juz ' +
+          juzHabis + '. Juz direkod sebagai ' + medanJuz.value + '.';
+      } else {
+        notaJuz.textContent = 'Dikira automatik daripada muka surat ' +
+          (mula || habis) + '.';
+      }
+    }
+
+    medanMula.addEventListener('input', kiraJuz);
+    medanHabis.addEventListener('input', kiraJuz);
+    medanJuz.addEventListener('change', function () {
+      notaJuz.textContent = medanJuz.value
+        ? 'Ditetapkan manual kepada Juz ' + medanJuz.value + '.'
+        : 'Dikira automatik apabila muka surat diisi.';
+    });
+    kiraJuz();
 
     kotak.querySelector('[data-simpan]').addEventListener('click', function () {
       var mula = kotak.querySelector('#r-mula').value.trim();
