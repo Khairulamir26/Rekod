@@ -151,7 +151,9 @@ CT.views.sukatan = (function () {
     /* Tapis program */
     var tapis = document.createElement('div');
     tapis.className = 'tapis jarak-atas';
-    [['semua', 'Semua program'], ['diploma', 'Diploma'], ['ijazah', 'Ijazah']].forEach(function (p) {
+    /* Diploma dahulu, kemudian Ijazah, dan "Semua program" di hujung — sama
+       susunan dengan senarai murid dalam tab Murid, Kehadiran dan Rekod. */
+    [['diploma', 'Diploma'], ['ijazah', 'Ijazah'], ['semua', 'Semua program']].forEach(function (p) {
       var b = document.createElement('button');
       b.type = 'button';
       b.textContent = p[1];
