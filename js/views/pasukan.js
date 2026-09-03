@@ -152,6 +152,11 @@ CT.views.pasukan = (function () {
     versi.className = 'kecil tengah jarak-atas';
     versi.textContent = 'e-Dawam versi ' + (CT.VERSI || '-');
     skrin.appendChild(versi);
+
+    var hakcipta = document.createElement('p');
+    hakcipta.className = 'kecil tengah';
+    hakcipta.textContent = 'Hakcipta © Abu Dawud 2026';
+    skrin.appendChild(hakcipta);
   }
 
   return { tajuk: 'Pasukan', render: render };

@@ -4352,6 +4352,11 @@ CT.views.pasukan = (function () {
     versi.className = 'kecil tengah jarak-atas';
     versi.textContent = 'e-Dawam versi ' + (CT.VERSI || '-');
     skrin.appendChild(versi);
+
+    var hakcipta = document.createElement('p');
+    hakcipta.className = 'kecil tengah';
+    hakcipta.textContent = 'Hakcipta © Abu Dawud 2026';
+    skrin.appendChild(hakcipta);
   }
 
   return { tajuk: 'Pasukan', render: render };
@@ -4372,7 +4377,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.7.1';
+  CT.VERSI = '1.7.2';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
