@@ -1,6 +1,10 @@
 /* Tab Rekod — lihat dan kemas kini rekod setiap murid mengikut tarikh dipilih.
    Setiap tarikh disimpan berasingan: mengubah rekod satu tarikh tidak menyentuh
-   rekod tarikh lain. */
+   rekod tarikh lain.
+
+   Senarai murid bagi sesuatu tarikh sama dengan tab Kehadiran dan datang
+   daripada js/jadual.js: Diploma Isnin hingga Jumaat, Ijazah pada hari
+   mingguannya sahaja. */
 
 window.CT = window.CT || {};
 CT.views = CT.views || {};
@@ -10,6 +14,13 @@ CT.views.rekod = (function () {
 
   var u = CT.util;
   var tarikh = null;
+
+  /* Rekod juga dipecahkan mengikut program, sama seperti tab Kehadiran. */
+  var KUMPULAN = ['diploma', 'ijazah'];
+
+  function kunciProgram(m) {
+    return m.program === 'ijazah' ? 'ijazah' : 'diploma';
+  }
 
   function labelKehadiran(nilai) {
     if (nilai === 'hadir') { return '<span class="lencana">Hadir</span>'; }
@@ -282,8 +293,8 @@ CT.views.rekod = (function () {
     });
     skrin.appendChild(kePeringkat);
 
-    var murid = CT.store.senaraiMurid();
-    if (!murid.length) {
+    var semua = CT.store.senaraiMurid();
+    if (!semua.length) {
       var kosong = CT.ui.kosong('Belum ada murid',
         'Tambah murid dalam tab Murid untuk mula merekod.');
       kosong.classList.add('jarak-atas');
@@ -291,15 +302,37 @@ CT.views.rekod = (function () {
       return;
     }
 
-    var tajuk = document.createElement('p');
-    tajuk.className = 'seksyen-tajuk jarak-atas';
-    tajuk.textContent = 'Rekod ' + murid.length + ' murid';
-    skrin.appendChild(tajuk);
+    /* Senarai yang sama dengan tab Kehadiran: hanya murid yang berkelas pada
+       tarikh ini. Pelajar Ijazah tidak muncul pada hari bukan kelasnya. */
+    var murid = CT.jadual.muridUntuk(tarikh, semua);
+    if (!murid.length) {
+      var tiadaKelas = CT.ui.kosong(
+        'Tiada kelas pada hari ' + CT.jadual.namaHari(u.hariMinggu(tarikh)),
+        'Tiada murid berjadual pada tarikh ini, jadi tiada rekod perlu diisi.');
+      tiadaKelas.classList.add('jarak-atas');
+      skrin.appendChild(tiadaKelas);
+      return;
+    }
 
-    var senarai = document.createElement('div');
-    senarai.className = 'senarai';
-    murid.forEach(function (m) { senarai.appendChild(kadRekod(m)); });
-    skrin.appendChild(senarai);
+    KUMPULAN.forEach(function (kunci) {
+      var ahli = murid.filter(function (m) { return kunciProgram(m) === kunci; });
+      if (!ahli.length) { return; }
+
+      var kumpulan = document.createElement('div');
+      kumpulan.className = 'kumpulan jarak-atas';
+
+      var tajuk = document.createElement('p');
+      tajuk.className = 'seksyen-tajuk';
+      tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' + ahli.length + ' murid';
+      kumpulan.appendChild(tajuk);
+
+      var senarai = document.createElement('div');
+      senarai.className = 'senarai';
+      ahli.forEach(function (m) { senarai.appendChild(kadRekod(m)); });
+      kumpulan.appendChild(senarai);
+
+      skrin.appendChild(kumpulan);
+    });
   }
 
   return { tajuk: 'Rekod', render: render };

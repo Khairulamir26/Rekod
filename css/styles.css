@@ -380,10 +380,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Senarai murid ---------- */
 .senarai { display: flex; flex-direction: column; gap: 10px; }
-/* Senarai murid dipecahkan mengikut program: Diploma dahulu sehingga habis,
-   kemudian Ijazah. Jarak antara kumpulan lebih lega daripada jarak antara
-   kad supaya pemisahan itu jelas. */
-.kumpulan-murid + .kumpulan-murid { margin-top: 22px; }
+/* Senarai dipecahkan mengikut program: Diploma dahulu sehingga habis, kemudian
+   Ijazah. Jarak antara kumpulan lebih lega daripada jarak antara kad supaya
+   pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
+.kumpulan + .kumpulan { margin-top: 26px; }
 .murid-kad {
   display: flex;
   align-items: center;
@@ -495,7 +495,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   gap: 8px;
   padding: 10px 0 2px;
-  background: linear-gradient(to top, var(--latar) 72%, rgba(244, 247, 245, 0));
+  background: linear-gradient(to top, var(--latar) 72%, rgba(242, 247, 246, 0));
 }
 
 /* ---------- Kalendar ---------- */

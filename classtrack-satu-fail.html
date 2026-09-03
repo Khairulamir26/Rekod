@@ -395,10 +395,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Senarai murid ---------- */
 .senarai { display: flex; flex-direction: column; gap: 10px; }
-/* Senarai murid dipecahkan mengikut program: Diploma dahulu sehingga habis,
-   kemudian Ijazah. Jarak antara kumpulan lebih lega daripada jarak antara
-   kad supaya pemisahan itu jelas. */
-.kumpulan-murid + .kumpulan-murid { margin-top: 22px; }
+/* Senarai dipecahkan mengikut program: Diploma dahulu sehingga habis, kemudian
+   Ijazah. Jarak antara kumpulan lebih lega daripada jarak antara kad supaya
+   pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
+.kumpulan + .kumpulan { margin-top: 26px; }
 .murid-kad {
   display: flex;
   align-items: center;
@@ -510,7 +510,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   display: flex;
   gap: 8px;
   padding: 10px 0 2px;
-  background: linear-gradient(to top, var(--latar) 72%, rgba(244, 247, 245, 0));
+  background: linear-gradient(to top, var(--latar) 72%, rgba(242, 247, 246, 0));
 }
 
 /* ---------- Kalendar ---------- */
@@ -1885,6 +1885,89 @@ window.CT = window.CT || {};
 </script>
 
 <script>
+/* js/jadual.js */
+/* e-Dawam — jadual hari kelas.
+
+   Pelajar Diploma berkelas Isnin hingga Jumaat. Pelajar Ijazah berkelas
+   sekali seminggu, pada hari yang ditetapkan dalam profil masing-masing.
+
+   Peraturan itu ditulis di sini sahaja supaya tab Kehadiran dan tab Rekod
+   sentiasa memaparkan senarai murid yang sama bagi sesuatu tarikh, dan murid
+   yang tiada kelas pada hari itu tidak pernah dikira sebagai belum ditanda
+   atau tidak hadir. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  /* Indeks sepadan dengan Date.getUTCDay(): 0 = Ahad. */
+  var NAMA_HARI = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+
+  var HARI_DIPLOMA = [1, 2, 3, 4, 5];      // Isnin hingga Jumaat
+
+  function namaHari(n) {
+    return NAMA_HARI[n] === undefined ? '-' : NAMA_HARI[n];
+  }
+
+  function programMurid(m) {
+    return m && m.program === 'ijazah' ? 'ijazah' : 'diploma';
+  }
+
+  /* Hari kelas Ijazah yang sah ialah 0-6. Apa-apa nilai lain (termasuk profil
+     lama yang dibuat sebelum medan ini wujud) bermakna guru belum
+     menetapkannya. */
+  function hariIjazah(m) {
+    var n = parseInt(m && m.hariKelas, 10);
+    return (n >= 0 && n <= 6) ? n : null;
+  }
+
+  function perluHari(m) {
+    return programMurid(m) === 'ijazah' && hariIjazah(m) === null;
+  }
+
+  /* Senarai hari kelas seorang murid. Pelajar Ijazah yang belum ditetapkan
+     harinya dikembalikan sebagai Isnin-Jumaat, bukan senarai kosong, supaya
+     dia tidak hilang daripada senarai kehadiran sebelum guru sempat memilih
+     harinya. Lebih baik muncul terlalu kerap daripada tercicir tanpa disedari. */
+  function hariKelas(m) {
+    if (programMurid(m) === 'diploma') { return HARI_DIPLOMA.slice(); }
+    var h = hariIjazah(m);
+    return h === null ? HARI_DIPLOMA.slice() : [h];
+  }
+
+  function adaKelas(m, tarikh) {
+    return hariKelas(m).indexOf(CT.util.hariMinggu(tarikh)) !== -1;
+  }
+
+  /* Teks pendek untuk kad dan profil murid. */
+  function teksHari(m) {
+    if (programMurid(m) === 'diploma') { return 'Isnin - Jumaat'; }
+    var h = hariIjazah(m);
+    return h === null ? 'Belum ditetapkan' : 'Setiap ' + namaHari(h);
+  }
+
+  function muridUntuk(tarikh, senarai) {
+    senarai = senarai || CT.store.senaraiMurid();
+    return senarai.filter(function (m) { return adaKelas(m, tarikh); });
+  }
+
+  CT.jadual = {
+    NAMA_HARI: NAMA_HARI,
+    HARI_DIPLOMA: HARI_DIPLOMA,
+    namaHari: namaHari,
+    hariIjazah: hariIjazah,
+    perluHari: perluHari,
+    hariKelas: hariKelas,
+    adaKelas: adaKelas,
+    teksHari: teksHari,
+    muridUntuk: muridUntuk
+  };
+})();
+
+</script>
+
+<script>
 /* js/ui.js */
 /* e-Dawam — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
 
@@ -2185,8 +2268,10 @@ CT.views.utama = (function () {
 /* js/views/murid.js */
 /* Tab Murid — senarai murid, carian, tambah murid dan profil murid.
    Profil hanya mengandungi: nama penuh, nombor matrik, nombor telefon,
-   semester (1-8) dan Hifz/I'adah (1-8). Juz dan muka surat direkodkan
-   dalam tab Rekod, bukan di sini. */
+   semester (1-8), Hifz/I'adah (1-8) dan — bagi Ijazah — hari kelas mingguan.
+   Juz dan muka surat direkodkan dalam tab Rekod, bukan di sini.
+
+   Senarai dipecahkan mengikut program: Diploma dahulu, kemudian Ijazah. */
 
 window.CT = window.CT || {};
 CT.views = CT.views || {};
@@ -2216,6 +2301,17 @@ CT.views.murid = (function () {
     });
   }
 
+  /* Hari kelas hanya bermakna untuk Ijazah — Diploma sentiasa Isnin hingga
+     Jumaat, jadi lencana itu hanya menambah bunyi pada kad Diploma. */
+  function lencanaHari(m) {
+    if (kunciProgram(m) !== 'ijazah') { return ''; }
+    if (CT.jadual.perluHari(m)) {
+      return '<span class="lencana lencana-merah">Hari kelas?</span>';
+    }
+    return '<span class="lencana lencana-kelabu">' +
+      u.selamat(CT.jadual.namaHari(CT.jadual.hariIjazah(m))) + '</span>';
+  }
+
   function kadMurid(m) {
     var butang = document.createElement('button');
     butang.type = 'button';
@@ -2229,9 +2325,18 @@ CT.views.murid = (function () {
       '<span class="lencana">Sem ' + u.selamat(m.semester || '-') + '</span>' +
       '<span class="lencana lencana-biru">' +
       u.selamat(CT.sukatan.namaTahap(m.program, m.hifz || '-')) + '</span>' +
+      lencanaHari(m) +
       '</span>';
     butang.addEventListener('click', function () { bukaProfil(m.id); });
     return butang;
+  }
+
+  function pilihanHari(terpilih) {
+    var n = CT.jadual.hariIjazah({ program: 'ijazah', hariKelas: terpilih });
+    return CT.jadual.NAMA_HARI.map(function (nama, i) {
+      return '<option value="' + i + '"' + (n === i ? ' selected' : '') + '>' +
+        nama + '</option>';
+    }).join('');
   }
 
   /* ---------- Borang tambah / sunting ---------- */
@@ -2259,6 +2364,17 @@ CT.views.murid = (function () {
       '>Ijazah (I\'adah 1-8)</option>' +
       '</select></div>' +
 
+      /* Hari kelas hanya dipaparkan untuk Ijazah. Diploma tetap Isnin hingga
+         Jumaat, jadi tiada apa yang perlu dipilih. */
+      '<div class="medan" data-medan-hari>' +
+      '<label for="m-hari">Hari kelas</label>' +
+      '<select id="m-hari">' +
+      '<option value="">Belum ditetapkan</option>' + pilihanHari(m.hariKelas) +
+      '</select>' +
+      '<p class="kecil" style="margin-top:5px">Pelajar Ijazah berkelas sekali ' +
+      'seminggu. Dia hanya muncul dalam Kehadiran dan Rekod pada hari ini.</p>' +
+      '</div>' +
+
       '<div class="medan-dua">' +
       '<div class="medan"><label for="m-semester">Semester</label>' +
       '<select id="m-semester">' + CT.ui.pilihanNombor(1, 8, m.semester || 1) + '</select></div>' +
@@ -2268,20 +2384,37 @@ CT.views.murid = (function () {
 
       '<button class="butang butang-penuh" type="button" data-simpan>Simpan murid</button>';
 
+    var pilihProgram = kotak.querySelector('#m-program');
+    var medanHari = kotak.querySelector('[data-medan-hari]');
+
+    function segarMedanHari() {
+      medanHari.classList.toggle('tersembunyi', pilihProgram.value !== 'ijazah');
+    }
+    pilihProgram.addEventListener('change', segarMedanHari);
+    segarMedanHari();
+
     kotak.querySelector('[data-simpan]').addEventListener('click', function () {
       var nama = kotak.querySelector('#m-nama').value.trim();
       if (!nama) { CT.ui.toast('Sila isi nama penuh murid.'); return; }
 
-      CT.store.simpanMurid({
+      var program = pilihProgram.value;
+      var hari = kotak.querySelector('#m-hari').value;
+
+      var rekod = {
         id: m.id,
         dicipta: m.dicipta,
         nama: nama,
         matrik: kotak.querySelector('#m-matrik').value.trim(),
         telefon: kotak.querySelector('#m-telefon').value.trim(),
-        program: kotak.querySelector('#m-program').value,
+        program: program,
         semester: +kotak.querySelector('#m-semester').value,
         hifz: +kotak.querySelector('#m-hifz').value
-      });
+      };
+      /* Hari kelas disimpan untuk Ijazah sahaja. Jika guru menukar murid
+         kepada Diploma, hari lama digugurkan supaya tiada nilai tersorok. */
+      if (program === 'ijazah' && hari !== '') { rekod.hariKelas = +hari; }
+
+      CT.store.simpanMurid(rekod);
       CT.ui.tutupLapisan();
       CT.ui.toast(m.id ? 'Profil murid dikemas kini.' : 'Murid baharu ditambah.');
       CT.app.segarSemula();
@@ -2308,6 +2441,7 @@ CT.views.murid = (function () {
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
       '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
       '<div><b>Program</b>' + u.selamat(CT.sukatan.program(m.program).nama) + '</div>' +
+      '<div><b>Hari kelas</b>' + u.selamat(CT.jadual.teksHari(m)) + '</div>' +
       '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
       '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +
       '</div></div>' +
@@ -2346,8 +2480,8 @@ CT.views.murid = (function () {
       { nama: 'Ahmad Danial bin Rosli', matrik: 'UIS2026001', telefon: '012-3456789', program: 'diploma', semester: 1, hifz: 1 },
       { nama: 'Nur Aisyah binti Kamal', matrik: 'UIS2026002', telefon: '013-2233445', program: 'diploma', semester: 2, hifz: 3 },
       { nama: 'Muhammad Haziq bin Zainal', matrik: 'UIS2026003', telefon: '011-98765432', program: 'diploma', semester: 3, hifz: 2 },
-      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', program: 'ijazah', semester: 4, hifz: 5 },
-      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', program: 'ijazah', semester: 5, hifz: 4 }
+      { nama: 'Siti Khadijah binti Anuar', matrik: 'UIS2026004', telefon: '019-7766554', program: 'ijazah', semester: 4, hifz: 5, hariKelas: 4 },
+      { nama: 'Amir Hamzah bin Ibrahim', matrik: 'UIS2026005', telefon: '017-4455667', program: 'ijazah', semester: 5, hifz: 4, hariKelas: 2 }
     ];
     contoh.forEach(function (m) { CT.store.simpanMurid(m); });
     CT.ui.toast('5 murid contoh ditambah.');
@@ -2408,7 +2542,7 @@ CT.views.murid = (function () {
         if (!ahli.length) { return; }
 
         var kumpulan = document.createElement('div');
-        kumpulan.className = 'kumpulan-murid';
+        kumpulan.className = 'kumpulan';
 
         var tajuk = document.createElement('p');
         tajuk.className = 'seksyen-tajuk';
@@ -2446,6 +2580,15 @@ CT.views.murid = (function () {
 /* Tab Kehadiran — dua pilihan sahaja bagi setiap murid: Hadir atau Tidak hadir.
    Bagi murid yang tidak hadir, guru boleh menanda sama ada ketidakhadiran itu
    Dimaklum atau Tidak dimaklum, dan menulis nota ringkas.
+
+   Hanya murid yang benar-benar ada kelas pada tarikh itu disenaraikan (lihat
+   js/jadual.js): Diploma Isnin hingga Jumaat, Ijazah pada hari mingguannya
+   sahaja. Murid yang tiada kelas tidak muncul langsung, jadi dia tidak pernah
+   dikira sebagai tidak hadir atau belum ditanda pada hari itu.
+
+   Setiap program mempunyai senarai dan ringkasannya sendiri supaya peratus
+   kehadiran Diploma dan Ijazah tidak bercampur.
+
    Rekod disimpan mengikut tarikh dan terus dipaparkan dalam tab Kalendar dan Rekod. */
 
 window.CT = window.CT || {};
@@ -2459,6 +2602,12 @@ CT.views.kehadiran = (function () {
   var draf = {};
   var drafButiran = {};
   var belumSimpan = false;
+
+  var KUMPULAN = ['diploma', 'ijazah'];
+
+  function kunciProgram(m) {
+    return m.program === 'ijazah' ? 'ijazah' : 'diploma';
+  }
 
   function muatDraf() {
     draf = Object.assign({}, CT.store.kehadiranTarikh(tarikh));
@@ -2488,6 +2637,133 @@ CT.views.kehadiran = (function () {
     };
   }
 
+  /* Satu baris murid dengan segmen Hadir/Tidak dan panel butiran. */
+  function barisMurid(m, selepasUbah) {
+    var baris = document.createElement('div');
+    baris.className = 'hadir-baris';
+    baris.innerHTML =
+      '<div class="hadir-atas">' +
+      '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
+      '<span class="segmen">' +
+      '<button type="button" data-nilai="hadir">Hadir</button>' +
+      '<button type="button" data-nilai="tidak">Tidak</button>' +
+      '</span>' +
+      '</div>' +
+      '<div class="hadir-butiran tersembunyi">' +
+      '<span class="segmen segmen-maklum">' +
+      '<button type="button" data-maklum="dimaklum">Dimaklum</button>' +
+      '<button type="button" data-maklum="tidak-dimaklum">Tidak dimaklum</button>' +
+      '</span>' +
+      '<input type="text" class="nota-tidak-hadir" maxlength="200" ' +
+      'placeholder="Nota ringkas (pilihan)" aria-label="Nota ketidakhadiran">' +
+      '</div>';
+
+    var butangHadir = baris.querySelector('[data-nilai="hadir"]');
+    var butangTidak = baris.querySelector('[data-nilai="tidak"]');
+    var butiran = baris.querySelector('.hadir-butiran');
+    var butangMaklum = baris.querySelectorAll('[data-maklum]');
+    var medanNota = baris.querySelector('.nota-tidak-hadir');
+
+    function segar() {
+      var tidakHadir = draf[m.id] === 'tidak';
+      butangHadir.classList.toggle('pilih-hadir', draf[m.id] === 'hadir');
+      butangTidak.classList.toggle('pilih-tidak', tidakHadir);
+      butiran.classList.toggle('tersembunyi', !tidakHadir);
+
+      var b = drafButiran[m.id] || {};
+      Array.prototype.forEach.call(butangMaklum, function (x) {
+        x.classList.toggle('pilih-maklum', b.maklum === x.getAttribute('data-maklum'));
+      });
+      if (medanNota.value !== (b.nota || '')) { medanNota.value = b.nota || ''; }
+    }
+
+    function pilih(nilai) {
+      draf[m.id] = draf[m.id] === nilai ? undefined : nilai;
+      if (!draf[m.id]) { delete draf[m.id]; }
+      // Butiran hanya bermakna untuk murid yang tidak hadir.
+      if (draf[m.id] !== 'tidak') { delete drafButiran[m.id]; }
+      belumSimpan = true;
+      segar();
+      selepasUbah();
+    }
+
+    butangHadir.addEventListener('click', function () { pilih('hadir'); });
+    butangTidak.addEventListener('click', function () { pilih('tidak'); });
+
+    Array.prototype.forEach.call(butangMaklum, function (x) {
+      x.addEventListener('click', function () {
+        var nilai = x.getAttribute('data-maklum');
+        var b = drafButiran[m.id] || {};
+        b.maklum = b.maklum === nilai ? '' : nilai;
+        if (!b.maklum) { delete b.maklum; }
+        drafButiran[m.id] = b;
+        belumSimpan = true;
+        segar();
+        selepasUbah();
+      });
+    });
+
+    medanNota.addEventListener('input', function () {
+      var b = drafButiran[m.id] || {};
+      b.nota = medanNota.value;
+      drafButiran[m.id] = b;
+      belumSimpan = true;
+    });
+
+    baris.segar = segar;
+    segar();
+    return baris;
+  }
+
+  /* Satu kumpulan program: tajuk, statistik sendiri, kemudian senarai murid. */
+  function bahagianProgram(kunci, ahli, kumpul) {
+    var kotak = document.createElement('div');
+    kotak.className = 'kumpulan jarak-atas';
+
+    var tajuk = document.createElement('p');
+    tajuk.className = 'seksyen-tajuk';
+    tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' + ahli.length + ' murid';
+    kotak.appendChild(tajuk);
+
+    var statistik = document.createElement('div');
+    statistik.className = 'statistik';
+    kotak.appendChild(statistik);
+
+    var ringkasTidak = document.createElement('p');
+    ringkasTidak.className = 'kecil jarak-atas';
+    kotak.appendChild(ringkasTidak);
+
+    function lukisStatistik() {
+      var k = kiraan(ahli);
+      statistik.innerHTML =
+        '<div class="stat"><b style="color:var(--hijau)">' + k.hadir + '</b><span>Hadir</span></div>' +
+        '<div class="stat"><b style="color:var(--merah)">' + k.tidak + '</b><span>Tidak hadir</span></div>' +
+        '<div class="stat"><b>' + u.peratus(k.hadir, k.jumlah) + '%</b><span>Peratus kehadiran</span></div>';
+
+      if (k.tidak) {
+        ringkasTidak.innerHTML = 'Tidak hadir: <b>' + k.dimaklum + '</b> dimaklum &middot; <b>' +
+          k.tidakDimaklum + '</b> tidak dimaklum' +
+          (k.belumDitanda ? ' &middot; <b>' + k.belumDitanda + '</b> belum ditanda' : '');
+      } else {
+        ringkasTidak.textContent = '';
+      }
+    }
+    kumpul.penyegar.push(lukisStatistik);
+
+    var senarai = document.createElement('div');
+    senarai.className = 'senarai jarak-atas';
+    ahli.forEach(function (m) {
+      var baris = barisMurid(m, kumpul.segarSemua);
+      kumpul.baris.push(baris);
+      senarai.appendChild(baris);
+    });
+    kotak.appendChild(senarai);
+
+    lukisStatistik();
+    return kotak;
+  }
+
   function render(skrin, param) {
     if (param && param.tarikh && u.sahKunci(param.tarikh)) {
       tarikh = param.tarikh;
@@ -2499,7 +2775,8 @@ CT.views.kehadiran = (function () {
       muatDraf();
     }
 
-    var murid = CT.store.senaraiMurid();
+    var semua = CT.store.senaraiMurid();
+    var murid = CT.jadual.muridUntuk(tarikh, semua);
 
     /* Pemilih tarikh */
     skrin.appendChild(CT.ui.pemilihTarikh(tarikh, function (baru) {
@@ -2515,7 +2792,7 @@ CT.views.kehadiran = (function () {
       skrin.appendChild(cuti);
     }
 
-    if (!murid.length) {
+    if (!semua.length) {
       var kosong = CT.ui.kosong('Belum ada murid',
         'Tambah murid dalam tab Murid sebelum mengambil kehadiran.');
       kosong.classList.add('jarak-atas');
@@ -2523,115 +2800,47 @@ CT.views.kehadiran = (function () {
       return;
     }
 
-    /* Statistik */
-    var statistik = document.createElement('div');
-    statistik.className = 'statistik jarak-atas';
-    skrin.appendChild(statistik);
-
-    var ringkasTidak = document.createElement('p');
-    ringkasTidak.className = 'kecil jarak-atas';
-    skrin.appendChild(ringkasTidak);
-
-    function lukisStatistik() {
-      var k = kiraan(murid);
-      statistik.innerHTML =
-        '<div class="stat"><b style="color:var(--hijau)">' + k.hadir + '</b><span>Hadir</span></div>' +
-        '<div class="stat"><b style="color:var(--merah)">' + k.tidak + '</b><span>Tidak hadir</span></div>' +
-        '<div class="stat"><b>' + u.peratus(k.hadir, k.jumlah) + '%</b><span>Peratus kehadiran</span></div>';
-
-      if (k.tidak) {
-        ringkasTidak.innerHTML = 'Tidak hadir: <b>' + k.dimaklum + '</b> dimaklum &middot; <b>' +
-          k.tidakDimaklum + '</b> tidak dimaklum' +
-          (k.belumDitanda ? ' &middot; <b>' + k.belumDitanda + '</b> belum ditanda' : '');
-      } else {
-        ringkasTidak.textContent = '';
-      }
+    /* Amaran: pelajar Ijazah tanpa hari kelas muncul setiap hari Isnin-Jumaat
+       supaya dia tidak tercicir. Guru perlu tahu sebabnya. */
+    var perluHari = semua.filter(function (m) { return CT.jadual.perluHari(m); });
+    if (perluHari.length) {
+      var amaran = document.createElement('p');
+      amaran.className = 'notis notis-info jarak-atas';
+      amaran.innerHTML = '<b>' + perluHari.length + '</b> pelajar Ijazah belum ada hari ' +
+        'kelas. Mereka muncul setiap hari sehingga harinya ditetapkan dalam tab Murid.';
+      skrin.appendChild(amaran);
     }
 
-    /* Senarai murid */
-    var senarai = document.createElement('div');
-    senarai.className = 'senarai jarak-atas';
-    skrin.appendChild(senarai);
+    if (!murid.length) {
+      var tiadaKelas = CT.ui.kosong(
+        'Tiada kelas pada hari ' + CT.jadual.namaHari(u.hariMinggu(tarikh)),
+        'Tiada murid berjadual pada tarikh ini, jadi tiada kehadiran perlu diambil.');
+      tiadaKelas.classList.add('jarak-atas');
+      skrin.appendChild(tiadaKelas);
+      return;
+    }
 
-    murid.forEach(function (m) {
-      var baris = document.createElement('div');
-      baris.className = 'hadir-baris';
-      baris.innerHTML =
-        '<div class="hadir-atas">' +
-        '<span class="tumbuh"><span class="murid-nama">' + u.selamat(m.nama) + '</span><br>' +
-        '<span class="kecil">' + u.selamat(m.matrik || 'Tiada matrik') + '</span></span>' +
-        '<span class="segmen">' +
-        '<button type="button" data-nilai="hadir">Hadir</button>' +
-        '<button type="button" data-nilai="tidak">Tidak</button>' +
-        '</span>' +
-        '</div>' +
-        '<div class="hadir-butiran tersembunyi">' +
-        '<span class="segmen segmen-maklum">' +
-        '<button type="button" data-maklum="dimaklum">Dimaklum</button>' +
-        '<button type="button" data-maklum="tidak-dimaklum">Tidak dimaklum</button>' +
-        '</span>' +
-        '<input type="text" class="nota-tidak-hadir" maxlength="200" ' +
-        'placeholder="Nota ringkas (pilihan)" aria-label="Nota ketidakhadiran">' +
-        '</div>';
+    /* Nota berapa murid tidak berjadual hari ini, supaya guru yakin tiada
+       sesiapa tertinggal secara senyap. */
+    if (murid.length < semua.length) {
+      var nota = document.createElement('p');
+      nota.className = 'kecil jarak-atas';
+      nota.textContent = (semua.length - murid.length) +
+        ' murid lain tiada kelas pada hari ' + CT.jadual.namaHari(u.hariMinggu(tarikh)) + '.';
+      skrin.appendChild(nota);
+    }
 
-      var butangHadir = baris.querySelector('[data-nilai="hadir"]');
-      var butangTidak = baris.querySelector('[data-nilai="tidak"]');
-      var butiran = baris.querySelector('.hadir-butiran');
-      var butangMaklum = baris.querySelectorAll('[data-maklum]');
-      var medanNota = baris.querySelector('.nota-tidak-hadir');
+    var kumpul = {
+      baris: [],
+      penyegar: [],
+      segarSemua: function () { kumpul.penyegar.forEach(function (f) { f(); }); }
+    };
 
-      function segar() {
-        var tidakHadir = draf[m.id] === 'tidak';
-        butangHadir.classList.toggle('pilih-hadir', draf[m.id] === 'hadir');
-        butangTidak.classList.toggle('pilih-tidak', tidakHadir);
-        butiran.classList.toggle('tersembunyi', !tidakHadir);
-
-        var b = drafButiran[m.id] || {};
-        Array.prototype.forEach.call(butangMaklum, function (x) {
-          x.classList.toggle('pilih-maklum', b.maklum === x.getAttribute('data-maklum'));
-        });
-        if (medanNota.value !== (b.nota || '')) { medanNota.value = b.nota || ''; }
-      }
-
-      function pilih(nilai) {
-        draf[m.id] = draf[m.id] === nilai ? undefined : nilai;
-        if (!draf[m.id]) { delete draf[m.id]; }
-        // Butiran hanya bermakna untuk murid yang tidak hadir.
-        if (draf[m.id] !== 'tidak') { delete drafButiran[m.id]; }
-        belumSimpan = true;
-        segar();
-        lukisStatistik();
-      }
-
-      butangHadir.addEventListener('click', function () { pilih('hadir'); });
-      butangTidak.addEventListener('click', function () { pilih('tidak'); });
-
-      Array.prototype.forEach.call(butangMaklum, function (x) {
-        x.addEventListener('click', function () {
-          var nilai = x.getAttribute('data-maklum');
-          var b = drafButiran[m.id] || {};
-          b.maklum = b.maklum === nilai ? '' : nilai;
-          if (!b.maklum) { delete b.maklum; }
-          drafButiran[m.id] = b;
-          belumSimpan = true;
-          segar();
-          lukisStatistik();
-        });
-      });
-
-      medanNota.addEventListener('input', function () {
-        var b = drafButiran[m.id] || {};
-        b.nota = medanNota.value;
-        drafButiran[m.id] = b;
-        belumSimpan = true;
-      });
-
-      baris.segar = segar;
-      segar();
-      senarai.appendChild(baris);
+    KUMPULAN.forEach(function (kunci) {
+      var ahli = murid.filter(function (m) { return kunciProgram(m) === kunci; });
+      if (!ahli.length) { return; }
+      skrin.appendChild(bahagianProgram(kunci, ahli, kumpul));
     });
-
-    lukisStatistik();
 
     /* Butang tindakan */
     var bar = document.createElement('div');
@@ -2641,13 +2850,14 @@ CT.views.kehadiran = (function () {
       '<button class="butang tumbuh" type="button" data-simpan>Simpan kehadiran</button>';
 
     bar.querySelector('[data-semua]').addEventListener('click', function () {
+      // Hanya murid yang berjadual hari ini disentuh.
       murid.forEach(function (m) {
         draf[m.id] = 'hadir';
         delete drafButiran[m.id];
       });
+      kumpul.baris.forEach(function (b) { b.segar(); });
       belumSimpan = true;
-      Array.prototype.forEach.call(senarai.children, function (b) { b.segar && b.segar(); });
-      lukisStatistik();
+      kumpul.segarSemua();
       CT.ui.toast('Semua murid ditanda hadir. Tekan "Simpan kehadiran".');
     });
 
@@ -2655,6 +2865,9 @@ CT.views.kehadiran = (function () {
       var bersih = {};
       var bersihButiran = {};
 
+      /* Draf mengandungi juga tandaan murid yang pernah berjadual pada tarikh
+         ini sebelum harinya ditukar. Ia dikekalkan supaya rekod lama tidak
+         terpadam apabila guru menyimpan semula. */
       Object.keys(draf).forEach(function (id) {
         if (draf[id] !== 'hadir' && draf[id] !== 'tidak') { return; }
         bersih[id] = draf[id];
@@ -3000,7 +3213,11 @@ CT.views.kalendar = (function () {
 /* js/views/rekod.js */
 /* Tab Rekod — lihat dan kemas kini rekod setiap murid mengikut tarikh dipilih.
    Setiap tarikh disimpan berasingan: mengubah rekod satu tarikh tidak menyentuh
-   rekod tarikh lain. */
+   rekod tarikh lain.
+
+   Senarai murid bagi sesuatu tarikh sama dengan tab Kehadiran dan datang
+   daripada js/jadual.js: Diploma Isnin hingga Jumaat, Ijazah pada hari
+   mingguannya sahaja. */
 
 window.CT = window.CT || {};
 CT.views = CT.views || {};
@@ -3010,6 +3227,13 @@ CT.views.rekod = (function () {
 
   var u = CT.util;
   var tarikh = null;
+
+  /* Rekod juga dipecahkan mengikut program, sama seperti tab Kehadiran. */
+  var KUMPULAN = ['diploma', 'ijazah'];
+
+  function kunciProgram(m) {
+    return m.program === 'ijazah' ? 'ijazah' : 'diploma';
+  }
 
   function labelKehadiran(nilai) {
     if (nilai === 'hadir') { return '<span class="lencana">Hadir</span>'; }
@@ -3282,8 +3506,8 @@ CT.views.rekod = (function () {
     });
     skrin.appendChild(kePeringkat);
 
-    var murid = CT.store.senaraiMurid();
-    if (!murid.length) {
+    var semua = CT.store.senaraiMurid();
+    if (!semua.length) {
       var kosong = CT.ui.kosong('Belum ada murid',
         'Tambah murid dalam tab Murid untuk mula merekod.');
       kosong.classList.add('jarak-atas');
@@ -3291,15 +3515,37 @@ CT.views.rekod = (function () {
       return;
     }
 
-    var tajuk = document.createElement('p');
-    tajuk.className = 'seksyen-tajuk jarak-atas';
-    tajuk.textContent = 'Rekod ' + murid.length + ' murid';
-    skrin.appendChild(tajuk);
+    /* Senarai yang sama dengan tab Kehadiran: hanya murid yang berkelas pada
+       tarikh ini. Pelajar Ijazah tidak muncul pada hari bukan kelasnya. */
+    var murid = CT.jadual.muridUntuk(tarikh, semua);
+    if (!murid.length) {
+      var tiadaKelas = CT.ui.kosong(
+        'Tiada kelas pada hari ' + CT.jadual.namaHari(u.hariMinggu(tarikh)),
+        'Tiada murid berjadual pada tarikh ini, jadi tiada rekod perlu diisi.');
+      tiadaKelas.classList.add('jarak-atas');
+      skrin.appendChild(tiadaKelas);
+      return;
+    }
 
-    var senarai = document.createElement('div');
-    senarai.className = 'senarai';
-    murid.forEach(function (m) { senarai.appendChild(kadRekod(m)); });
-    skrin.appendChild(senarai);
+    KUMPULAN.forEach(function (kunci) {
+      var ahli = murid.filter(function (m) { return kunciProgram(m) === kunci; });
+      if (!ahli.length) { return; }
+
+      var kumpulan = document.createElement('div');
+      kumpulan.className = 'kumpulan jarak-atas';
+
+      var tajuk = document.createElement('p');
+      tajuk.className = 'seksyen-tajuk';
+      tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' + ahli.length + ' murid';
+      kumpulan.appendChild(tajuk);
+
+      var senarai = document.createElement('div');
+      senarai.className = 'senarai';
+      ahli.forEach(function (m) { senarai.appendChild(kadRekod(m)); });
+      kumpulan.appendChild(senarai);
+
+      skrin.appendChild(kumpulan);
+    });
   }
 
   return { tajuk: 'Rekod', render: render };
@@ -4124,7 +4370,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.6.3';
+  CT.VERSI = '1.7.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
