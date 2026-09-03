@@ -1,4 +1,4 @@
-/* ClassTrack — penyimpanan data.
+/* e-Dawam — penyimpanan data.
    Data teks : localStorage (murid, kehadiran, rekod, nota, acara, pasukan, tetapan).
    Fail besar: IndexedDB (PDF juz Al-Quran dan logo rasmi).
    Rekod kehadiran dan rekod murid menggunakan tarikh "YYYY-MM-DD" sebagai kunci. */
@@ -8,6 +8,9 @@ window.CT = window.CT || {};
 (function () {
   'use strict';
 
+  /* Awalan simpanan sengaja dikekalkan walaupun aplikasi dinamakan semula
+     kepada e-Dawam. Menukarnya akan menyebabkan semua data guru yang sedia
+     ada tidak lagi dijumpai. */
   var AWALAN = 'classtrack.v1.';
   var pendengar = {};
 

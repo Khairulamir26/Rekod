@@ -1,7 +1,7 @@
 {
-  "name": "ClassTrack — Universiti Islam Selangor",
-  "short_name": "ClassTrack",
-  "description": "Aplikasi guru UIS untuk kehadiran, hafazan, nota dan rekod murid.",
+  "name": "e-Dawam — Universiti Islam Selangor",
+  "short_name": "e-Dawam",
+  "description": "e-Dawam: aplikasi guru UIS untuk kehadiran, hafazan, nota dan rekod murid.",
   "lang": "ms",
   "dir": "ltr",
   "start_url": "./index.html",

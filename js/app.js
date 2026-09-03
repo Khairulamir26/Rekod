@@ -1,4 +1,4 @@
-/* ClassTrack — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
+/* e-Dawam — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
 
 window.CT = window.CT || {};
 
@@ -9,7 +9,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.5.0';
+  CT.VERSI = '1.5.1';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

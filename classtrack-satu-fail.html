@@ -2,7 +2,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>ClassTrack UIS</title>
+<title>e-Dawam</title>
 
 <style>
 /* ClassTrack — Universiti Islam Selangor
@@ -783,7 +783,7 @@ window.CT_LOGO_TERBENAM = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABsAAAAN
 
 <script>
 /* js/util.js */
-/* ClassTrack — fungsi bantuan tarikh, masa dan format Malaysia.
+/* e-Dawam — fungsi bantuan tarikh, masa dan format Malaysia.
    Semua pengiraan tarikh menggunakan zon waktu Asia/Kuala_Lumpur. */
 
 window.CT = window.CT || {};
@@ -941,7 +941,7 @@ window.CT = window.CT || {};
 
 <script>
 /* js/store.js */
-/* ClassTrack — penyimpanan data.
+/* e-Dawam — penyimpanan data.
    Data teks : localStorage (murid, kehadiran, rekod, nota, acara, pasukan, tetapan).
    Fail besar: IndexedDB (PDF juz Al-Quran dan logo rasmi).
    Rekod kehadiran dan rekod murid menggunakan tarikh "YYYY-MM-DD" sebagai kunci. */
@@ -951,6 +951,9 @@ window.CT = window.CT || {};
 (function () {
   'use strict';
 
+  /* Awalan simpanan sengaja dikekalkan walaupun aplikasi dinamakan semula
+     kepada e-Dawam. Menukarnya akan menyebabkan semua data guru yang sedia
+     ada tidak lagi dijumpai. */
   var AWALAN = 'classtrack.v1.';
   var pendengar = {};
 
@@ -1387,7 +1390,7 @@ window.CT = window.CT || {};
 
 <script>
 /* js/cuti.js */
-/* ClassTrack — cuti umum.
+/* e-Dawam — cuti umum.
    Gabungan automatik: cuti Persekutuan + Wilayah Persekutuan Kuala Lumpur + Selangor.
    Tiada pemilih negeri dipaparkan; gabungan ini digunakan di belakang tabir.
 
@@ -1584,7 +1587,7 @@ window.CT = window.CT || {};
 
 <script>
 /* js/sukatan.js */
-/* ClassTrack — sukatan hafazan mengikut program dan tahap.
+/* e-Dawam — sukatan hafazan mengikut program dan tahap.
 
    Muka surat mengikut susun atur mushaf 604 halaman (Madani / Dar Al-Ma'rifah).
    Nombor halaman yang direkodkan guru dalam tab Rekod ialah nombor halaman
@@ -1834,7 +1837,7 @@ window.CT = window.CT || {};
 
 <script>
 /* js/ui.js */
-/* ClassTrack — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
+/* e-Dawam — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
 
 window.CT = window.CT || {};
 
@@ -4023,7 +4026,7 @@ CT.views.pasukan = (function () {
        kemas kini terkini. */
     var versi = document.createElement('p');
     versi.className = 'kecil tengah jarak-atas';
-    versi.textContent = 'ClassTrack versi ' + (CT.VERSI || '-');
+    versi.textContent = 'e-Dawam versi ' + (CT.VERSI || '-');
     skrin.appendChild(versi);
   }
 
@@ -4034,7 +4037,7 @@ CT.views.pasukan = (function () {
 
 <script>
 /* js/app.js */
-/* ClassTrack — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
+/* e-Dawam — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
 
 window.CT = window.CT || {};
 
@@ -4045,7 +4048,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.5.0';
+  CT.VERSI = '1.5.1';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

@@ -1,4 +1,4 @@
-/* ClassTrack — sukatan hafazan mengikut program dan tahap.
+/* e-Dawam — sukatan hafazan mengikut program dan tahap.
 
    Muka surat mengikut susun atur mushaf 604 halaman (Madani / Dar Al-Ma'rifah).
    Nombor halaman yang direkodkan guru dalam tab Rekod ialah nombor halaman

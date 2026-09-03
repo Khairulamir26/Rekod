@@ -1,4 +1,4 @@
-/* ClassTrack — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
+/* e-Dawam — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
 
 window.CT = window.CT || {};
 

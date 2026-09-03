@@ -1,4 +1,4 @@
-# ClassTrack — Universiti Islam Selangor
+# e-Dawam — Universiti Islam Selangor
 
 Aplikasi web progresif (PWA) untuk guru UIS: mengurus profil murid, mengambil
 kehadiran, merekod hafazan Al-Quran, menulis nota murid, melihat rekod mengikut
@@ -37,15 +37,27 @@ Keseluruhan antara muka menggunakan **Bahasa Melayu**, tarikh format Malaysia
 │       └── pasukan.js          Guru jabatan, peranan, tahap akses
 ├── assets/
 │   ├── BACA-SAYA-LOGO.txt      Cara meletakkan logo rasmi UIS
-│   ├── ikon-192.png            Ikon aplikasi (bukan logo UIS)
+│   ├── logo-dawam.png          Logo jenama e-Dawam (bar tajuk)
+│   ├── ikon-192.png            Ikon aplikasi (simbol "e" daripada logo)
 │   ├── ikon-512.png
 │   └── ikon-maskable.png
 └── tools/
-    ├── buat-ikon.mjs           Menjana semula ikon aplikasi (node)
+    ├── buat-ikon.mjs           Menjana ikon aplikasi daripada logo jenama
+    ├── sedia-logo-jenama.mjs   Menyahkod, memotong dan menyaiz fail logo
     └── buat-satu-fail.mjs      Menjana classtrack-satu-fail.html untuk pratonton
 ```
 
-## 2. Logo rasmi UIS
+## 2. Nama dan jenama
+
+Aplikasi ini dinamakan **e-Dawam**. Logo jenama dipaparkan pada bar tajuk
+(`assets/logo-dawam.png`) dan simbol "e" daripada logo itu digunakan sebagai
+ikon aplikasi.
+
+Awalan simpanan data kekal `classtrack.v1.` dan nama pangkalan IndexedDB kekal
+`classtrack-fail` walaupun aplikasi dinamakan semula — menukarnya akan
+menyebabkan data guru yang sedia ada hilang.
+
+## 3. Logo rasmi UIS
 
 Logo rasmi adalah **tetap**. Ia dimuatkan daripada fail yang dihantar bersama
 aplikasi sahaja — `assets/logo-uis.png` (atau `.jpg` / `.svg`), atau data yang
@@ -62,7 +74,7 @@ Selepas fail logo diletakkan, `node tools/buat-satu-fail.mjs` membenamkan logo
 terus ke dalam `classtrack-satu-fail.html` sebagai data URI, jadi fail tunggal
 itu membawa logo bersamanya.
 
-## 3. Sukatan hafazan
+## 4. Sukatan hafazan
 
 Tab **Sukatan** mengira sendiri berapa banyak lagi setiap murid perlu hantar
 untuk cukup sukatan semester, berdasarkan halaman terjauh yang direkodkan
@@ -100,7 +112,7 @@ Program murid (Diploma atau Ijazah) ditetapkan dalam profil murid. Tahap
 Hifz/I'adah kekal pilihan 1 hingga 8; Diploma hanya mempunyai sukatan sehingga
 Hifz 6, dan murid di luar julat itu disenaraikan sebagai "tiada sukatan".
 
-## 4. Cara membuka aplikasi pada komputer
+## 5. Cara membuka aplikasi pada komputer
 
 Semua ciri (kecuali service worker) berfungsi dengan hanya membuka
 `index.html` melalui pelayar. Untuk pengalaman PWA penuh, jalankan pelayan
@@ -118,7 +130,7 @@ Kemudian buka `http://localhost:8080/index.html`.
 Service worker hanya berdaftar pada `http://localhost` atau `https://`,
 bukan pada `file://`.
 
-## 5. Cara memasang pada telefon
+## 6. Cara memasang pada telefon
 
 1. Hoskan folder ini pada mana-mana pelayan **HTTPS** (contoh: GitHub Pages,
    Netlify, Vercel, atau pelayan universiti).
@@ -132,7 +144,7 @@ Untuk ujian pantas dalam rangkaian Wi-Fi yang sama, jalankan pelayan tempatan
 seperti di atas dan buka `http://<alamat-IP-komputer>:8080` pada telefon.
 (Pemasangan PWA memerlukan HTTPS; `http://` hanya sesuai untuk ujian paparan.)
 
-## 6. Penyimpanan data
+## 7. Penyimpanan data
 
 | Data | Tempat simpan | Kunci |
 |---|---|---|
@@ -148,7 +160,7 @@ Setiap tarikh disimpan berasingan — mengemas kini rekod satu tarikh tidak
 menyentuh tarikh lain. Data kekal selepas halaman dimuat semula dan tidak
 dipadam semasa kod dikemas kini.
 
-## 7. Bahagian yang masih menggunakan data prototaip
+## 8. Bahagian yang masih menggunakan data prototaip
 
 - **Pasukan / jabatan** — senarai guru, peranan dan tahap akses disimpan pada
   peranti ini sahaja. "Guru aktif" menggantikan log masuk sebenar.
@@ -165,7 +177,7 @@ dipadam semasa kod dikemas kini.
 - **Murid contoh** — butang "Muat 5 murid contoh" hanya muncul apabila senarai
   murid kosong.
 
-## 8. Langkah ke arah aplikasi sebenar (akaun + pangkalan data awan)
+## 9. Langkah ke arah aplikasi sebenar (akaun + pangkalan data awan)
 
 1. **Log masuk guru** — sambungkan pembekal identiti universiti (SSO/Google
    Workspace) atau e-mel + kata laluan. Ganti pemilih "Guru aktif" dalam tab
@@ -189,7 +201,7 @@ dipadam semasa kod dikemas kini.
 7. **Perlindungan data murid** — HTTPS wajib, penyulitan semasa rehat, dasar
    simpanan data, dan kebenaran penjaga selaras PDPA Malaysia.
 
-## 9. Nota penyelenggaraan
+## 10. Nota penyelenggaraan
 
 - Setiap kali fail aplikasi diubah, naikkan `VERSI` dalam `sw.js`
   (contoh: `classtrack-v1.0.0` → `classtrack-v1.0.1`) supaya cache lama

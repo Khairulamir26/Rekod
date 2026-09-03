@@ -1,4 +1,4 @@
-/* Membina versi SATU FAIL ClassTrack untuk pratonton dan perkongsian pantas.
+/* Membina versi SATU FAIL e-Dawam untuk pratonton dan perkongsian pantas.
    Jalankan: node tools/buat-satu-fail.mjs
    Keluaran : classtrack-satu-fail.html (CSS + JS diselitkan ke dalam HTML)
 
@@ -71,7 +71,7 @@ const logo = logoTerbenam();
 const bahagian = [
   '<meta charset="utf-8">',
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
-  '<title>ClassTrack UIS</title>',
+  '<title>e-Dawam</title>',
   '<style>\n' + css + '\n</style>',
   badan,
   '<script>\n' +

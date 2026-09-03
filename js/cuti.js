@@ -1,4 +1,4 @@
-/* ClassTrack — cuti umum.
+/* e-Dawam — cuti umum.
    Gabungan automatik: cuti Persekutuan + Wilayah Persekutuan Kuala Lumpur + Selangor.
    Tiada pemilih negeri dipaparkan; gabungan ini digunakan di belakang tabir.
 

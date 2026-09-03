@@ -150,7 +150,7 @@ CT.views.pasukan = (function () {
        kemas kini terkini. */
     var versi = document.createElement('p');
     versi.className = 'kecil tengah jarak-atas';
-    versi.textContent = 'ClassTrack versi ' + (CT.VERSI || '-');
+    versi.textContent = 'e-Dawam versi ' + (CT.VERSI || '-');
     skrin.appendChild(versi);
   }
 

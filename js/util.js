@@ -1,4 +1,4 @@
-/* ClassTrack — fungsi bantuan tarikh, masa dan format Malaysia.
+/* e-Dawam — fungsi bantuan tarikh, masa dan format Malaysia.
    Semua pengiraan tarikh menggunakan zon waktu Asia/Kuala_Lumpur. */
 
 window.CT = window.CT || {};

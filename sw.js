@@ -1,8 +1,8 @@
-/* ClassTrack — service worker.
+/* e-Dawam — service worker.
    PENTING: naikkan VERSI setiap kali fail aplikasi diubah supaya cache lama
    digantikan. Data guru (localStorage / IndexedDB) tidak pernah disentuh di sini. */
 
-var VERSI = 'classtrack-v1.5.0';
+var VERSI = 'edawam-v1.5.1';
 
 var FAIL_TERAS = [
   './',
