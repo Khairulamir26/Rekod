@@ -9,7 +9,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.6.1';
+  CT.VERSI = '1.6.2';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

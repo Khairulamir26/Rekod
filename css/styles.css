@@ -49,6 +49,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Tajuk utama ---------- */
 .tajuk-utama {
+  /* Tinggi lencana logo (imej + pad). Blok teks di sebelah kiri berkongsi
+     nilai yang sama supaya kedua-dua belah bar tajuk sebaris tepat. */
+  --tinggi-lencana: 42px;
   position: sticky;
   top: 0;
   z-index: 30;
@@ -61,20 +64,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: #fff;
   box-shadow: 0 2px 12px rgba(9, 62, 51, .25);
 }
-/* Nama halaman dan status rangkaian disusun menegak di sebelah kanan,
-   sejajar tepi kanan supaya seimbang dengan logo di sebelah kiri. */
-.tajuk-kanan {
+/* Nama halaman dan status rangkaian disusun menegak di sebelah kiri. Kedua-dua
+   blok tajuk berkongsi tinggi --tinggi-lencana, dan teks ditolak ke hujung
+   atas dan hujung bawah blok itu. Hasilnya baris nama halaman sejajar dengan
+   bahagian atas lencana logo, dan baris status sejajar dengan bahagian
+   bawahnya. */
+.tajuk-kiri {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  text-align: right;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: var(--tinggi-lencana);
   min-width: 0;
 }
 .tajuk-muka {
-  font-size: .98rem;
+  font-size: 1rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: .01em;
 }
 .tajuk-status {
@@ -101,8 +107,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tajuk-logo {
   display: inline-flex;
   align-items: center;
-  /* Diturunkan sedikit supaya logo tidak melekat pada tepi atas bar. */
-  margin-top: 6px;
+  min-height: var(--tinggi-lencana);
   background: #fff;
   /* Pil putih ini sepusat dengan bentuk pil logo itu sendiri, jadi kedua-duanya
      kelihatan sebagai satu lencana dan bukan kotak dalam kotak. */
@@ -303,7 +308,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .nav-butang:active { background: #edf2f0; }
 
 @media (min-width: 620px) {
+  .tajuk-utama { --tinggi-lencana: 46px; }
   .tajuk-logo img { height: 36px; }
+  .tajuk-muka { font-size: 1.06rem; }
 }
 
 @media (min-width: 620px) {
