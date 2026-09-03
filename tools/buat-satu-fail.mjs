@@ -38,11 +38,33 @@ const css = baca('css/styles.css');
 const skrip = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map((m) => m[1]);
 if (!skrip.length) { throw new Error('Tiada <script src> dijumpai dalam index.html'); }
 
+/* Gambar yang dirujuk terus dalam HTML (contoh: logo jenama pada bar tajuk)
+   dibenamkan sebagai data URI supaya fail tunggal ini membawanya bersama. */
+const JENIS_GAMBAR = {
+  '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+  '.webp': 'image/webp', '.svg': 'image/svg+xml', '.gif': 'image/gif'
+};
+
+function benamkanGambar(teks) {
+  return teks.replace(/src="(assets\/[^"]+)"/g, (padanan, laluan) => {
+    const penuh = join(akar, laluan);
+    const sambungan = laluan.slice(laluan.lastIndexOf('.')).toLowerCase();
+    if (!existsSync(penuh) || !JENIS_GAMBAR[sambungan]) { return padanan; }
+    const data = readFileSync(penuh).toString('base64');
+    gambarDibenam.push(laluan);
+    return 'src="data:' + JENIS_GAMBAR[sambungan] + ';base64,' + data + '"';
+  });
+}
+
+const gambarDibenam = [];
+
 // Ambil kandungan <body> tanpa tag skrip.
-const badan = html
-  .slice(html.indexOf('<body>') + '<body>'.length, html.lastIndexOf('</body>'))
-  .replace(/<script src="[^"]+"><\/script>\s*/g, '')
-  .trim();
+const badan = benamkanGambar(
+  html
+    .slice(html.indexOf('<body>') + '<body>'.length, html.lastIndexOf('</body>'))
+    .replace(/<script src="[^"]+"><\/script>\s*/g, '')
+    .trim()
+);
 
 const logo = logoTerbenam();
 
@@ -69,4 +91,5 @@ writeFileSync(join(akar, 'classtrack-satu-fail.html'), keluaran);
 
 console.log('Ditulis: classtrack-satu-fail.html');
 console.log('Skrip diselitkan:', skrip.length);
+console.log('Gambar dibenam :', gambarDibenam.length ? gambarDibenam.join(', ') : 'tiada');
 console.log('Saiz:', Math.round(keluaran.length / 1024) + ' KB');
