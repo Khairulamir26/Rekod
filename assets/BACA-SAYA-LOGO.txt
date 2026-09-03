@@ -42,3 +42,22 @@ PERATURAN PAPARAN
 
 Jika fail belum ada, halaman Utama memaparkan nota ringkas "Logo rasmi tiada"
 tanpa sebarang butang.
+
+IKON APLIKASI
+-------------
+Ikon rasmi e-Dawam disimpan seadanya sebagai:
+
+    ikon-dawam-asal.webp
+
+Fail itu adalah satu-satunya sumber. Tiga fail berikut DIJANA daripadanya dan
+tidak boleh disunting terus:
+
+    ikon-192.png        ikon biasa, bucu lut sinar
+    ikon-512.png        ikon biasa, bucu lut sinar
+    ikon-maskable.png   untuk Android, penuh tanpa lut sinar
+
+Untuk menukar ikon, gantikan ikon-dawam-asal.webp sahaja, kemudian jalankan:
+
+    node tools/buat-ikon.mjs
+
+Jangan lukis semula atau ubah warna ikon jenama secara manual.

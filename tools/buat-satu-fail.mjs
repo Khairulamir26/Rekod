@@ -68,10 +68,19 @@ const badan = benamkanGambar(
 
 const logo = logoTerbenam();
 
+/* Ikon aplikasi turut dibenamkan supaya fail tunggal ini memaparkan ikon
+   e-Dawam pada tab pelayar dan pada skrin utama telefon apabila disimpan. */
+const ikonUri = 'data:image/png;base64,'
+  + readFileSync(join(akar, 'assets', 'ikon-192.png')).toString('base64');
+
 const bahagian = [
   '<meta charset="utf-8">',
   '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
+  '<meta name="theme-color" content="#1c7f6b">',
   '<title>e-Dawam</title>',
+  '<link rel="icon" href="' + ikonUri + '">',
+  '<link rel="apple-touch-icon" href="' + ikonUri + '">',
+  '<meta name="apple-mobile-web-app-title" content="e-Dawam">',
   '<style>\n' + css + '\n</style>',
   badan,
   '<script>\n' +
