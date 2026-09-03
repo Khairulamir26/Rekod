@@ -380,6 +380,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* ---------- Senarai murid ---------- */
 .senarai { display: flex; flex-direction: column; gap: 10px; }
+/* Senarai murid dipecahkan mengikut program: Diploma dahulu sehingga habis,
+   kemudian Ijazah. Jarak antara kumpulan lebih lega daripada jarak antara
+   kad supaya pemisahan itu jelas. */
+.kumpulan-murid + .kumpulan-murid { margin-top: 22px; }
 .murid-kad {
   display: flex;
   align-items: center;

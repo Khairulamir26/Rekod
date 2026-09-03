@@ -12,6 +12,15 @@ CT.views.murid = (function () {
   var u = CT.util;
   var carian = '';
 
+  /* Susunan kumpulan pada senarai: Diploma dahulu sehingga habis, kemudian
+     Ijazah. Murid tanpa program dikira sebagai Diploma, sama seperti tab
+     Sukatan. */
+  var KUMPULAN = ['diploma', 'ijazah'];
+
+  function kunciProgram(m) {
+    return m.program === 'ijazah' ? 'ijazah' : 'diploma';
+  }
+
   function tapis(senarai) {
     var cari = carian.trim().toLowerCase();
     if (!cari) { return senarai; }
@@ -196,7 +205,8 @@ CT.views.murid = (function () {
 
       var ditapis = tapis(semua);
       var kira = document.createElement('p');
-      kira.className = 'seksyen-tajuk';
+      kira.className = 'kecil';
+      kira.style.marginBottom = '12px';
       kira.textContent = ditapis.length + ' daripada ' + semua.length + ' murid';
       seksyen.appendChild(kira);
 
@@ -206,10 +216,27 @@ CT.views.murid = (function () {
         return;
       }
 
-      var senarai = document.createElement('div');
-      senarai.className = 'senarai';
-      ditapis.forEach(function (m) { senarai.appendChild(kadMurid(m)); });
-      seksyen.appendChild(senarai);
+      /* Setiap program menjadi kumpulan berasingan dengan tajuknya sendiri.
+         Kumpulan yang tiada murid tidak dipaparkan. */
+      KUMPULAN.forEach(function (kunci) {
+        var ahli = ditapis.filter(function (m) { return kunciProgram(m) === kunci; });
+        if (!ahli.length) { return; }
+
+        var kumpulan = document.createElement('div');
+        kumpulan.className = 'kumpulan-murid';
+
+        var tajuk = document.createElement('p');
+        tajuk.className = 'seksyen-tajuk';
+        tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' + ahli.length + ' murid';
+        kumpulan.appendChild(tajuk);
+
+        var senarai = document.createElement('div');
+        senarai.className = 'senarai';
+        ahli.forEach(function (m) { senarai.appendChild(kadMurid(m)); });
+        kumpulan.appendChild(senarai);
+
+        seksyen.appendChild(kumpulan);
+      });
     }
 
     lukisSenarai();
