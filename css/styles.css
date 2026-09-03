@@ -1,4 +1,4 @@
-/* ClassTrack — Universiti Islam Selangor
+/* e-Dawam — Universiti Islam Selangor
    Reka bentuk mudah alih dahulu (mobile-first). */
 
 :root {
@@ -61,8 +61,39 @@ button, input, select, textarea { font: inherit; color: inherit; }
   color: #fff;
   box-shadow: 0 2px 12px rgba(8, 69, 33, .25);
 }
-.tajuk-teks h1 { font-size: 1.15rem; line-height: 1.2; }
-.tajuk-teks p { font-size: .8rem; opacity: .85; margin-top: 3px; }
+/* Nama halaman dan status rangkaian disusun menegak di sebelah kanan,
+   sejajar tepi kanan supaya seimbang dengan logo di sebelah kiri. */
+.tajuk-kanan {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+  min-width: 0;
+}
+.tajuk-muka {
+  font-size: .98rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: .01em;
+}
+.tajuk-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .7rem;
+  font-weight: 500;
+  letter-spacing: .06em;
+  /* Sengaja dikaburkan supaya ia kekal maklumat latar, bukan tumpuan. */
+  opacity: .45;
+}
+.tajuk-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
 
 /* Logo jenama dalam bar tajuk. Logo mempunyai latar putihnya sendiri, jadi ia
    diletakkan di atas kepingan putih berbentuk pil supaya warnanya kekal jelas
@@ -70,6 +101,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tajuk-logo {
   display: inline-flex;
   align-items: center;
+  /* Diturunkan sedikit supaya logo tidak melekat pada tepi atas bar. */
+  margin-top: 6px;
   background: #fff;
   /* Pil putih ini sepusat dengan bentuk pil logo itu sendiri, jadi kedua-duanya
      kelihatan sebagai satu lencana dan bukan kotak dalam kotak. */
@@ -84,7 +117,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
   user-select: none;
   -webkit-user-drag: none;
 }
-.tajuk-status .lencana-kecil { background: rgba(255, 255, 255, .18); color: #fff; }
 
 /* ---------- Skrin ---------- */
 .skrin { padding: 16px 16px 8px; outline: none; max-width: 780px; margin: 0 auto; }

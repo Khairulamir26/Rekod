@@ -9,7 +9,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.5.1';
+  CT.VERSI = '1.5.2';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
@@ -93,11 +93,7 @@ window.CT = window.CT || {};
   function segarRangkaian() {
     var penunjuk = document.getElementById('penunjuk-rangkaian');
     if (!penunjuk) { return; }
-    if (navigator.onLine) {
-      penunjuk.textContent = 'Dalam talian';
-    } else {
-      penunjuk.textContent = 'Luar talian';
-    }
+    penunjuk.textContent = navigator.onLine ? 'Online' : 'Offline';
   }
 
   /* ---------- Service worker ---------- */
