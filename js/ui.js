@@ -162,11 +162,12 @@ window.CT = window.CT || {};
     return kotak;
   }
 
-  function pilihanNombor(dari, hingga, nilai) {
+  /* "awalan" pilihan, contoh "Juz " untuk menghasilkan "Juz 1", "Juz 2" ... */
+  function pilihanNombor(dari, hingga, nilai, awalan) {
     var html = '';
     for (var i = dari; i <= hingga; i++) {
       html += '<option value="' + i + '"' + (String(nilai) === String(i) ? ' selected' : '') +
-        '>' + i + '</option>';
+        '>' + (awalan || '') + i + '</option>';
     }
     return html;
   }
