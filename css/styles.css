@@ -413,11 +413,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Bingkai mushaf mengambil hampir seluruh tinggi skrin yang tinggal selepas
    bar tajuk, kawalan juz dan navigasi bawah. 100dvh digunakan supaya bar
    alamat pelayar mudah alih yang menyorot tidak memotong bingkai. */
-.quran-kawalan { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.quran-kawalan { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .quran-kawalan .butang { flex: 0 0 auto; }
 .quran-bingkai {
-  height: calc(100vh - var(--nav-tinggi) - 200px);
-  height: calc(100dvh - var(--nav-tinggi) - 200px);
+  height: calc(100vh - var(--nav-tinggi) - 194px);
+  height: calc(100dvh - var(--nav-tinggi) - 194px);
   min-height: 360px;
   border: 1px solid var(--garis);
   border-radius: var(--r);

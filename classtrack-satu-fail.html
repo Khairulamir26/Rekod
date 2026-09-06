@@ -428,11 +428,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Bingkai mushaf mengambil hampir seluruh tinggi skrin yang tinggal selepas
    bar tajuk, kawalan juz dan navigasi bawah. 100dvh digunakan supaya bar
    alamat pelayar mudah alih yang menyorot tidak memotong bingkai. */
-.quran-kawalan { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.quran-kawalan { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .quran-kawalan .butang { flex: 0 0 auto; }
 .quran-bingkai {
-  height: calc(100vh - var(--nav-tinggi) - 200px);
-  height: calc(100dvh - var(--nav-tinggi) - 200px);
+  height: calc(100vh - var(--nav-tinggi) - 194px);
+  height: calc(100dvh - var(--nav-tinggi) - 194px);
   min-height: 360px;
   border: 1px solid var(--garis);
   border-radius: var(--r);
@@ -2279,12 +2279,11 @@ window.CT = window.CT || {};
     return kotak;
   }
 
-  /* "awalan" pilihan, contoh "Juz " untuk menghasilkan "Juz 1", "Juz 2" ... */
-  function pilihanNombor(dari, hingga, nilai, awalan) {
+  function pilihanNombor(dari, hingga, nilai) {
     var html = '';
     for (var i = dari; i <= hingga; i++) {
       html += '<option value="' + i + '"' + (String(nilai) === String(i) ? ' selected' : '') +
-        '>' + (awalan || '') + i + '</option>';
+        '>' + i + '</option>';
     }
     return html;
   }
@@ -4151,25 +4150,14 @@ CT.views = CT.views || {};
 CT.views.quran = (function () {
   'use strict';
 
+  /* Pembaca QuranFlash membawa navigasi juz dan muka suratnya sendiri, jadi
+     tab ini tidak menambah kawalan sendiri di atasnya. */
   var ASAS = 'https://app.quranflash.com/book/Tajweed?en';
-  var juzSemasa = 1;
-
-  /* Nombor dalam laluan #/reader/chapter/N ialah nombor muka surat mushaf.
-     Muka surat pertama setiap juz diambil daripada jadual yang sama seperti
-     tab Sukatan dan Rekod, jadi ketiga-tiganya tidak boleh terpesong. */
-  function alamatJuz(nombor) {
-    var halaman = CT.sukatan.JUZ_MULA[nombor] || 1;
-    return ASAS + '#/reader/chapter/' + halaman;
-  }
 
   function render(skrin) {
-    /* Kawalan: pilih juz dan buka dalam pelayar. */
     var kawalan = document.createElement('div');
     kawalan.className = 'quran-kawalan';
     kawalan.innerHTML =
-      '<div class="medan tumbuh" style="margin-bottom:0">' +
-      '<select id="q-juz" aria-label="Pilih juz">' +
-      CT.ui.pilihanNombor(1, 30, juzSemasa, 'Juz ') + '</select></div>' +
       '<button class="butang butang-luar butang-kecil" type="button" data-luar>' +
       'Buka dalam pelayar</button>';
     skrin.appendChild(kawalan);
@@ -4206,16 +4194,13 @@ CT.views.quran = (function () {
         return;
       }
 
-      /* Elemen bingkai dicipta semula setiap kali juz ditukar. Menukar hanya
-         bahagian hash pada src sedia ada tidak memuatkan semula halaman
-         merentas asal. */
       var frem = document.createElement('iframe');
       frem.className = 'quran-frem';
       frem.title = 'Mushaf QuranFlash';
       frem.setAttribute('loading', 'lazy');
       frem.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
       frem.setAttribute('allow', 'fullscreen');
-      frem.src = alamatJuz(juzSemasa);
+      frem.src = ASAS;
 
       var sudahMuat = false;
       frem.addEventListener('load', function () { sudahMuat = true; });
@@ -4228,14 +4213,8 @@ CT.views.quran = (function () {
       bingkai.appendChild(frem);
     }
 
-    var pilihJuz = kawalan.querySelector('#q-juz');
-    pilihJuz.addEventListener('change', function () {
-      juzSemasa = +pilihJuz.value || 1;
-      lukisBingkai();
-    });
-
     kawalan.querySelector('[data-luar]').addEventListener('click', function () {
-      window.open(alamatJuz(juzSemasa), '_blank', 'noopener');
+      window.open(ASAS, '_blank', 'noopener');
     });
 
     lukisBingkai();
@@ -4636,7 +4615,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.9.3';
+  CT.VERSI = '1.9.4';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

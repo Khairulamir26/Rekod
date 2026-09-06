@@ -19,25 +19,14 @@ CT.views = CT.views || {};
 CT.views.quran = (function () {
   'use strict';
 
+  /* Pembaca QuranFlash membawa navigasi juz dan muka suratnya sendiri, jadi
+     tab ini tidak menambah kawalan sendiri di atasnya. */
   var ASAS = 'https://app.quranflash.com/book/Tajweed?en';
-  var juzSemasa = 1;
-
-  /* Nombor dalam laluan #/reader/chapter/N ialah nombor muka surat mushaf.
-     Muka surat pertama setiap juz diambil daripada jadual yang sama seperti
-     tab Sukatan dan Rekod, jadi ketiga-tiganya tidak boleh terpesong. */
-  function alamatJuz(nombor) {
-    var halaman = CT.sukatan.JUZ_MULA[nombor] || 1;
-    return ASAS + '#/reader/chapter/' + halaman;
-  }
 
   function render(skrin) {
-    /* Kawalan: pilih juz dan buka dalam pelayar. */
     var kawalan = document.createElement('div');
     kawalan.className = 'quran-kawalan';
     kawalan.innerHTML =
-      '<div class="medan tumbuh" style="margin-bottom:0">' +
-      '<select id="q-juz" aria-label="Pilih juz">' +
-      CT.ui.pilihanNombor(1, 30, juzSemasa, 'Juz ') + '</select></div>' +
       '<button class="butang butang-luar butang-kecil" type="button" data-luar>' +
       'Buka dalam pelayar</button>';
     skrin.appendChild(kawalan);
@@ -74,16 +63,13 @@ CT.views.quran = (function () {
         return;
       }
 
-      /* Elemen bingkai dicipta semula setiap kali juz ditukar. Menukar hanya
-         bahagian hash pada src sedia ada tidak memuatkan semula halaman
-         merentas asal. */
       var frem = document.createElement('iframe');
       frem.className = 'quran-frem';
       frem.title = 'Mushaf QuranFlash';
       frem.setAttribute('loading', 'lazy');
       frem.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
       frem.setAttribute('allow', 'fullscreen');
-      frem.src = alamatJuz(juzSemasa);
+      frem.src = ASAS;
 
       var sudahMuat = false;
       frem.addEventListener('load', function () { sudahMuat = true; });
@@ -96,14 +82,8 @@ CT.views.quran = (function () {
       bingkai.appendChild(frem);
     }
 
-    var pilihJuz = kawalan.querySelector('#q-juz');
-    pilihJuz.addEventListener('change', function () {
-      juzSemasa = +pilihJuz.value || 1;
-      lukisBingkai();
-    });
-
     kawalan.querySelector('[data-luar]').addEventListener('click', function () {
-      window.open(alamatJuz(juzSemasa), '_blank', 'noopener');
+      window.open(ASAS, '_blank', 'noopener');
     });
 
     lukisBingkai();
