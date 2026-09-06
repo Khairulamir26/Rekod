@@ -399,6 +399,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 700;
 }
 .ringkas-perinci { margin-top: 10px; }
+/* Cip tarikh ialah data rujukan, bukan amaran. Lencana kiraan di sebelah nama
+   murid sudah merah; jika setiap tarikh turut merah, kad menjadi satu blok
+   merah dan tiada apa yang menonjol lagi. */
+.cip-tarikh {
+  background: var(--latar);
+  color: var(--teks-lembut);
+  border: 1px solid var(--garis);
+  font-weight: 600;
+}
 
 /* ---------- Tab Al-Quran ---------- */
 /* Bingkai mushaf mengambil hampir seluruh tinggi skrin yang tinggal selepas

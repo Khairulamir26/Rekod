@@ -354,14 +354,15 @@ CT.views.kehadiran = (function () {
        Lima tarikh dalam satu ayat menjadi satu blok teks yang sukar diimbas;
        sebagai cip, setiap tarikh berdiri sendiri dan boleh dibilang dengan
        pandangan. Tahun digugurkan kerana julat semester sudah tertera di
-       kepala senarai. */
+       kepala senarai. Cip sengaja dibiarkan senyap: lencana kiraan di atas
+       sudah membawa isyarat merah. */
     var tarikh = '';
     if (r.tidak) {
       tarikh =
         '<p class="kecil ringkas-label">Tarikh tidak hadir</p>' +
         '<div class="baris-lipat">' + r.tarikhTidak.map(function (t) {
           var p = u.pecah(t);
-          return '<span class="lencana lencana-merah">' +
+          return '<span class="lencana cip-tarikh">' +
             u.selamat(CT.jadual.namaHariPendek(u.hariMinggu(t))) + ' ' +
             u.selamat(('0' + p.hari).slice(-2) + '/' + ('0' + p.bulan).slice(-2)) +
             '</span>';

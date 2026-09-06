@@ -414,6 +414,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
   font-weight: 700;
 }
 .ringkas-perinci { margin-top: 10px; }
+/* Cip tarikh ialah data rujukan, bukan amaran. Lencana kiraan di sebelah nama
+   murid sudah merah; jika setiap tarikh turut merah, kad menjadi satu blok
+   merah dan tiada apa yang menonjol lagi. */
+.cip-tarikh {
+  background: var(--latar);
+  color: var(--teks-lembut);
+  border: 1px solid var(--garis);
+  font-weight: 600;
+}
 
 /* ---------- Tab Al-Quran ---------- */
 /* Bingkai mushaf mengambil hampir seluruh tinggi skrin yang tinggal selepas
@@ -3071,14 +3080,15 @@ CT.views.kehadiran = (function () {
        Lima tarikh dalam satu ayat menjadi satu blok teks yang sukar diimbas;
        sebagai cip, setiap tarikh berdiri sendiri dan boleh dibilang dengan
        pandangan. Tahun digugurkan kerana julat semester sudah tertera di
-       kepala senarai. */
+       kepala senarai. Cip sengaja dibiarkan senyap: lencana kiraan di atas
+       sudah membawa isyarat merah. */
     var tarikh = '';
     if (r.tidak) {
       tarikh =
         '<p class="kecil ringkas-label">Tarikh tidak hadir</p>' +
         '<div class="baris-lipat">' + r.tarikhTidak.map(function (t) {
           var p = u.pecah(t);
-          return '<span class="lencana lencana-merah">' +
+          return '<span class="lencana cip-tarikh">' +
             u.selamat(CT.jadual.namaHariPendek(u.hariMinggu(t))) + ' ' +
             u.selamat(('0' + p.hari).slice(-2) + '/' + ('0' + p.bulan).slice(-2)) +
             '</span>';
@@ -4626,7 +4636,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.9.2';
+  CT.VERSI = '1.9.3';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
