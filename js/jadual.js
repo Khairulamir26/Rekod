@@ -15,11 +15,16 @@ window.CT = window.CT || {};
 
   /* Indeks sepadan dengan Date.getUTCDay(): 0 = Ahad. */
   var NAMA_HARI = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+  var NAMA_HARI_PENDEK = ['Ahd', 'Isn', 'Sel', 'Rab', 'Kha', 'Jum', 'Sab'];
 
   var HARI_DIPLOMA = [1, 2, 3, 4, 5];      // Isnin hingga Jumaat
 
   function namaHari(n) {
     return NAMA_HARI[n] === undefined ? '-' : NAMA_HARI[n];
+  }
+
+  function namaHariPendek(n) {
+    return NAMA_HARI_PENDEK[n] === undefined ? '-' : NAMA_HARI_PENDEK[n];
   }
 
   function programMurid(m) {
@@ -66,8 +71,10 @@ window.CT = window.CT || {};
 
   CT.jadual = {
     NAMA_HARI: NAMA_HARI,
+    NAMA_HARI_PENDEK: NAMA_HARI_PENDEK,
     HARI_DIPLOMA: HARI_DIPLOMA,
     namaHari: namaHari,
+    namaHariPendek: namaHariPendek,
     hariIjazah: hariIjazah,
     perluHari: perluHari,
     hariKelas: hariKelas,

@@ -385,6 +385,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* Kad ringkasan ketidakhadiran semester: label kecil di atas deretan cip
+   tarikh, kemudian pecahan dimaklum di bawahnya. Lencana kiraan disejajarkan
+   ke atas supaya ia tidak terapung di tengah apabila baris maklumat murid
+   membalut kepada dua baris. */
+.ringkas-kepala { align-items: flex-start; }
+.ringkas-label {
+  margin-top: 12px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-size: .72rem;
+  font-weight: 700;
+}
+.ringkas-perinci { margin-top: 10px; }
+
 /* ---------- Tab Al-Quran ---------- */
 /* Bingkai mushaf mengambil hampir seluruh tinggi skrin yang tinggal selepas
    bar tajuk, kawalan juz dan navigasi bawah. 100dvh digunakan supaya bar

@@ -350,16 +350,27 @@ CT.views.kehadiran = (function () {
       ? '<span class="lencana lencana-merah">' + r.tidak + ' tidak hadir</span>'
       : '<span class="lencana">Kehadiran penuh</span>';
 
+    /* Tarikh dipaparkan sebagai cip berasingan, bukan satu baris berkoma.
+       Lima tarikh dalam satu ayat menjadi satu blok teks yang sukar diimbas;
+       sebagai cip, setiap tarikh berdiri sendiri dan boleh dibilang dengan
+       pandangan. Tahun digugurkan kerana julat semester sudah tertera di
+       kepala senarai. */
+    var tarikh = '';
+    if (r.tidak) {
+      tarikh =
+        '<p class="kecil ringkas-label">Tarikh tidak hadir</p>' +
+        '<div class="baris-lipat">' + r.tarikhTidak.map(function (t) {
+          var p = u.pecah(t);
+          return '<span class="lencana lencana-merah">' +
+            u.selamat(CT.jadual.namaHariPendek(u.hariMinggu(t))) + ' ' +
+            u.selamat(('0' + p.hari).slice(-2) + '/' + ('0' + p.bulan).slice(-2)) +
+            '</span>';
+        }).join('') + '</div>';
+    }
+
     var perinci = '';
     if (r.tidak) {
-      /* Tarikh didahulukan: itu soalan pertama guru apabila membuka kad ini.
-         Nama hari disertakan supaya corak seperti "sentiasa hari Khamis"
-         kelihatan tanpa perlu membuka kalendar. */
-      perinci = 'Tarikh tidak hadir: <b>' + r.tarikhTidak.map(function (t) {
-        return u.selamat(CT.jadual.namaHari(u.hariMinggu(t)) + ' ' + u.tarikhRingkas(t));
-      }).join('</b>, <b>') + '</b>';
-
-      perinci += '<br><b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
+      perinci = '<b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
         r.dimaklum + '</b> dimaklum';
       var belumMaklum = r.tidak - r.dimaklum - r.tidakDimaklum;
       if (belumMaklum) {
@@ -374,13 +385,14 @@ CT.views.kehadiran = (function () {
     }
 
     kad.innerHTML =
-      '<div class="baris-antara">' +
+      '<div class="baris-antara ringkas-kepala">' +
       '<span class="tumbuh">' +
       '<span class="murid-nama">' + u.selamat(r.murid.nama) + '</span><br>' +
       '<span class="kecil">' + u.selamat(r.murid.matrik || 'Tiada matrik') +
       ' &middot; ' + r.kelas + ' kelas &middot; ' + r.peratus + '% hadir</span>' +
       '</span>' + lencana + '</div>' +
-      (perinci ? '<p class="kecil jarak-atas">' + perinci + '</p>' : '');
+      tarikh +
+      (perinci ? '<p class="kecil ringkas-perinci">' + perinci + '</p>' : '');
     return kad;
   }
 
