@@ -129,13 +129,23 @@ CT.views.sukatan = (function () {
     /* Tetapan semester */
     var kadSemester = document.createElement('div');
     kadSemester.className = 'kad';
+    var mula = CT.store.tetapan().tarikhMulaSemester || '';
     kadSemester.innerHTML =
       '<p class="seksyen-tajuk">Hari terakhir semester</p>' +
       '<div class="medan" style="margin-bottom:8px">' +
       '<input type="date" id="sk-akhir" value="' + u.selamat(akhir) + '" aria-label="Hari terakhir semester">' +
       '</div>' +
       '<p class="kecil">' + u.selamat(u.tarikhPenuh(akhir)) + ' &middot; <b>' +
-      hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>';
+      hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>' +
+
+      /* Hari pertama menentukan julat kiraan ketidakhadiran semester dalam tab
+         Kehadiran. Jika dibiarkan kosong, kiraan bermula pada hari kehadiran
+         mula-mula diambil, jadi ia tetap betul tanpa perlu diisi. */
+      '<p class="seksyen-tajuk" style="margin-top:16px">Hari pertama semester</p>' +
+      '<div class="medan" style="margin-bottom:8px">' +
+      '<input type="date" id="sk-mula" value="' + u.selamat(mula) + '" aria-label="Hari pertama semester">' +
+      '</div>' +
+      '<p class="kecil" id="sk-mula-nota"></p>';
 
     var medanAkhir = kadSemester.querySelector('#sk-akhir');
     CT.ui.hiasTarikh(medanAkhir);      // paparkan format tarikh Malaysia
@@ -145,6 +155,25 @@ CT.views.sukatan = (function () {
         CT.ui.toast('Hari terakhir semester dikemas kini.');
         CT.app.segarSemula();
       }
+    });
+
+    var medanMula = kadSemester.querySelector('#sk-mula');
+    var notaMula = kadSemester.querySelector('#sk-mula-nota');
+    CT.ui.hiasTarikh(medanMula);
+    notaMula.innerHTML = mula
+      ? u.selamat(u.tarikhPenuh(mula)) + ' &middot; digunakan untuk kiraan ketidakhadiran semester.'
+      : 'Belum ditetapkan. Kiraan ketidakhadiran bermula pada hari kehadiran ' +
+        'mula-mula diambil.';
+    medanMula.addEventListener('change', function () {
+      if (!u.sahKunci(medanMula.value)) { return; }
+      if (medanMula.value > CT.sukatan.tarikhAkhir()) {
+        CT.ui.toast('Hari pertama tidak boleh selepas hari terakhir semester.');
+        medanMula.value = mula;
+        return;
+      }
+      CT.store.simpanTetapan({ tarikhMulaSemester: medanMula.value });
+      CT.ui.toast('Hari pertama semester dikemas kini.');
+      CT.app.segarSemula();
     });
     skrin.appendChild(kadSemester);
 

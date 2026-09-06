@@ -1968,6 +1968,102 @@ window.CT = window.CT || {};
 </script>
 
 <script>
+/* js/ringkasan.js */
+/* e-Dawam — ringkasan kehadiran sepanjang semester.
+
+   Tiada data baharu disimpan di sini. Semua nombor dikira semula daripada
+   rekod kehadiran harian yang sedia ada, jadi ia tidak boleh menjadi lari
+   daripada apa yang guru betul-betul tanda setiap hari.
+
+   Dua peraturan penting:
+
+   1. Hanya hari yang kehadiran benar-benar diambil dikira. Kalau guru
+      terlepas mengambil kehadiran pada satu hari, hari itu tidak dikira
+      langsung — bukan dikira semua murid tidak hadir.
+   2. Hanya hari murid itu ada kelas dikira (lihat js/jadual.js). Pelajar
+      Ijazah berkelas sekali seminggu, jadi denominatornya lebih kecil dan
+      satu ketidakhadiran memberi kesan yang jauh lebih besar. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  /* Tarikh mula semester: tetapan guru jika ada, jika tidak tarikh kehadiran
+     terawal yang pernah direkod. Dengan itu ringkasan sudah betul sejak hari
+     pertama tanpa guru perlu menetapkan apa-apa. */
+  function julat() {
+    var tetapan = CT.store.tetapan();
+    var akhir = CT.sukatan.tarikhAkhir();
+    var tarikh = CT.store.tarikhAdaKehadiran().sort();
+    var mula = tetapan.tarikhMulaSemester;
+
+    if (!CT.util.sahKunci(mula)) { mula = tarikh.length ? tarikh[0] : null; }
+    return { mula: mula, akhir: akhir };
+  }
+
+  /* Tarikh yang kehadiran benar-benar diambil dalam julat semester. Tarikh
+     yang disimpan tanpa seorang pun ditanda tidak dikira sebagai kelas. */
+  function tarikhDiambil() {
+    var j = julat();
+    if (!j.mula) { return []; }
+    return CT.store.tarikhAdaKehadiran().filter(function (t) {
+      if (t < j.mula || t > j.akhir) { return false; }
+      return Object.keys(CT.store.kehadiranTarikh(t)).length > 0;
+    }).sort();
+  }
+
+  function untukMurid(murid, senaraiTarikh) {
+    var tarikh = senaraiTarikh || tarikhDiambil();
+    var hasil = {
+      kelas: 0, hadir: 0, tidak: 0, belum: 0,
+      dimaklum: 0, tidakDimaklum: 0, tarikhTidak: []
+    };
+
+    tarikh.forEach(function (t) {
+      if (!CT.jadual.adaKelas(murid, t)) { return; }   // dia tiada kelas hari itu
+      hasil.kelas++;
+
+      var nilai = CT.store.kehadiranTarikh(t)[murid.id];
+      if (nilai === 'hadir') { hasil.hadir++; return; }
+      if (nilai !== 'tidak') { hasil.belum++; return; }
+
+      hasil.tidak++;
+      hasil.tarikhTidak.push(t);
+      var b = CT.store.butiranMurid(t, murid.id) || {};
+      if (b.maklum === 'dimaklum') { hasil.dimaklum++; }
+      else if (b.maklum === 'tidak-dimaklum') { hasil.tidakDimaklum++; }
+    });
+
+    hasil.peratus = hasil.kelas ? Math.round((hasil.hadir / hasil.kelas) * 100) : 0;
+    return hasil;
+  }
+
+  /* Semua murid, disusun supaya yang paling banyak tidak hadir berada di atas.
+     Nama menjadi pemutus apabila bilangannya sama. */
+  function semuaMurid() {
+    var tarikh = tarikhDiambil();
+    return CT.store.senaraiMurid().map(function (m) {
+      var r = untukMurid(m, tarikh);
+      r.murid = m;
+      return r;
+    }).sort(function (a, b) {
+      if (b.tidak !== a.tidak) { return b.tidak - a.tidak; }
+      return String(a.murid.nama || '').localeCompare(String(b.murid.nama || ''), 'ms');
+    });
+  }
+
+  CT.ringkasan = {
+    julat: julat,
+    tarikhDiambil: tarikhDiambil,
+    untukMurid: untukMurid,
+    semuaMurid: semuaMurid
+  };
+})();
+
+</script>
+
+<script>
 /* js/ui.js */
 /* e-Dawam — komponen antara muka yang dikongsi (toast, lapisan, pemilih tarikh). */
 
@@ -2817,6 +2913,10 @@ CT.views.kehadiran = (function () {
         'Tiada murid berjadual pada tarikh ini, jadi tiada kehadiran perlu diambil.');
       tiadaKelas.classList.add('jarak-atas');
       skrin.appendChild(tiadaKelas);
+      /* Pautan bawah tetap dipaparkan: ringkasan semester berguna pada
+         hari cuti juga, dan guru sepatutnya tidak perlu menukar tarikh
+         dahulu semata-mata untuk membukanya. */
+      pautanBawah(skrin);
       return;
     }
 
@@ -2893,6 +2993,12 @@ CT.views.kehadiran = (function () {
 
     skrin.appendChild(bar);
 
+    pautanBawah(skrin);
+  }
+
+  /* Dua pautan di bawah tab, dipaparkan sama ada ada kelas pada hari itu
+     atau tidak. */
+  function pautanBawah(skrin) {
     var pautan = document.createElement('button');
     pautan.type = 'button';
     pautan.className = 'butang butang-lembut butang-penuh jarak-atas';
@@ -2901,6 +3007,98 @@ CT.views.kehadiran = (function () {
       CT.app.pergi('rekod', { tarikh: tarikh });
     });
     skrin.appendChild(pautan);
+
+    var pautanRingkas = document.createElement('button');
+    pautanRingkas.type = 'button';
+    pautanRingkas.className = 'butang butang-lembut butang-penuh jarak-atas';
+    pautanRingkas.textContent = 'Jumlah tidak hadir sepanjang semester';
+    pautanRingkas.addEventListener('click', bukaRingkasan);
+    skrin.appendChild(pautanRingkas);
+  }
+
+  /* ---------- Ringkasan ketidakhadiran sepanjang semester ---------- */
+  function kadRingkasan(r) {
+    var kad = document.createElement('div');
+    kad.className = 'kad kad-rapat';
+
+    var lencana = r.tidak
+      ? '<span class="lencana lencana-merah">' + r.tidak + ' tidak hadir</span>'
+      : '<span class="lencana">Kehadiran penuh</span>';
+
+    var perinci = '';
+    if (r.tidak) {
+      perinci = '<b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
+        r.dimaklum + '</b> dimaklum';
+      var belumMaklum = r.tidak - r.dimaklum - r.tidakDimaklum;
+      if (belumMaklum) { perinci += ' &middot; <b>' + belumMaklum + '</b> belum ditanda'; }
+      perinci += '<br>' + r.tarikhTidak.map(function (t) {
+        return u.selamat(u.tarikhRingkas(t));
+      }).join(', ');
+    }
+    /* Hari yang kelas diambil tetapi murid ini langsung tidak ditanda. Ia
+       bukan ketidakhadiran — ia rekod yang belum lengkap. */
+    if (r.belum) {
+      perinci += (perinci ? '<br>' : '') + '<b>' + r.belum +
+        '</b> hari belum ditanda langsung.';
+    }
+
+    kad.innerHTML =
+      '<div class="baris-antara">' +
+      '<span class="tumbuh">' +
+      '<span class="murid-nama">' + u.selamat(r.murid.nama) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(r.murid.matrik || 'Tiada matrik') +
+      ' &middot; ' + r.kelas + ' kelas &middot; ' + r.peratus + '% hadir</span>' +
+      '</span>' + lencana + '</div>' +
+      (perinci ? '<p class="kecil jarak-atas">' + perinci + '</p>' : '');
+    return kad;
+  }
+
+  function bukaRingkasan() {
+    var kotak = document.createElement('div');
+    var j = CT.ringkasan.julat();
+    var bilTarikh = CT.ringkasan.tarikhDiambil().length;
+
+    if (!bilTarikh) {
+      kotak.appendChild(CT.ui.kosong('Belum ada kehadiran direkod',
+        'Ambil kehadiran sekurang-kurangnya sekali sebelum ringkasan semester ' +
+        'boleh dikira.'));
+      CT.ui.bukaLapisan('Ketidakhadiran Semester', kotak);
+      return;
+    }
+
+    var julat = document.createElement('p');
+    julat.className = 'kecil';
+    julat.style.marginBottom = '14px';
+    julat.innerHTML = u.selamat(u.tarikhRingkas(j.mula)) + ' hingga ' +
+      u.selamat(u.tarikhRingkas(j.akhir)) + ' &middot; <b>' + bilTarikh +
+      '</b> hari kehadiran diambil. Hari yang kehadiran tidak diambil tidak dikira.';
+    kotak.appendChild(julat);
+
+    var semua = CT.ringkasan.semuaMurid();
+
+    KUMPULAN.forEach(function (kunci) {
+      var ahli = semua.filter(function (r) { return kunciProgram(r.murid) === kunci; });
+      if (!ahli.length) { return; }
+
+      var kumpulan = document.createElement('div');
+      kumpulan.className = 'kumpulan';
+
+      var jumlahTidak = ahli.reduce(function (n, r) { return n + r.tidak; }, 0);
+      var tajuk = document.createElement('p');
+      tajuk.className = 'seksyen-tajuk';
+      tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' +
+        jumlahTidak + ' ketidakhadiran';
+      kumpulan.appendChild(tajuk);
+
+      var senarai = document.createElement('div');
+      senarai.className = 'senarai';
+      ahli.forEach(function (r) { senarai.appendChild(kadRingkasan(r)); });
+      kumpulan.appendChild(senarai);
+
+      kotak.appendChild(kumpulan);
+    });
+
+    CT.ui.bukaLapisan('Ketidakhadiran Semester', kotak);
   }
 
   function tetapTarikh(baru) {
@@ -3686,13 +3884,23 @@ CT.views.sukatan = (function () {
     /* Tetapan semester */
     var kadSemester = document.createElement('div');
     kadSemester.className = 'kad';
+    var mula = CT.store.tetapan().tarikhMulaSemester || '';
     kadSemester.innerHTML =
       '<p class="seksyen-tajuk">Hari terakhir semester</p>' +
       '<div class="medan" style="margin-bottom:8px">' +
       '<input type="date" id="sk-akhir" value="' + u.selamat(akhir) + '" aria-label="Hari terakhir semester">' +
       '</div>' +
       '<p class="kecil">' + u.selamat(u.tarikhPenuh(akhir)) + ' &middot; <b>' +
-      hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>';
+      hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>' +
+
+      /* Hari pertama menentukan julat kiraan ketidakhadiran semester dalam tab
+         Kehadiran. Jika dibiarkan kosong, kiraan bermula pada hari kehadiran
+         mula-mula diambil, jadi ia tetap betul tanpa perlu diisi. */
+      '<p class="seksyen-tajuk" style="margin-top:16px">Hari pertama semester</p>' +
+      '<div class="medan" style="margin-bottom:8px">' +
+      '<input type="date" id="sk-mula" value="' + u.selamat(mula) + '" aria-label="Hari pertama semester">' +
+      '</div>' +
+      '<p class="kecil" id="sk-mula-nota"></p>';
 
     var medanAkhir = kadSemester.querySelector('#sk-akhir');
     CT.ui.hiasTarikh(medanAkhir);      // paparkan format tarikh Malaysia
@@ -3702,6 +3910,25 @@ CT.views.sukatan = (function () {
         CT.ui.toast('Hari terakhir semester dikemas kini.');
         CT.app.segarSemula();
       }
+    });
+
+    var medanMula = kadSemester.querySelector('#sk-mula');
+    var notaMula = kadSemester.querySelector('#sk-mula-nota');
+    CT.ui.hiasTarikh(medanMula);
+    notaMula.innerHTML = mula
+      ? u.selamat(u.tarikhPenuh(mula)) + ' &middot; digunakan untuk kiraan ketidakhadiran semester.'
+      : 'Belum ditetapkan. Kiraan ketidakhadiran bermula pada hari kehadiran ' +
+        'mula-mula diambil.';
+    medanMula.addEventListener('change', function () {
+      if (!u.sahKunci(medanMula.value)) { return; }
+      if (medanMula.value > CT.sukatan.tarikhAkhir()) {
+        CT.ui.toast('Hari pertama tidak boleh selepas hari terakhir semester.');
+        medanMula.value = mula;
+        return;
+      }
+      CT.store.simpanTetapan({ tarikhMulaSemester: medanMula.value });
+      CT.ui.toast('Hari pertama semester dikemas kini.');
+      CT.app.segarSemula();
     });
     skrin.appendChild(kadSemester);
 
@@ -4377,7 +4604,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.7.2';
+  CT.VERSI = '1.8.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

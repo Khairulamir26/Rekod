@@ -238,6 +238,10 @@ CT.views.kehadiran = (function () {
         'Tiada murid berjadual pada tarikh ini, jadi tiada kehadiran perlu diambil.');
       tiadaKelas.classList.add('jarak-atas');
       skrin.appendChild(tiadaKelas);
+      /* Pautan bawah tetap dipaparkan: ringkasan semester berguna pada
+         hari cuti juga, dan guru sepatutnya tidak perlu menukar tarikh
+         dahulu semata-mata untuk membukanya. */
+      pautanBawah(skrin);
       return;
     }
 
@@ -314,6 +318,12 @@ CT.views.kehadiran = (function () {
 
     skrin.appendChild(bar);
 
+    pautanBawah(skrin);
+  }
+
+  /* Dua pautan di bawah tab, dipaparkan sama ada ada kelas pada hari itu
+     atau tidak. */
+  function pautanBawah(skrin) {
     var pautan = document.createElement('button');
     pautan.type = 'button';
     pautan.className = 'butang butang-lembut butang-penuh jarak-atas';
@@ -322,6 +332,98 @@ CT.views.kehadiran = (function () {
       CT.app.pergi('rekod', { tarikh: tarikh });
     });
     skrin.appendChild(pautan);
+
+    var pautanRingkas = document.createElement('button');
+    pautanRingkas.type = 'button';
+    pautanRingkas.className = 'butang butang-lembut butang-penuh jarak-atas';
+    pautanRingkas.textContent = 'Jumlah tidak hadir sepanjang semester';
+    pautanRingkas.addEventListener('click', bukaRingkasan);
+    skrin.appendChild(pautanRingkas);
+  }
+
+  /* ---------- Ringkasan ketidakhadiran sepanjang semester ---------- */
+  function kadRingkasan(r) {
+    var kad = document.createElement('div');
+    kad.className = 'kad kad-rapat';
+
+    var lencana = r.tidak
+      ? '<span class="lencana lencana-merah">' + r.tidak + ' tidak hadir</span>'
+      : '<span class="lencana">Kehadiran penuh</span>';
+
+    var perinci = '';
+    if (r.tidak) {
+      perinci = '<b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
+        r.dimaklum + '</b> dimaklum';
+      var belumMaklum = r.tidak - r.dimaklum - r.tidakDimaklum;
+      if (belumMaklum) { perinci += ' &middot; <b>' + belumMaklum + '</b> belum ditanda'; }
+      perinci += '<br>' + r.tarikhTidak.map(function (t) {
+        return u.selamat(u.tarikhRingkas(t));
+      }).join(', ');
+    }
+    /* Hari yang kelas diambil tetapi murid ini langsung tidak ditanda. Ia
+       bukan ketidakhadiran — ia rekod yang belum lengkap. */
+    if (r.belum) {
+      perinci += (perinci ? '<br>' : '') + '<b>' + r.belum +
+        '</b> hari belum ditanda langsung.';
+    }
+
+    kad.innerHTML =
+      '<div class="baris-antara">' +
+      '<span class="tumbuh">' +
+      '<span class="murid-nama">' + u.selamat(r.murid.nama) + '</span><br>' +
+      '<span class="kecil">' + u.selamat(r.murid.matrik || 'Tiada matrik') +
+      ' &middot; ' + r.kelas + ' kelas &middot; ' + r.peratus + '% hadir</span>' +
+      '</span>' + lencana + '</div>' +
+      (perinci ? '<p class="kecil jarak-atas">' + perinci + '</p>' : '');
+    return kad;
+  }
+
+  function bukaRingkasan() {
+    var kotak = document.createElement('div');
+    var j = CT.ringkasan.julat();
+    var bilTarikh = CT.ringkasan.tarikhDiambil().length;
+
+    if (!bilTarikh) {
+      kotak.appendChild(CT.ui.kosong('Belum ada kehadiran direkod',
+        'Ambil kehadiran sekurang-kurangnya sekali sebelum ringkasan semester ' +
+        'boleh dikira.'));
+      CT.ui.bukaLapisan('Ketidakhadiran Semester', kotak);
+      return;
+    }
+
+    var julat = document.createElement('p');
+    julat.className = 'kecil';
+    julat.style.marginBottom = '14px';
+    julat.innerHTML = u.selamat(u.tarikhRingkas(j.mula)) + ' hingga ' +
+      u.selamat(u.tarikhRingkas(j.akhir)) + ' &middot; <b>' + bilTarikh +
+      '</b> hari kehadiran diambil. Hari yang kehadiran tidak diambil tidak dikira.';
+    kotak.appendChild(julat);
+
+    var semua = CT.ringkasan.semuaMurid();
+
+    KUMPULAN.forEach(function (kunci) {
+      var ahli = semua.filter(function (r) { return kunciProgram(r.murid) === kunci; });
+      if (!ahli.length) { return; }
+
+      var kumpulan = document.createElement('div');
+      kumpulan.className = 'kumpulan';
+
+      var jumlahTidak = ahli.reduce(function (n, r) { return n + r.tidak; }, 0);
+      var tajuk = document.createElement('p');
+      tajuk.className = 'seksyen-tajuk';
+      tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' +
+        jumlahTidak + ' ketidakhadiran';
+      kumpulan.appendChild(tajuk);
+
+      var senarai = document.createElement('div');
+      senarai.className = 'senarai';
+      ahli.forEach(function (r) { senarai.appendChild(kadRingkasan(r)); });
+      kumpulan.appendChild(senarai);
+
+      kotak.appendChild(kumpulan);
+    });
+
+    CT.ui.bukaLapisan('Ketidakhadiran Semester', kotak);
   }
 
   function tetapTarikh(baru) {
