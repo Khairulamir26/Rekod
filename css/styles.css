@@ -5,6 +5,11 @@
   --hijau: #1c7f6b;
   --hijau-gelap: #14614f;
   --hijau-muda: #e2f3ee;
+  /* Hijau jenama dinaikkan sedikit kroma khusus untuk isian carta. Pada
+     #1c7f6b isian hijau bersebelahan isian merah gagal ambang kroma dan mula
+     terbaca kelabu; #12876b lulus kesemua semakan dan mata tidak dapat
+     membezakannya daripada hijau jenama. */
+  --hijau-carta: #12876b;
   --emas: #f5b301;
   --merah: #d92b3d;
   --merah-muda: #fdecee;
@@ -385,6 +390,36 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* ---------- Graf prestasi sukatan ---------- */
+/* Satu bar berkadar dua segmen. Jurang 2px berwarna permukaan memisahkan
+   segmen supaya sempadan antara habis dan belum habis tidak bergantung pada
+   warna semata-mata. */
+.graf-bar {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  margin: 10px 0 12px;
+}
+.graf-segmen { border-radius: 4px; min-width: 4px; }
+.graf-habis { background: var(--hijau-carta); }
+.graf-belum { background: var(--merah); }
+.graf-baris {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .85rem;
+  padding: 3px 0;
+}
+.graf-baris + .graf-baris { border-top: 1px solid var(--garis); }
+.graf-tanda {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.graf-nama { flex: 1 1 auto; color: var(--teks); }
+.graf-nilai { flex: 0 0 auto; font-weight: 700; }
+
 /* Kad ringkasan ketidakhadiran semester: label kecil di atas deretan cip
    tarikh, kemudian pecahan dimaklum di bawahnya. Lencana kiraan disejajarkan
    ke atas supaya ia tidak terapung di tengah apabila baris maklumat murid
@@ -677,7 +712,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   overflow: hidden;
   background: transparent;
 }
-.sk-sudah { flex: 0 0 auto; background: var(--hijau); }
+.sk-sudah { flex: 0 0 auto; background: var(--hijau-carta); }
 .sk-baki { flex: 1 1 0; min-width: 0; background: #c5dad3; }
 .sk-trek > :first-child { border-radius: 4px 0 0 4px; }
 .sk-trek > :last-child { border-radius: 0 4px 4px 0; }
@@ -695,7 +730,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sk-petunjuk { display: flex; flex-wrap: wrap; gap: 14px; font-size: .75rem; color: var(--teks-lembut); }
 .sk-petunjuk span { display: inline-flex; align-items: center; gap: 6px; }
 .sk-petunjuk i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-.sk-warna-sudah { background: var(--hijau); }
+.sk-warna-sudah { background: var(--hijau-carta); }
 .sk-warna-baki { background: #c5dad3; }
 .sk-skala {
   display: flex;

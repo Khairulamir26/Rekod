@@ -20,6 +20,11 @@
   --hijau: #1c7f6b;
   --hijau-gelap: #14614f;
   --hijau-muda: #e2f3ee;
+  /* Hijau jenama dinaikkan sedikit kroma khusus untuk isian carta. Pada
+     #1c7f6b isian hijau bersebelahan isian merah gagal ambang kroma dan mula
+     terbaca kelabu; #12876b lulus kesemua semakan dan mata tidak dapat
+     membezakannya daripada hijau jenama. */
+  --hijau-carta: #12876b;
   --emas: #f5b301;
   --merah: #d92b3d;
   --merah-muda: #fdecee;
@@ -400,6 +405,36 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* ---------- Graf prestasi sukatan ---------- */
+/* Satu bar berkadar dua segmen. Jurang 2px berwarna permukaan memisahkan
+   segmen supaya sempadan antara habis dan belum habis tidak bergantung pada
+   warna semata-mata. */
+.graf-bar {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+  margin: 10px 0 12px;
+}
+.graf-segmen { border-radius: 4px; min-width: 4px; }
+.graf-habis { background: var(--hijau-carta); }
+.graf-belum { background: var(--merah); }
+.graf-baris {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .85rem;
+  padding: 3px 0;
+}
+.graf-baris + .graf-baris { border-top: 1px solid var(--garis); }
+.graf-tanda {
+  flex: 0 0 auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+.graf-nama { flex: 1 1 auto; color: var(--teks); }
+.graf-nilai { flex: 0 0 auto; font-weight: 700; }
+
 /* Kad ringkasan ketidakhadiran semester: label kecil di atas deretan cip
    tarikh, kemudian pecahan dimaklum di bawahnya. Lencana kiraan disejajarkan
    ke atas supaya ia tidak terapung di tengah apabila baris maklumat murid
@@ -692,7 +727,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   overflow: hidden;
   background: transparent;
 }
-.sk-sudah { flex: 0 0 auto; background: var(--hijau); }
+.sk-sudah { flex: 0 0 auto; background: var(--hijau-carta); }
 .sk-baki { flex: 1 1 0; min-width: 0; background: #c5dad3; }
 .sk-trek > :first-child { border-radius: 4px 0 0 4px; }
 .sk-trek > :last-child { border-radius: 0 4px 4px 0; }
@@ -710,7 +745,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .sk-petunjuk { display: flex; flex-wrap: wrap; gap: 14px; font-size: .75rem; color: var(--teks-lembut); }
 .sk-petunjuk span { display: inline-flex; align-items: center; gap: 6px; }
 .sk-petunjuk i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-.sk-warna-sudah { background: var(--hijau); }
+.sk-warna-sudah { background: var(--hijau-carta); }
 .sk-warna-baki { background: #c5dad3; }
 .sk-skala {
   display: flex;
@@ -3839,6 +3874,7 @@ CT.views.sukatan = (function () {
      kekal sepanjang sesi selepas dia menukarnya. */
   var tapisProgram = 'diploma';
   var paparJadual = false;
+  var paparGraf = false;
 
   function lencanaStatus(status) {
     var kelas = {
@@ -3925,6 +3961,55 @@ CT.views.sukatan = (function () {
       d.sudah + ' halaman daripada ' + d.jumlah + ', baki ' + d.baki + ' halaman.');
     baris.addEventListener('click', function () { bukaButiran(d); });
     return baris;
+  }
+
+  /* ---------- Graf prestasi: habis lawan belum habis ----------
+     Satu bar berkadar, bukan carta pai: perbandingan panjang lebih mudah
+     dibaca daripada perbandingan sudut, dan satu bar muat pada telefon tanpa
+     mengecilkan apa-apa. "Habis" bermaksud baki sifar, definisi yang sama
+     dengan petak "Belum cukup" di atas, jadi graf ini tidak boleh bercanggah
+     dengan angka itu. */
+  function graf(senarai) {
+    var jumlah = senarai.length;
+    var habis = senarai.filter(function (d) { return d.baki <= 0; }).length;
+    var belum = jumlah - habis;
+
+    /* Peratus kedua dikira daripada yang pertama supaya kedua-duanya
+       sentiasa berjumlah 100 walaupun selepas pembundaran. */
+    var peratusHabis = jumlah ? Math.round((habis / jumlah) * 100) : 0;
+    var peratusBelum = jumlah ? 100 - peratusHabis : 0;
+
+    var kotak = document.createElement('div');
+    kotak.className = 'kad jarak-atas';
+
+    /* Segmen berukuran sifar ditinggalkan supaya tiada jalur nipis tergantung
+       pada hujung bar apabila semua murid berada di satu pihak. */
+    var bar = '';
+    if (habis) {
+      bar += '<span class="graf-segmen graf-habis" style="flex:' + habis + '"></span>';
+    }
+    if (belum) {
+      bar += '<span class="graf-segmen graf-belum" style="flex:' + belum + '"></span>';
+    }
+
+    function baris(kelas, nama, bilangan, peratus) {
+      return '<div class="graf-baris">' +
+        '<i class="graf-tanda ' + kelas + '"></i>' +
+        '<span class="graf-nama">' + nama + '</span>' +
+        '<span class="graf-nilai">' + bilangan + ' murid &middot; ' + peratus + '%</span>' +
+        '</div>';
+    }
+
+    kotak.innerHTML =
+      '<p class="seksyen-tajuk">Prestasi sukatan</p>' +
+      '<div class="graf-bar" role="img" aria-label="' +
+      u.selamat(habis + ' daripada ' + jumlah + ' murid sudah habis sukatan (' +
+        peratusHabis + '%), ' + belum + ' murid belum habis (' + peratusBelum + '%).') +
+      '">' + bar + '</div>' +
+      baris('graf-habis', 'Habis sukatan', habis, peratusHabis) +
+      baris('graf-belum', 'Belum habis', belum, peratusBelum);
+
+    return kotak;
   }
 
   /* ---------- Jadual data ---------- */
@@ -4087,18 +4172,34 @@ CT.views.sukatan = (function () {
       skalaMaks + ' halaman</span>';
     carta.appendChild(skala);
 
+    var barisTogol = document.createElement('div');
+    barisTogol.className = 'baris-lipat jarak-atas';
+
     var togol = document.createElement('button');
     togol.type = 'button';
-    togol.className = 'butang butang-luar butang-kecil jarak-atas';
+    togol.className = 'butang butang-luar butang-kecil';
     togol.textContent = paparJadual ? 'Sembunyikan jadual' : 'Lihat jadual';
     togol.addEventListener('click', function () {
       paparJadual = !paparJadual;
       CT.app.segarSemula();
     });
-    carta.appendChild(togol);
+    barisTogol.appendChild(togol);
+
+    var togolGraf = document.createElement('button');
+    togolGraf.type = 'button';
+    togolGraf.className = 'butang butang-luar butang-kecil';
+    togolGraf.textContent = paparGraf ? 'Sembunyikan graf' : 'Lihat graf';
+    togolGraf.addEventListener('click', function () {
+      paparGraf = !paparGraf;
+      CT.app.segarSemula();
+    });
+    barisTogol.appendChild(togolGraf);
+
+    carta.appendChild(barisTogol);
 
     skrin.appendChild(carta);
 
+    if (paparGraf) { skrin.appendChild(graf(senarai)); }
     if (paparJadual) { skrin.appendChild(jadual(senarai)); }
 
     if (tiadaSukatan.length) {
@@ -4607,7 +4708,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.9.5';
+  CT.VERSI = '1.10.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];

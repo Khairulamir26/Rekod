@@ -15,6 +15,7 @@ CT.views.sukatan = (function () {
      kekal sepanjang sesi selepas dia menukarnya. */
   var tapisProgram = 'diploma';
   var paparJadual = false;
+  var paparGraf = false;
 
   function lencanaStatus(status) {
     var kelas = {
@@ -101,6 +102,55 @@ CT.views.sukatan = (function () {
       d.sudah + ' halaman daripada ' + d.jumlah + ', baki ' + d.baki + ' halaman.');
     baris.addEventListener('click', function () { bukaButiran(d); });
     return baris;
+  }
+
+  /* ---------- Graf prestasi: habis lawan belum habis ----------
+     Satu bar berkadar, bukan carta pai: perbandingan panjang lebih mudah
+     dibaca daripada perbandingan sudut, dan satu bar muat pada telefon tanpa
+     mengecilkan apa-apa. "Habis" bermaksud baki sifar, definisi yang sama
+     dengan petak "Belum cukup" di atas, jadi graf ini tidak boleh bercanggah
+     dengan angka itu. */
+  function graf(senarai) {
+    var jumlah = senarai.length;
+    var habis = senarai.filter(function (d) { return d.baki <= 0; }).length;
+    var belum = jumlah - habis;
+
+    /* Peratus kedua dikira daripada yang pertama supaya kedua-duanya
+       sentiasa berjumlah 100 walaupun selepas pembundaran. */
+    var peratusHabis = jumlah ? Math.round((habis / jumlah) * 100) : 0;
+    var peratusBelum = jumlah ? 100 - peratusHabis : 0;
+
+    var kotak = document.createElement('div');
+    kotak.className = 'kad jarak-atas';
+
+    /* Segmen berukuran sifar ditinggalkan supaya tiada jalur nipis tergantung
+       pada hujung bar apabila semua murid berada di satu pihak. */
+    var bar = '';
+    if (habis) {
+      bar += '<span class="graf-segmen graf-habis" style="flex:' + habis + '"></span>';
+    }
+    if (belum) {
+      bar += '<span class="graf-segmen graf-belum" style="flex:' + belum + '"></span>';
+    }
+
+    function baris(kelas, nama, bilangan, peratus) {
+      return '<div class="graf-baris">' +
+        '<i class="graf-tanda ' + kelas + '"></i>' +
+        '<span class="graf-nama">' + nama + '</span>' +
+        '<span class="graf-nilai">' + bilangan + ' murid &middot; ' + peratus + '%</span>' +
+        '</div>';
+    }
+
+    kotak.innerHTML =
+      '<p class="seksyen-tajuk">Prestasi sukatan</p>' +
+      '<div class="graf-bar" role="img" aria-label="' +
+      u.selamat(habis + ' daripada ' + jumlah + ' murid sudah habis sukatan (' +
+        peratusHabis + '%), ' + belum + ' murid belum habis (' + peratusBelum + '%).') +
+      '">' + bar + '</div>' +
+      baris('graf-habis', 'Habis sukatan', habis, peratusHabis) +
+      baris('graf-belum', 'Belum habis', belum, peratusBelum);
+
+    return kotak;
   }
 
   /* ---------- Jadual data ---------- */
@@ -263,18 +313,34 @@ CT.views.sukatan = (function () {
       skalaMaks + ' halaman</span>';
     carta.appendChild(skala);
 
+    var barisTogol = document.createElement('div');
+    barisTogol.className = 'baris-lipat jarak-atas';
+
     var togol = document.createElement('button');
     togol.type = 'button';
-    togol.className = 'butang butang-luar butang-kecil jarak-atas';
+    togol.className = 'butang butang-luar butang-kecil';
     togol.textContent = paparJadual ? 'Sembunyikan jadual' : 'Lihat jadual';
     togol.addEventListener('click', function () {
       paparJadual = !paparJadual;
       CT.app.segarSemula();
     });
-    carta.appendChild(togol);
+    barisTogol.appendChild(togol);
+
+    var togolGraf = document.createElement('button');
+    togolGraf.type = 'button';
+    togolGraf.className = 'butang butang-luar butang-kecil';
+    togolGraf.textContent = paparGraf ? 'Sembunyikan graf' : 'Lihat graf';
+    togolGraf.addEventListener('click', function () {
+      paparGraf = !paparGraf;
+      CT.app.segarSemula();
+    });
+    barisTogol.appendChild(togolGraf);
+
+    carta.appendChild(barisTogol);
 
     skrin.appendChild(carta);
 
+    if (paparGraf) { skrin.appendChild(graf(senarai)); }
     if (paparJadual) { skrin.appendChild(jadual(senarai)); }
 
     if (tiadaSukatan.length) {
