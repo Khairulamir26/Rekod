@@ -352,19 +352,25 @@ CT.views.kehadiran = (function () {
 
     var perinci = '';
     if (r.tidak) {
-      perinci = '<b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
+      /* Tarikh didahulukan: itu soalan pertama guru apabila membuka kad ini.
+         Nama hari disertakan supaya corak seperti "sentiasa hari Khamis"
+         kelihatan tanpa perlu membuka kalendar. */
+      perinci = 'Tarikh tidak hadir: <b>' + r.tarikhTidak.map(function (t) {
+        return u.selamat(CT.jadual.namaHari(u.hariMinggu(t)) + ' ' + u.tarikhRingkas(t));
+      }).join('</b>, <b>') + '</b>';
+
+      perinci += '<br><b>' + r.tidakDimaklum + '</b> tidak dimaklum &middot; <b>' +
         r.dimaklum + '</b> dimaklum';
       var belumMaklum = r.tidak - r.dimaklum - r.tidakDimaklum;
-      if (belumMaklum) { perinci += ' &middot; <b>' + belumMaklum + '</b> belum ditanda'; }
-      perinci += '<br>' + r.tarikhTidak.map(function (t) {
-        return u.selamat(u.tarikhRingkas(t));
-      }).join(', ');
+      if (belumMaklum) {
+        perinci += ' &middot; <b>' + belumMaklum + '</b> sebab belum ditanda';
+      }
     }
     /* Hari yang kelas diambil tetapi murid ini langsung tidak ditanda. Ia
        bukan ketidakhadiran — ia rekod yang belum lengkap. */
     if (r.belum) {
       perinci += (perinci ? '<br>' : '') + '<b>' + r.belum +
-        '</b> hari belum ditanda langsung.';
+        '</b> hari kelas belum ditanda kehadirannya.';
     }
 
     kad.innerHTML =
