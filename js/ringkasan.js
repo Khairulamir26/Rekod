@@ -18,17 +18,10 @@ window.CT = window.CT || {};
 (function () {
   'use strict';
 
-  /* Tarikh mula semester: tetapan guru jika ada, jika tidak tarikh kehadiran
-     terawal yang pernah direkod. Dengan itu ringkasan sudah betul sejak hari
-     pertama tanpa guru perlu menetapkan apa-apa. */
+  /* Julat semester datang daripada tab Sukatan, jadi ringkasan ini dan kiraan
+     baki sukatan sentiasa merujuk semester yang sama. */
   function julat() {
-    var tetapan = CT.store.tetapan();
-    var akhir = CT.sukatan.tarikhAkhir();
-    var tarikh = CT.store.tarikhAdaKehadiran().sort();
-    var mula = tetapan.tarikhMulaSemester;
-
-    if (!CT.util.sahKunci(mula)) { mula = tarikh.length ? tarikh[0] : null; }
-    return { mula: mula, akhir: akhir };
+    return { mula: CT.sukatan.tarikhMula(), akhir: CT.sukatan.tarikhAkhir() };
   }
 
   /* Tarikh yang kehadiran benar-benar diambil dalam julat semester. Tarikh

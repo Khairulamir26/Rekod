@@ -37,6 +37,9 @@ window.CT = window.CT || {};
     }
   };
 
+  /* Julat semester semasa. Guru boleh menggantikan kedua-duanya dalam tab
+     Sukatan; nilai ini hanya nilai lalai. */
+  var TARIKH_MULA_LALAI = '2026-06-22';
   var TARIKH_AKHIR_LALAI = '2026-09-25';
 
   function program(kunci) {
@@ -148,6 +151,10 @@ window.CT = window.CT || {};
     return Math.round(ms / 86400000);
   }
 
+  function tarikhMula() {
+    return CT.store.tetapan().tarikhMulaSemester || TARIKH_MULA_LALAI;
+  }
+
   function tarikhAkhir() {
     return CT.store.tetapan().tarikhAkhirSemester || TARIKH_AKHIR_LALAI;
   }
@@ -228,6 +235,7 @@ window.CT = window.CT || {};
     JUMLAH_HALAMAN: JUMLAH_HALAMAN,
     JUZ_MULA: JUZ_MULA,
     PROGRAM: PROGRAM,
+    TARIKH_MULA_LALAI: TARIKH_MULA_LALAI,
     TARIKH_AKHIR_LALAI: TARIKH_AKHIR_LALAI,
     program: program,
     namaTahap: namaTahap,
@@ -238,6 +246,7 @@ window.CT = window.CT || {};
     juzUntukHalaman: juzUntukHalaman,
     cadanganSambungan: cadanganSambungan,
     bezaHari: bezaHari,
+    tarikhMula: tarikhMula,
     tarikhAkhir: tarikhAkhir,
     kira: kira,
     kiraSemua: kiraSemua

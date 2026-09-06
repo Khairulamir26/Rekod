@@ -1675,6 +1675,9 @@ window.CT = window.CT || {};
     }
   };
 
+  /* Julat semester semasa. Guru boleh menggantikan kedua-duanya dalam tab
+     Sukatan; nilai ini hanya nilai lalai. */
+  var TARIKH_MULA_LALAI = '2026-06-22';
   var TARIKH_AKHIR_LALAI = '2026-09-25';
 
   function program(kunci) {
@@ -1786,6 +1789,10 @@ window.CT = window.CT || {};
     return Math.round(ms / 86400000);
   }
 
+  function tarikhMula() {
+    return CT.store.tetapan().tarikhMulaSemester || TARIKH_MULA_LALAI;
+  }
+
   function tarikhAkhir() {
     return CT.store.tetapan().tarikhAkhirSemester || TARIKH_AKHIR_LALAI;
   }
@@ -1866,6 +1873,7 @@ window.CT = window.CT || {};
     JUMLAH_HALAMAN: JUMLAH_HALAMAN,
     JUZ_MULA: JUZ_MULA,
     PROGRAM: PROGRAM,
+    TARIKH_MULA_LALAI: TARIKH_MULA_LALAI,
     TARIKH_AKHIR_LALAI: TARIKH_AKHIR_LALAI,
     program: program,
     namaTahap: namaTahap,
@@ -1876,6 +1884,7 @@ window.CT = window.CT || {};
     juzUntukHalaman: juzUntukHalaman,
     cadanganSambungan: cadanganSambungan,
     bezaHari: bezaHari,
+    tarikhMula: tarikhMula,
     tarikhAkhir: tarikhAkhir,
     kira: kira,
     kiraSemua: kiraSemua
@@ -1989,17 +1998,10 @@ window.CT = window.CT || {};
 (function () {
   'use strict';
 
-  /* Tarikh mula semester: tetapan guru jika ada, jika tidak tarikh kehadiran
-     terawal yang pernah direkod. Dengan itu ringkasan sudah betul sejak hari
-     pertama tanpa guru perlu menetapkan apa-apa. */
+  /* Julat semester datang daripada tab Sukatan, jadi ringkasan ini dan kiraan
+     baki sukatan sentiasa merujuk semester yang sama. */
   function julat() {
-    var tetapan = CT.store.tetapan();
-    var akhir = CT.sukatan.tarikhAkhir();
-    var tarikh = CT.store.tarikhAdaKehadiran().sort();
-    var mula = tetapan.tarikhMulaSemester;
-
-    if (!CT.util.sahKunci(mula)) { mula = tarikh.length ? tarikh[0] : null; }
-    return { mula: mula, akhir: akhir };
+    return { mula: CT.sukatan.tarikhMula(), akhir: CT.sukatan.tarikhAkhir() };
   }
 
   /* Tarikh yang kehadiran benar-benar diambil dalam julat semester. Tarikh
@@ -3884,41 +3886,31 @@ CT.views.sukatan = (function () {
     /* Tetapan semester */
     var kadSemester = document.createElement('div');
     kadSemester.className = 'kad';
-    var mula = CT.store.tetapan().tarikhMulaSemester || '';
+    /* Hari pertama menentukan julat kiraan ketidakhadiran semester dalam tab
+       Kehadiran; hari terakhir menentukan baki masa sukatan. */
+    var mula = CT.sukatan.tarikhMula();
+    var panjang = CT.sukatan.bezaHari(mula, akhir);
+
     kadSemester.innerHTML =
-      '<p class="seksyen-tajuk">Hari terakhir semester</p>' +
+      '<p class="seksyen-tajuk">Hari pertama semester</p>' +
+      '<div class="medan" style="margin-bottom:8px">' +
+      '<input type="date" id="sk-mula" value="' + u.selamat(mula) + '" aria-label="Hari pertama semester">' +
+      '</div>' +
+      '<p class="kecil">' + u.selamat(u.tarikhPenuh(mula)) + '</p>' +
+
+      '<p class="seksyen-tajuk" style="margin-top:16px">Hari terakhir semester</p>' +
       '<div class="medan" style="margin-bottom:8px">' +
       '<input type="date" id="sk-akhir" value="' + u.selamat(akhir) + '" aria-label="Hari terakhir semester">' +
       '</div>' +
       '<p class="kecil">' + u.selamat(u.tarikhPenuh(akhir)) + ' &middot; <b>' +
       hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>' +
 
-      /* Hari pertama menentukan julat kiraan ketidakhadiran semester dalam tab
-         Kehadiran. Jika dibiarkan kosong, kiraan bermula pada hari kehadiran
-         mula-mula diambil, jadi ia tetap betul tanpa perlu diisi. */
-      '<p class="seksyen-tajuk" style="margin-top:16px">Hari pertama semester</p>' +
-      '<div class="medan" style="margin-bottom:8px">' +
-      '<input type="date" id="sk-mula" value="' + u.selamat(mula) + '" aria-label="Hari pertama semester">' +
-      '</div>' +
-      '<p class="kecil" id="sk-mula-nota"></p>';
-
-    var medanAkhir = kadSemester.querySelector('#sk-akhir');
-    CT.ui.hiasTarikh(medanAkhir);      // paparkan format tarikh Malaysia
-    medanAkhir.addEventListener('change', function () {
-      if (u.sahKunci(medanAkhir.value)) {
-        CT.store.simpanTetapan({ tarikhAkhirSemester: medanAkhir.value });
-        CT.ui.toast('Hari terakhir semester dikemas kini.');
-        CT.app.segarSemula();
-      }
-    });
+      '<p class="kecil" style="margin-top:10px">Semester ini <b>' + panjang +
+      ' hari</b>. Julat ini digunakan untuk kiraan ketidakhadiran semester ' +
+      'dalam tab Kehadiran.</p>';
 
     var medanMula = kadSemester.querySelector('#sk-mula');
-    var notaMula = kadSemester.querySelector('#sk-mula-nota');
-    CT.ui.hiasTarikh(medanMula);
-    notaMula.innerHTML = mula
-      ? u.selamat(u.tarikhPenuh(mula)) + ' &middot; digunakan untuk kiraan ketidakhadiran semester.'
-      : 'Belum ditetapkan. Kiraan ketidakhadiran bermula pada hari kehadiran ' +
-        'mula-mula diambil.';
+    CT.ui.hiasTarikh(medanMula);       // paparkan format tarikh Malaysia
     medanMula.addEventListener('change', function () {
       if (!u.sahKunci(medanMula.value)) { return; }
       if (medanMula.value > CT.sukatan.tarikhAkhir()) {
@@ -3928,6 +3920,20 @@ CT.views.sukatan = (function () {
       }
       CT.store.simpanTetapan({ tarikhMulaSemester: medanMula.value });
       CT.ui.toast('Hari pertama semester dikemas kini.');
+      CT.app.segarSemula();
+    });
+
+    var medanAkhir = kadSemester.querySelector('#sk-akhir');
+    CT.ui.hiasTarikh(medanAkhir);
+    medanAkhir.addEventListener('change', function () {
+      if (!u.sahKunci(medanAkhir.value)) { return; }
+      if (medanAkhir.value < CT.sukatan.tarikhMula()) {
+        CT.ui.toast('Hari terakhir tidak boleh sebelum hari pertama semester.');
+        medanAkhir.value = akhir;
+        return;
+      }
+      CT.store.simpanTetapan({ tarikhAkhirSemester: medanAkhir.value });
+      CT.ui.toast('Hari terakhir semester dikemas kini.');
       CT.app.segarSemula();
     });
     skrin.appendChild(kadSemester);
@@ -4604,7 +4610,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.8.0';
+  CT.VERSI = '1.8.1';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
