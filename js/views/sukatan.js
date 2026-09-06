@@ -132,7 +132,11 @@ CT.views.sukatan = (function () {
     /* Hari pertama menentukan julat kiraan ketidakhadiran semester dalam tab
        Kehadiran; hari terakhir menentukan baki masa sukatan. */
     var mula = CT.sukatan.tarikhMula();
-    var panjang = CT.sukatan.bezaHari(mula, akhir);
+    /* Panjang semester dikira secara inklusif: hari pertama dan hari terakhir
+       kedua-duanya termasuk. Minggu dibundarkan ke atas kerana minggu yang
+       tidak penuh tetap minggu pengajaran. */
+    var panjang = CT.sukatan.bezaHari(mula, akhir) + 1;
+    var minggu = Math.ceil(panjang / 7);
 
     kadSemester.innerHTML =
       '<p class="seksyen-tajuk">Hari pertama semester</p>' +
@@ -148,9 +152,9 @@ CT.views.sukatan = (function () {
       '<p class="kecil">' + u.selamat(u.tarikhPenuh(akhir)) + ' &middot; <b>' +
       hariBaki + ' hari lagi</b> dari ' + u.selamat(u.tarikhRingkas(hariIni)) + '</p>' +
 
-      '<p class="kecil" style="margin-top:10px">Semester ini <b>' + panjang +
-      ' hari</b>. Julat ini digunakan untuk kiraan ketidakhadiran semester ' +
-      'dalam tab Kehadiran.</p>';
+      '<p class="kecil" style="margin-top:10px">Semester ini <b>' + minggu +
+      ' minggu</b> &middot; ' + panjang + ' hari. Julat ini digunakan untuk ' +
+      'kiraan ketidakhadiran semester dalam tab Kehadiran.</p>';
 
     var medanMula = kadSemester.querySelector('#sk-mula');
     CT.ui.hiasTarikh(medanMula);       // paparkan format tarikh Malaysia
