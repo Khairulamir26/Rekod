@@ -138,7 +138,7 @@ CT.views.kehadiran = (function () {
   }
 
   /* Satu kumpulan program: tajuk, statistik sendiri, kemudian senarai murid. */
-  function bahagianProgram(kunci, ahli, kumpul) {
+  function bahagianProgram(kunci, ahli, kumpul, tarikh) {
     var kotak = document.createElement('div');
     kotak.className = 'kumpulan jarak-atas';
 
@@ -146,6 +146,19 @@ CT.views.kehadiran = (function () {
     tajuk.className = 'seksyen-tajuk';
     tajuk.textContent = CT.sukatan.program(kunci).nama + ' · ' + ahli.length + ' murid';
     kotak.appendChild(tajuk);
+
+    /* Pelajar Ijazah berkelas sekali seminggu, jadi senarai hari ini hanya
+       sebahagian daripada kumpulan itu. Baris ini menerangkan sebab hanya
+       sebilangan nama muncul. Diploma tidak memerlukannya kerana mereka
+       berkelas setiap hari Isnin hingga Jumaat. */
+    if (kunci === 'ijazah') {
+      var notaHari = document.createElement('p');
+      notaHari.className = 'kecil';
+      notaHari.style.marginBottom = '10px';
+      notaHari.textContent = ahli.length + ' orang kelas pada hari ' +
+        CT.jadual.namaHari(u.hariMinggu(tarikh)) + '.';
+      kotak.appendChild(notaHari);
+    }
 
     var statistik = document.createElement('div');
     statistik.className = 'statistik';
@@ -245,16 +258,6 @@ CT.views.kehadiran = (function () {
       return;
     }
 
-    /* Nota berapa murid tidak berjadual hari ini, supaya guru yakin tiada
-       sesiapa tertinggal secara senyap. */
-    if (murid.length < semua.length) {
-      var nota = document.createElement('p');
-      nota.className = 'kecil jarak-atas';
-      nota.textContent = (semua.length - murid.length) +
-        ' murid lain tiada kelas pada hari ' + CT.jadual.namaHari(u.hariMinggu(tarikh)) + '.';
-      skrin.appendChild(nota);
-    }
-
     var kumpul = {
       baris: [],
       penyegar: [],
@@ -264,7 +267,7 @@ CT.views.kehadiran = (function () {
     KUMPULAN.forEach(function (kunci) {
       var ahli = murid.filter(function (m) { return kunciProgram(m) === kunci; });
       if (!ahli.length) { return; }
-      skrin.appendChild(bahagianProgram(kunci, ahli, kumpul));
+      skrin.appendChild(bahagianProgram(kunci, ahli, kumpul, tarikh));
     });
 
     /* Butang tindakan */
