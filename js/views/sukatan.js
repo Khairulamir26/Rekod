@@ -11,7 +11,9 @@ CT.views.sukatan = (function () {
   'use strict';
 
   var u = CT.util;
-  var tapisProgram = 'semua';
+  /* Diploma menjadi tapisan lalai kerana ia kumpulan terbesar. Pilihan guru
+     kekal sepanjang sesi selepas dia menukarnya. */
+  var tapisProgram = 'diploma';
   var paparJadual = false;
 
   function lencanaStatus(status) {
