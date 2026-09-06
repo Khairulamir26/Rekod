@@ -288,14 +288,6 @@ CT.views.sukatan = (function () {
         'dalam profil murid.';
       skrin.appendChild(notis);
     }
-
-    var nota = document.createElement('p');
-    nota.className = 'kecil jarak-atas';
-    nota.innerHTML = 'Kiraan menggunakan halaman terjauh yang direkodkan dalam tab ' +
-      'Rekod (nombor halaman mushaf 604 halaman). Status ditentukan oleh kadar yang ' +
-      'diperlukan bagi baki hari: <b>Ikut jadual</b> 1 halaman sehari atau kurang, ' +
-      '<b>Perlu dikejar</b> lebih daripada itu.';
-    skrin.appendChild(nota);
   }
 
   return { tajuk: 'Sukatan', render: render };
