@@ -2472,6 +2472,17 @@ CT.views.murid = (function () {
     return m.program === 'ijazah' ? 'ijazah' : 'diploma';
   }
 
+  /* Semester menaik: Sem 1 di atas, Sem 8 di bawah. Nama menjadi pemutus
+     dalam semester yang sama. Murid tanpa semester diletakkan di atas sekali
+     supaya profil yang belum lengkap itu dilihat dan dibetulkan, bukan
+     tersembunyi di hujung senarai. */
+  function susunSemester(a, b) {
+    var sa = +a.semester || 0;
+    var sb = +b.semester || 0;
+    if (sa !== sb) { return sa - sb; }
+    return String(a.nama || '').localeCompare(String(b.nama || ''), 'ms');
+  }
+
   function tapis(senarai) {
     var cari = carian.trim().toLowerCase();
     if (!cari) { return senarai; }
@@ -2719,7 +2730,8 @@ CT.views.murid = (function () {
       /* Setiap program menjadi kumpulan berasingan dengan tajuknya sendiri.
          Kumpulan yang tiada murid tidak dipaparkan. */
       KUMPULAN.forEach(function (kunci) {
-        var ahli = ditapis.filter(function (m) { return kunciProgram(m) === kunci; });
+        var ahli = ditapis.filter(function (m) { return kunciProgram(m) === kunci; })
+          .sort(susunSemester);
         if (!ahli.length) { return; }
 
         var kumpulan = document.createElement('div');
@@ -4711,7 +4723,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.10.1';
+  CT.VERSI = '1.10.2';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota', 'pasukan'];
