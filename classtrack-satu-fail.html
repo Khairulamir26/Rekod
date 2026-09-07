@@ -1641,7 +1641,14 @@ window.CT = window.CT || {};
 
   function statusSegerak(tahun) {
     var d = tahunSegera(tahun);
-    return { sumber: d.sumber, masa: d.masa };
+    return {
+      sumber: d.sumber,
+      masa: d.masa,
+      /* Bilangan tarikh cuti yang diketahui bagi tahun itu. Sifar bermakna
+         tiada senarai terbina dan tiada cache — tahun itu di luar julat
+         SANDARAN dan belum pernah disegerakkan. */
+      bilangan: Object.keys(d.peta).length
+    };
   }
 
   /* Penyegerakan langsung. Jika gagal, data luar talian terus digunakan. */
@@ -3476,19 +3483,22 @@ CT.views.kalendar = (function () {
     return kad;
   }
 
-  /* ---------- Bar penyegerakan ---------- */
+  /* ---------- Bar penyegerakan ----------
+     Bar ini hanya muncul apabila tahun yang dilihat betul-betul tiada cuti
+     diketahui — iaitu di luar julat senarai terbina dan belum pernah
+     disegerakkan. Selagi cuti terpapar dengan betul, dari mana sumbernya
+     bukan urusan guru, jadi tiada apa yang perlu ditunjukkan. */
   function barSegerak() {
+    var status = CT.cuti.statusSegerak(lihat.tahun);
+    if (status.bilangan > 0) { return null; }
+
     var kad = document.createElement('div');
     kad.className = 'kad kad-rapat jarak-atas';
 
-    var status = CT.cuti.statusSegerak(lihat.tahun);
-    var teks = status.sumber === 'segerak'
-      ? 'Cuti umum disegerakkan pada ' + u.capMasa(status.masa)
-      : 'Menggunakan data cuti luar talian.';
-
     kad.innerHTML =
       '<div class="baris-antara">' +
-      '<span class="kecil tumbuh" data-status>' + u.selamat(teks) + '</span>' +
+      '<span class="kecil tumbuh" data-status>Tiada cuti umum diketahui untuk ' +
+      lihat.tahun + '. Segerakkan untuk memuat turunnya.</span>' +
       '<button class="butang butang-luar butang-kecil" type="button" data-segerak>Segerak</button>' +
       '</div>';
 
@@ -3518,7 +3528,8 @@ CT.views.kalendar = (function () {
     pastikanKeadaan(param);
     skrin.appendChild(gridBulan());
     skrin.appendChild(panelTarikh());
-    skrin.appendChild(barSegerak());
+    var bar = barSegerak();
+    if (bar) { skrin.appendChild(bar); }
 
     // Cuba segerak senyap sekali bagi tahun yang dilihat.
     CT.cuti.segerak(lihat.tahun, false).then(function (hasil) {
@@ -4560,7 +4571,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.11.0';
+  CT.VERSI = '1.11.1';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota'];

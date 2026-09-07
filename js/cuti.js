@@ -129,7 +129,14 @@ window.CT = window.CT || {};
 
   function statusSegerak(tahun) {
     var d = tahunSegera(tahun);
-    return { sumber: d.sumber, masa: d.masa };
+    return {
+      sumber: d.sumber,
+      masa: d.masa,
+      /* Bilangan tarikh cuti yang diketahui bagi tahun itu. Sifar bermakna
+         tiada senarai terbina dan tiada cache — tahun itu di luar julat
+         SANDARAN dan belum pernah disegerakkan. */
+      bilangan: Object.keys(d.peta).length
+    };
   }
 
   /* Penyegerakan langsung. Jika gagal, data luar talian terus digunakan. */
