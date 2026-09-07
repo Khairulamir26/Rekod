@@ -87,6 +87,16 @@ CT.views.utama = (function () {
     kotak.appendChild(butang);
 
     skrin.appendChild(kotak);
+
+    /* Versi dan hakcipta dipindahkan ke sini apabila tab Pasukan dibuang.
+       Ia diletakkan di bawah sekali sebagai kaki halaman — nombor versi
+       diperlukan untuk mengesahkan binaan mana yang sedang berjalan pada
+       peranti guru. */
+    var kaki = document.createElement('p');
+    kaki.className = 'kecil tengah utama-kaki';
+    kaki.textContent = 'e-Dawam versi ' + (CT.VERSI || '-') +
+      ' · Hakcipta © Abu Dawud 2026';
+    skrin.appendChild(kaki);
   }
 
   return { tajuk: 'Utama', render: render };

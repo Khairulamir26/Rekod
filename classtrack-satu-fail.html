@@ -291,7 +291,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   left: 0; right: 0; bottom: 0;
   z-index: 40;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* Lapan tab dibahagi 4 + 4 supaya dua baris itu sama panjang. */
+  grid-template-columns: repeat(4, 1fr);
   gap: 2px;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
   background: rgba(255, 255, 255, .97);
@@ -336,7 +337,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 @media (min-width: 620px) {
   :root { --nav-tinggi: 68px; }
   .nav-bawah {
-    grid-template-columns: repeat(9, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     max-width: 860px;
     margin: 0 auto;
     border-radius: 18px 18px 0 0;
@@ -355,6 +356,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   text-align: center;
   padding: 10px 0 20px;
 }
+/* Kaki halaman Utama: versi dan hakcipta. Sengaja senyap — ia maklumat
+   rujukan, bukan sebahagian daripada tugas guru. */
+.utama-kaki { margin-top: 2px; padding-bottom: 4px; }
+
 .logo-bingkai {
   width: 100%;
   max-width: 300px;
@@ -881,10 +886,6 @@ table.jadual tr:last-child td { border-bottom: 0; }
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5h14v15l-4-3-3 2-3-2-4 3z"/><path d="M9 9h6"/><path d="M9 12.5h4"/></svg>
     <span>Nota</span>
   </button>
-  <button class="nav-butang" data-tab="pasukan" type="button">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="9" r="2.8"/><circle cx="16.5" cy="9.5" r="2.3"/><path d="M2.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M15 14.2c2.7.1 4.5 2 4.5 4.8"/></svg>
-    <span>Pasukan</span>
-  </button>
 </nav>
 
 <div id="lapisan" class="lapisan tersembunyi" role="dialog" aria-modal="true" aria-labelledby="lapisan-tajuk">
@@ -1361,11 +1362,6 @@ window.CT = window.CT || {};
     return ahli;
   }
 
-  function padamAhli(id) {
-    tulis('pasukan', baca('pasukan', []).filter(function (a) { return a.id !== id; }));
-    lapor('pasukan');
-  }
-
   function tetapan() {
     return baca('tetapan', {});
   }
@@ -1497,7 +1493,6 @@ window.CT = window.CT || {};
 
     senaraiPasukan: senaraiPasukan,
     simpanAhli: simpanAhli,
-    padamAhli: padamAhli,
     guruAktif: guruAktif,
 
     tetapan: tetapan,
@@ -2438,6 +2433,16 @@ CT.views.utama = (function () {
     kotak.appendChild(butang);
 
     skrin.appendChild(kotak);
+
+    /* Versi dan hakcipta dipindahkan ke sini apabila tab Pasukan dibuang.
+       Ia diletakkan di bawah sekali sebagai kaki halaman — nombor versi
+       diperlukan untuk mengesahkan binaan mana yang sedang berjalan pada
+       peranti guru. */
+    var kaki = document.createElement('p');
+    kaki.className = 'kecil tengah utama-kaki';
+    kaki.textContent = 'e-Dawam versi ' + (CT.VERSI || '-') +
+      ' · Hakcipta © Abu Dawud 2026';
+    skrin.appendChild(kaki);
   }
 
   return { tajuk: 'Utama', render: render };
@@ -4543,174 +4548,6 @@ CT.views.nota = (function () {
 </script>
 
 <script>
-/* js/views/pasukan.js */
-/* Tab Pasukan — kerjasama jabatan.
-   Prototaip ini menyimpan senarai guru pada peranti sahaja. Struktur data
-   ("id", "peranan", "akses") sudah disediakan supaya log masuk dan pangkalan
-   data awan boleh ditambah kemudian tanpa mengubah antara muka. */
-
-window.CT = window.CT || {};
-CT.views = CT.views || {};
-
-CT.views.pasukan = (function () {
-  'use strict';
-
-  var u = CT.util;
-  var AKSES = ['Akses penuh', 'Boleh sunting', 'Boleh lihat'];
-
-  function lencanaAkses(akses) {
-    var kelas = akses === 'Akses penuh' ? 'lencana'
-      : akses === 'Boleh sunting' ? 'lencana lencana-biru' : 'lencana lencana-kelabu';
-    return '<span class="' + kelas + '">' + u.selamat(akses) + '</span>';
-  }
-
-  function borang(sedia) {
-    var a = sedia || {};
-    var kotak = document.createElement('div');
-    kotak.innerHTML =
-      '<div class="medan"><label for="p-nama">Nama guru</label>' +
-      '<input id="p-nama" type="text" value="' + u.selamat(a.nama || '') +
-      '" placeholder="Nama penuh guru"></div>' +
-      '<div class="medan"><label for="p-peranan">Peranan</label>' +
-      '<input id="p-peranan" type="text" value="' + u.selamat(a.peranan || '') +
-      '" placeholder="Contoh: Guru Tahfiz"></div>' +
-      '<div class="medan"><label for="p-emel">E-mel</label>' +
-      '<input id="p-emel" type="email" value="' + u.selamat(a.emel || '') +
-      '" placeholder="nama@uis.edu.my"></div>' +
-      '<div class="medan"><label for="p-akses">Tahap akses</label><select id="p-akses">' +
-      AKSES.map(function (k) {
-        return '<option' + (a.akses === k ? ' selected' : '') + '>' + k + '</option>';
-      }).join('') + '</select></div>' +
-      '<button class="butang butang-penuh" type="button" data-simpan>' +
-      (a.id ? 'Simpan perubahan' : 'Hantar jemputan') + '</button>' +
-      (a.id ? '<button class="butang butang-bahaya butang-penuh jarak-atas" type="button" data-buang>Buang daripada pasukan</button>' : '');
-
-    kotak.querySelector('[data-simpan]').addEventListener('click', function () {
-      var nama = kotak.querySelector('#p-nama').value.trim();
-      if (!nama) { CT.ui.toast('Sila isi nama guru.'); return; }
-      CT.store.simpanAhli({
-        id: a.id,
-        dicipta: a.dicipta,
-        nama: nama,
-        peranan: kotak.querySelector('#p-peranan').value.trim() || 'Guru',
-        emel: kotak.querySelector('#p-emel').value.trim(),
-        akses: kotak.querySelector('#p-akses').value,
-        status: a.status || (a.id ? 'aktif' : 'dijemput')
-      });
-      CT.ui.tutupLapisan();
-      CT.ui.toast(a.id ? 'Maklumat guru dikemas kini.' : 'Jemputan direkodkan.');
-      CT.app.segarSemula();
-    });
-
-    if (a.id) {
-      kotak.querySelector('[data-buang]').addEventListener('click', function () {
-        if (CT.store.senaraiPasukan().length <= 1) {
-          CT.ui.toast('Sekurang-kurangnya seorang guru mesti kekal dalam pasukan.');
-          return;
-        }
-        CT.ui.sahkan('Buang guru', 'Buang ' + a.nama + ' daripada pasukan jabatan?',
-          function () {
-            var tetapan = CT.store.tetapan();
-            CT.store.padamAhli(a.id);
-            if (tetapan.guruAktifId === a.id) {
-              var baki = CT.store.senaraiPasukan();
-              CT.store.simpanTetapan({ guruAktifId: baki.length ? baki[0].id : null });
-            }
-            CT.ui.toast('Guru dibuang daripada pasukan.');
-            CT.app.segarSemula();
-          }, 'Ya, buang');
-      });
-    }
-    return kotak;
-  }
-
-  function render(skrin) {
-    var senarai = CT.store.senaraiPasukan();
-    var aktif = CT.store.guruAktif();
-
-    /* Guru yang sedang menggunakan aplikasi (menggantikan log masuk buat sementara) */
-    var kotakAktif = document.createElement('div');
-    kotakAktif.className = 'kad';
-    kotakAktif.innerHTML =
-      '<p class="seksyen-tajuk">Guru aktif</p>' +
-      '<div class="medan" style="margin-bottom:0"><select id="guru-aktif">' +
-      senarai.map(function (g) {
-        return '<option value="' + u.selamat(g.id) + '"' +
-          (aktif && aktif.id === g.id ? ' selected' : '') + '>' +
-          u.selamat(g.nama) + ' — ' + u.selamat(g.peranan || 'Guru') + '</option>';
-      }).join('') + '</select></div>' +
-      '<p class="kecil jarak-atas">Nota sulit yang ditulis oleh guru lain tidak dipaparkan ' +
-      'kepada guru aktif. Bahagian ini akan digantikan dengan log masuk sebenar.</p>';
-
-    kotakAktif.querySelector('#guru-aktif').addEventListener('change', function (e) {
-      CT.store.simpanTetapan({ guruAktifId: e.target.value });
-      CT.ui.toast('Guru aktif ditukar.');
-      CT.app.segarSemula();
-    });
-    skrin.appendChild(kotakAktif);
-
-    var jemput = document.createElement('button');
-    jemput.type = 'button';
-    jemput.className = 'butang butang-penuh jarak-atas';
-    jemput.textContent = '+ Jemput Guru';
-    jemput.addEventListener('click', function () {
-      CT.ui.bukaLapisan('Jemput Guru', borang(null));
-    });
-    skrin.appendChild(jemput);
-
-    var tajuk = document.createElement('p');
-    tajuk.className = 'seksyen-tajuk jarak-atas';
-    tajuk.textContent = senarai.length + ' guru dalam jabatan';
-    skrin.appendChild(tajuk);
-
-    var kotakSenarai = document.createElement('div');
-    kotakSenarai.className = 'senarai';
-    senarai.forEach(function (g) {
-      var kad = document.createElement('div');
-      kad.className = 'kad kad-rapat';
-      kad.innerHTML =
-        '<div class="baris">' +
-        '<span class="tumbuh"><span class="murid-nama">' + u.selamat(g.nama) + '</span><br>' +
-        '<span class="kecil">' + u.selamat(g.peranan || 'Guru') +
-        (g.emel ? ' &middot; ' + u.selamat(g.emel) : '') + '</span></span>' +
-        '</div>' +
-        '<div class="baris-lipat jarak-atas">' + lencanaAkses(g.akses || 'Boleh lihat') +
-        (g.status === 'dijemput' ? '<span class="lencana lencana-emas">Jemputan belum diterima</span>' : '') +
-        '<button class="butang butang-luar butang-kecil" type="button" data-sunting>Sunting</button>' +
-        '</div>';
-      kad.querySelector('[data-sunting]').addEventListener('click', function () {
-        CT.ui.bukaLapisan('Sunting Guru', borang(g));
-      });
-      kotakSenarai.appendChild(kad);
-    });
-    skrin.appendChild(kotakSenarai);
-
-    var notis = document.createElement('div');
-    notis.className = 'notis notis-info jarak-atas';
-    notis.innerHTML = '<b>Prototaip:</b> senarai pasukan dan nota dikongsi disimpan pada ' +
-      'peranti ini sahaja. Perkongsian sebenar antara guru memerlukan log masuk dan ' +
-      'pangkalan data awan.';
-    skrin.appendChild(notis);
-
-    /* Nombor versi memudahkan pengesahan sama ada peranti sudah mendapat
-       kemas kini terkini. */
-    var versi = document.createElement('p');
-    versi.className = 'kecil tengah jarak-atas';
-    versi.textContent = 'e-Dawam versi ' + (CT.VERSI || '-');
-    skrin.appendChild(versi);
-
-    var hakcipta = document.createElement('p');
-    hakcipta.className = 'kecil tengah';
-    hakcipta.textContent = 'Hakcipta © Abu Dawud 2026';
-    skrin.appendChild(hakcipta);
-  }
-
-  return { tajuk: 'Pasukan', render: render };
-})();
-
-</script>
-
-<script>
 /* js/app.js */
 /* e-Dawam — pemula aplikasi, navigasi tab dan pendaftaran service worker. */
 
@@ -4723,10 +4560,10 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.10.2';
+  CT.VERSI = '1.11.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
-    'quran', 'nota', 'pasukan'];
+    'quran', 'nota'];
   var tabSemasa = 'utama';
   var paramSemasa = null;
 

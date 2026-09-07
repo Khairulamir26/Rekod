@@ -293,11 +293,6 @@ window.CT = window.CT || {};
     return ahli;
   }
 
-  function padamAhli(id) {
-    tulis('pasukan', baca('pasukan', []).filter(function (a) { return a.id !== id; }));
-    lapor('pasukan');
-  }
-
   function tetapan() {
     return baca('tetapan', {});
   }
@@ -429,7 +424,6 @@ window.CT = window.CT || {};
 
     senaraiPasukan: senaraiPasukan,
     simpanAhli: simpanAhli,
-    padamAhli: padamAhli,
     guruAktif: guruAktif,
 
     tetapan: tetapan,
