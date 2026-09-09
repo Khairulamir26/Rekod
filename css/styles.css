@@ -395,6 +395,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* Nombor utama dalam kad bacaan julat tarikh. */
+.julat-besar { font-size: 1.45rem; line-height: 1.2; margin-bottom: 2px; }
+.julat-besar b { color: var(--hijau-gelap); }
+
 /* ---------- Graf prestasi sukatan ---------- */
 /* Satu bar berkadar dua segmen. Jurang 2px berwarna permukaan memisahkan
    segmen supaya sempadan antara habis dan belum habis tidak bergantung pada

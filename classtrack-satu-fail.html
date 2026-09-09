@@ -410,6 +410,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* Nombor utama dalam kad bacaan julat tarikh. */
+.julat-besar { font-size: 1.45rem; line-height: 1.2; margin-bottom: 2px; }
+.julat-besar b { color: var(--hijau-gelap); }
+
 /* ---------- Graf prestasi sukatan ---------- */
 /* Satu bar berkadar dua segmen. Jurang 2px berwarna permukaan memisahkan
    segmen supaya sempadan antara habis dan belum habis tidak bergantung pada
@@ -1815,6 +1819,58 @@ window.CT = window.CT || {};
     };
   }
 
+  /* Muka surat yang dibaca seorang murid dalam julat tarikh tertentu.
+
+     Dikira sebagai bilangan muka surat BERLAINAN yang disentuh oleh rekod
+     dalam julat itu, bukan jumlah span setiap rekod. Sebabnya: jika murid
+     mengulang muka surat 69 pada dua hari berlainan, ia tetap satu muka
+     surat sahaja. Menjumlahkan span akan mengira dua kali dan memberi guru
+     nombor yang lebih besar daripada hakikat.
+
+     Contoh: 03/07 rekod 68-69, 07/07 rekod 69-70
+             -> muka surat berlainan {68, 69, 70} = 3 muka surat. */
+  function julatBacaan(muridId, dari, hingga) {
+    if (!CT.util.sahKunci(dari) || !CT.util.sahKunci(hingga)) { return null; }
+    if (dari > hingga) { var t = dari; dari = hingga; hingga = t; }
+
+    var semua = CT.store.baca('rekod', {});
+    var set = {};
+    var hari = 0;
+    var tarikhAda = [];
+
+    Object.keys(semua).forEach(function (tarikh) {
+      if (tarikh < dari || tarikh > hingga) { return; }
+      var r = semua[tarikh][muridId];
+      if (!r) { return; }
+
+      var a = +r.mukaMula || 0;
+      var b = +r.mukaHabis || 0;
+      /* Rekod yang hanya ada satu daripada dua medan dikira sebagai satu
+         muka surat, bukan diabaikan. */
+      if (!a && !b) { return; }
+      if (!a) { a = b; }
+      if (!b) { b = a; }
+      if (a > b) { var s = a; a = b; b = s; }
+
+      hari++;
+      tarikhAda.push(tarikh);
+      for (var h = a; h <= b; h++) {
+        if (h >= 1 && h <= JUMLAH_HALAMAN) { set[h] = true; }
+      }
+    });
+
+    var halaman = Object.keys(set).map(Number).sort(function (x, y) { return x - y; });
+    return {
+      dari: dari,
+      hingga: hingga,
+      bilangan: halaman.length,
+      halamanTerendah: halaman.length ? halaman[0] : null,
+      halamanTertinggi: halaman.length ? halaman[halaman.length - 1] : null,
+      hari: hari,
+      tarikh: tarikhAda.sort()
+    };
+  }
+
   /* Rekod hafazan terakhir SEBELUM tarikh yang diberi.
      Digunakan untuk menyambung muka surat: jika kali terakhir murid habis di
      halaman 487, rekod berikutnya bermula di halaman 488. */
@@ -1959,6 +2015,7 @@ window.CT = window.CT || {};
     julatHalaman: julatHalaman,
     rekodHafazan: rekodHafazan,
     rekodTerakhirSebelum: rekodTerakhirSebelum,
+    julatBacaan: julatBacaan,
     juzUntukHalaman: juzUntukHalaman,
     cadanganSambungan: cadanganSambungan,
     bezaHari: bezaHari,
@@ -3950,8 +4007,50 @@ CT.views.sukatan = (function () {
           d.halamanDihantar + ') berada di luar julat sukatan tahap ini. ' +
           'Semak semula nombor muka surat dalam tab Rekod.</div>'
         : '') +
+      /* Bacaan dalam julat tarikh pilihan guru. Lalai ialah seluruh semester,
+         supaya nombor pertama yang dilihat guru sudah bermakna tanpa perlu
+         memilih apa-apa. */
+      '<p class="seksyen-tajuk jarak-atas">Bacaan dalam julat tarikh</p>' +
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="jb-dari">Dari</label>' +
+      '<input type="date" id="jb-dari" value="' + u.selamat(CT.sukatan.tarikhMula()) +
+      '" aria-label="Tarikh mula julat"></div>' +
+      '<div class="medan"><label for="jb-hingga">Hingga</label>' +
+      '<input type="date" id="jb-hingga" value="' + u.selamat(u.hariIni()) +
+      '" aria-label="Tarikh akhir julat"></div>' +
+      '</div>' +
+      '<div class="kad kad-rapat" data-julat-hasil></div>' +
+
       '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
       'Buka Rekod hari ini</button>';
+
+    var medanDari = kotak.querySelector('#jb-dari');
+    var medanHingga = kotak.querySelector('#jb-hingga');
+    var hasilJulat = kotak.querySelector('[data-julat-hasil]');
+
+    function lukisJulat() {
+      var j = CT.sukatan.julatBacaan(d.muridId, medanDari.value, medanHingga.value);
+      if (!j) {
+        hasilJulat.innerHTML = '<p class="kecil">Pilih kedua-dua tarikh.</p>';
+        return;
+      }
+      if (!j.bilangan) {
+        hasilJulat.innerHTML = '<p class="kecil">Tiada rekod muka surat antara ' +
+          u.selamat(u.tarikhRingkas(j.dari)) + ' dan ' +
+          u.selamat(u.tarikhRingkas(j.hingga)) + '.</p>';
+        return;
+      }
+      hasilJulat.innerHTML =
+        '<p class="julat-besar"><b>' + j.bilangan + '</b> muka surat</p>' +
+        '<p class="kecil">Muka surat ' + j.halamanTerendah + ' hingga ' +
+        j.halamanTertinggi + ' &middot; ' + j.hari + ' hari ada rekod</p>';
+    }
+
+    /* Medan tarikh dalam lapisan dihias dengan format Malaysia oleh
+       CT.ui.bukaLapisan, jadi ia hanya perlu didengar di sini. */
+    medanDari.addEventListener('change', lukisJulat);
+    medanHingga.addEventListener('change', lukisJulat);
+    lukisJulat();
 
     kotak.querySelector('[data-rekod]').addEventListener('click', function () {
       CT.ui.tutupLapisan();
@@ -4571,7 +4670,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.11.1';
+  CT.VERSI = '1.12.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota'];

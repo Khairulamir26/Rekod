@@ -60,8 +60,50 @@ CT.views.sukatan = (function () {
           d.halamanDihantar + ') berada di luar julat sukatan tahap ini. ' +
           'Semak semula nombor muka surat dalam tab Rekod.</div>'
         : '') +
+      /* Bacaan dalam julat tarikh pilihan guru. Lalai ialah seluruh semester,
+         supaya nombor pertama yang dilihat guru sudah bermakna tanpa perlu
+         memilih apa-apa. */
+      '<p class="seksyen-tajuk jarak-atas">Bacaan dalam julat tarikh</p>' +
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="jb-dari">Dari</label>' +
+      '<input type="date" id="jb-dari" value="' + u.selamat(CT.sukatan.tarikhMula()) +
+      '" aria-label="Tarikh mula julat"></div>' +
+      '<div class="medan"><label for="jb-hingga">Hingga</label>' +
+      '<input type="date" id="jb-hingga" value="' + u.selamat(u.hariIni()) +
+      '" aria-label="Tarikh akhir julat"></div>' +
+      '</div>' +
+      '<div class="kad kad-rapat" data-julat-hasil></div>' +
+
       '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
       'Buka Rekod hari ini</button>';
+
+    var medanDari = kotak.querySelector('#jb-dari');
+    var medanHingga = kotak.querySelector('#jb-hingga');
+    var hasilJulat = kotak.querySelector('[data-julat-hasil]');
+
+    function lukisJulat() {
+      var j = CT.sukatan.julatBacaan(d.muridId, medanDari.value, medanHingga.value);
+      if (!j) {
+        hasilJulat.innerHTML = '<p class="kecil">Pilih kedua-dua tarikh.</p>';
+        return;
+      }
+      if (!j.bilangan) {
+        hasilJulat.innerHTML = '<p class="kecil">Tiada rekod muka surat antara ' +
+          u.selamat(u.tarikhRingkas(j.dari)) + ' dan ' +
+          u.selamat(u.tarikhRingkas(j.hingga)) + '.</p>';
+        return;
+      }
+      hasilJulat.innerHTML =
+        '<p class="julat-besar"><b>' + j.bilangan + '</b> muka surat</p>' +
+        '<p class="kecil">Muka surat ' + j.halamanTerendah + ' hingga ' +
+        j.halamanTertinggi + ' &middot; ' + j.hari + ' hari ada rekod</p>';
+    }
+
+    /* Medan tarikh dalam lapisan dihias dengan format Malaysia oleh
+       CT.ui.bukaLapisan, jadi ia hanya perlu didengar di sini. */
+    medanDari.addEventListener('change', lukisJulat);
+    medanHingga.addEventListener('change', lukisJulat);
+    lukisJulat();
 
     kotak.querySelector('[data-rekod]').addEventListener('click', function () {
       CT.ui.tutupLapisan();

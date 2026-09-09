@@ -99,6 +99,58 @@ window.CT = window.CT || {};
     };
   }
 
+  /* Muka surat yang dibaca seorang murid dalam julat tarikh tertentu.
+
+     Dikira sebagai bilangan muka surat BERLAINAN yang disentuh oleh rekod
+     dalam julat itu, bukan jumlah span setiap rekod. Sebabnya: jika murid
+     mengulang muka surat 69 pada dua hari berlainan, ia tetap satu muka
+     surat sahaja. Menjumlahkan span akan mengira dua kali dan memberi guru
+     nombor yang lebih besar daripada hakikat.
+
+     Contoh: 03/07 rekod 68-69, 07/07 rekod 69-70
+             -> muka surat berlainan {68, 69, 70} = 3 muka surat. */
+  function julatBacaan(muridId, dari, hingga) {
+    if (!CT.util.sahKunci(dari) || !CT.util.sahKunci(hingga)) { return null; }
+    if (dari > hingga) { var t = dari; dari = hingga; hingga = t; }
+
+    var semua = CT.store.baca('rekod', {});
+    var set = {};
+    var hari = 0;
+    var tarikhAda = [];
+
+    Object.keys(semua).forEach(function (tarikh) {
+      if (tarikh < dari || tarikh > hingga) { return; }
+      var r = semua[tarikh][muridId];
+      if (!r) { return; }
+
+      var a = +r.mukaMula || 0;
+      var b = +r.mukaHabis || 0;
+      /* Rekod yang hanya ada satu daripada dua medan dikira sebagai satu
+         muka surat, bukan diabaikan. */
+      if (!a && !b) { return; }
+      if (!a) { a = b; }
+      if (!b) { b = a; }
+      if (a > b) { var s = a; a = b; b = s; }
+
+      hari++;
+      tarikhAda.push(tarikh);
+      for (var h = a; h <= b; h++) {
+        if (h >= 1 && h <= JUMLAH_HALAMAN) { set[h] = true; }
+      }
+    });
+
+    var halaman = Object.keys(set).map(Number).sort(function (x, y) { return x - y; });
+    return {
+      dari: dari,
+      hingga: hingga,
+      bilangan: halaman.length,
+      halamanTerendah: halaman.length ? halaman[0] : null,
+      halamanTertinggi: halaman.length ? halaman[halaman.length - 1] : null,
+      hari: hari,
+      tarikh: tarikhAda.sort()
+    };
+  }
+
   /* Rekod hafazan terakhir SEBELUM tarikh yang diberi.
      Digunakan untuk menyambung muka surat: jika kali terakhir murid habis di
      halaman 487, rekod berikutnya bermula di halaman 488. */
@@ -243,6 +295,7 @@ window.CT = window.CT || {};
     julatHalaman: julatHalaman,
     rekodHafazan: rekodHafazan,
     rekodTerakhirSebelum: rekodTerakhirSebelum,
+    julatBacaan: julatBacaan,
     juzUntukHalaman: juzUntukHalaman,
     cadanganSambungan: cadanganSambungan,
     bezaHari: bezaHari,
