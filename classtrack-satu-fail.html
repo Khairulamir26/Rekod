@@ -416,8 +416,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .julat-medan label { font-size: .74rem; }
 .julat-medan .medan-papar { font-size: .88rem; font-weight: 600; }
 
-/* Nombor utama dalam kad bacaan julat tarikh. */
-.julat-besar { font-size: 1.45rem; line-height: 1.2; margin-bottom: 2px; }
+/* Nombor utama dalam kad bacaan julat tarikh. Cukup besar untuk menjadi
+   jawapan pertama yang dibaca mata, tetapi tidak melebihi nama murid di
+   kepala lapisan — ia satu angka, bukan tajuk halaman. */
+.julat-besar { font-size: 1.12rem; line-height: 1.25; margin-bottom: 3px; }
 .julat-besar b { color: var(--hijau-gelap); }
 
 /* ---------- Graf prestasi sukatan ---------- */
@@ -4683,7 +4685,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.12.2';
+  CT.VERSI = '1.12.3';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota'];
