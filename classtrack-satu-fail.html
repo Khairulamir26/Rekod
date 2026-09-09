@@ -410,6 +410,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
    pemisahan itu jelas. Digunakan oleh tab Murid, Kehadiran dan Rekod. */
 .kumpulan + .kumpulan { margin-top: 26px; }
 
+/* Medan tarikh julat sengaja lebih kecil daripada medan borang biasa: ia
+   kawalan penapis, bukan input yang guru isi. Tinggi sentuh 44px dikekalkan
+   supaya ia masih mudah ditekan pada telefon. */
+.julat-medan label { font-size: .74rem; }
+.julat-medan .medan-papar { font-size: .88rem; font-weight: 600; }
+
 /* Nombor utama dalam kad bacaan julat tarikh. */
 .julat-besar { font-size: 1.45rem; line-height: 1.2; margin-bottom: 2px; }
 .julat-besar b { color: var(--hijau-gelap); }
@@ -3999,6 +4005,9 @@ CT.views.sukatan = (function () {
         : nombor(d.kadarSemasa, 2) + ' halaman/hari') + '</div>' +
       '<div><b>Status</b>' + u.selamat(d.status.teks) + '</div>' +
       '</div>' +
+      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
+      'Buka Rekod hari ini</button>' +
+
       /* Bacaan dalam julat tarikh disembunyikan sehingga guru memintanya.
          Kebanyakan kali dia membuka butiran ini untuk melihat baki sukatan,
          bukan untuk menyoal julat tarikh, jadi dua medan tarikh dan satu kad
@@ -4006,7 +4015,7 @@ CT.views.sukatan = (function () {
       '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-togol-julat>' +
       'Bacaan dalam julat tarikh</button>' +
       '<div data-panel-julat class="tersembunyi">' +
-      '<div class="medan-dua jarak-atas">' +
+      '<div class="medan-dua julat-medan jarak-atas">' +
       '<div class="medan"><label for="jb-dari">Dari</label>' +
       '<input type="date" id="jb-dari" value="' + u.selamat(CT.sukatan.tarikhMula()) +
       '" aria-label="Tarikh mula julat"></div>' +
@@ -4015,10 +4024,7 @@ CT.views.sukatan = (function () {
       '" aria-label="Tarikh akhir julat"></div>' +
       '</div>' +
       '<div class="kad kad-rapat" data-julat-hasil></div>' +
-      '</div>' +
-
-      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
-      'Buka Rekod hari ini</button>';
+      '</div>';
 
     var medanDari = kotak.querySelector('#jb-dari');
     var medanHingga = kotak.querySelector('#jb-hingga');
@@ -4677,7 +4683,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.12.1';
+  CT.VERSI = '1.12.2';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota'];

@@ -55,6 +55,9 @@ CT.views.sukatan = (function () {
         : nombor(d.kadarSemasa, 2) + ' halaman/hari') + '</div>' +
       '<div><b>Status</b>' + u.selamat(d.status.teks) + '</div>' +
       '</div>' +
+      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
+      'Buka Rekod hari ini</button>' +
+
       /* Bacaan dalam julat tarikh disembunyikan sehingga guru memintanya.
          Kebanyakan kali dia membuka butiran ini untuk melihat baki sukatan,
          bukan untuk menyoal julat tarikh, jadi dua medan tarikh dan satu kad
@@ -62,7 +65,7 @@ CT.views.sukatan = (function () {
       '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-togol-julat>' +
       'Bacaan dalam julat tarikh</button>' +
       '<div data-panel-julat class="tersembunyi">' +
-      '<div class="medan-dua jarak-atas">' +
+      '<div class="medan-dua julat-medan jarak-atas">' +
       '<div class="medan"><label for="jb-dari">Dari</label>' +
       '<input type="date" id="jb-dari" value="' + u.selamat(CT.sukatan.tarikhMula()) +
       '" aria-label="Tarikh mula julat"></div>' +
@@ -71,10 +74,7 @@ CT.views.sukatan = (function () {
       '" aria-label="Tarikh akhir julat"></div>' +
       '</div>' +
       '<div class="kad kad-rapat" data-julat-hasil></div>' +
-      '</div>' +
-
-      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
-      'Buka Rekod hari ini</button>';
+      '</div>';
 
     var medanDari = kotak.querySelector('#jb-dari');
     var medanHingga = kotak.querySelector('#jb-hingga');
