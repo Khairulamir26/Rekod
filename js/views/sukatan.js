@@ -55,16 +55,14 @@ CT.views.sukatan = (function () {
         : nombor(d.kadarSemasa, 2) + ' halaman/hari') + '</div>' +
       '<div><b>Status</b>' + u.selamat(d.status.teks) + '</div>' +
       '</div>' +
-      (d.luarJulat
-        ? '<div class="notis notis-info jarak-atas">Halaman terakhir yang direkodkan (' +
-          d.halamanDihantar + ') berada di luar julat sukatan tahap ini. ' +
-          'Semak semula nombor muka surat dalam tab Rekod.</div>'
-        : '') +
-      /* Bacaan dalam julat tarikh pilihan guru. Lalai ialah seluruh semester,
-         supaya nombor pertama yang dilihat guru sudah bermakna tanpa perlu
-         memilih apa-apa. */
-      '<p class="seksyen-tajuk jarak-atas">Bacaan dalam julat tarikh</p>' +
-      '<div class="medan-dua">' +
+      /* Bacaan dalam julat tarikh disembunyikan sehingga guru memintanya.
+         Kebanyakan kali dia membuka butiran ini untuk melihat baki sukatan,
+         bukan untuk menyoal julat tarikh, jadi dua medan tarikh dan satu kad
+         hasil di situ hanya menambah panjang skrol. */
+      '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-togol-julat>' +
+      'Bacaan dalam julat tarikh</button>' +
+      '<div data-panel-julat class="tersembunyi">' +
+      '<div class="medan-dua jarak-atas">' +
       '<div class="medan"><label for="jb-dari">Dari</label>' +
       '<input type="date" id="jb-dari" value="' + u.selamat(CT.sukatan.tarikhMula()) +
       '" aria-label="Tarikh mula julat"></div>' +
@@ -73,6 +71,7 @@ CT.views.sukatan = (function () {
       '" aria-label="Tarikh akhir julat"></div>' +
       '</div>' +
       '<div class="kad kad-rapat" data-julat-hasil></div>' +
+      '</div>' +
 
       '<button class="butang butang-lembut butang-penuh jarak-atas" type="button" data-rekod>' +
       'Buka Rekod hari ini</button>';
@@ -103,7 +102,18 @@ CT.views.sukatan = (function () {
        CT.ui.bukaLapisan, jadi ia hanya perlu didengar di sini. */
     medanDari.addEventListener('change', lukisJulat);
     medanHingga.addEventListener('change', lukisJulat);
-    lukisJulat();
+
+    var togolJulat = kotak.querySelector('[data-togol-julat]');
+    var panelJulat = kotak.querySelector('[data-panel-julat]');
+    togolJulat.addEventListener('click', function () {
+      var tersembunyi = panelJulat.classList.toggle('tersembunyi');
+      togolJulat.textContent = tersembunyi
+        ? 'Bacaan dalam julat tarikh'
+        : 'Sembunyikan julat tarikh';
+      /* Hasil dikira hanya apabila panel dibuka, bukan setiap kali butiran
+         murid dipaparkan. */
+      if (!tersembunyi) { lukisJulat(); }
+    });
 
     kotak.querySelector('[data-rekod]').addEventListener('click', function () {
       CT.ui.tutupLapisan();

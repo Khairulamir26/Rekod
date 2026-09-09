@@ -247,9 +247,6 @@ window.CT = window.CT || {};
     hasil.sudah = sudah;
     hasil.baki = halaman.jumlah - sudah;
     hasil.peratus = CT.util.peratus(sudah, halaman.jumlah);
-    hasil.luarJulat = rekod.halaman > 0 &&
-      (rekod.halaman < halaman.mula || rekod.halaman > halaman.habis);
-
     // Kadar diperlukan bagi baki hari.
     hasil.kadarPerlu = hasil.hariBaki > 0 ? hasil.baki / hasil.hariBaki : null;
 
