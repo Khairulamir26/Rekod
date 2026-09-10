@@ -74,6 +74,19 @@ CT.views.murid = (function () {
     return butang;
   }
 
+  /* Senarai halaqah yang sudah pernah ditaip, supaya ejaan kekal sama antara
+     murid — eksport spreadsheet bergantung pada padanan nama ini. */
+  function pilihanHalaqah() {
+    var set = {};
+    CT.store.senaraiMurid().forEach(function (m) {
+      var h = String(m.halaqah || '').trim();
+      if (h) { set[h] = true; }
+    });
+    return Object.keys(set).sort().map(function (h) {
+      return '<option value="' + u.selamat(h) + '"></option>';
+    }).join('');
+  }
+
   function pilihanHari(terpilih) {
     var n = CT.jadual.hariIjazah({ program: 'ijazah', hariKelas: terpilih });
     return CT.jadual.NAMA_HARI.map(function (nama, i) {
@@ -99,6 +112,26 @@ CT.views.murid = (function () {
       '<input id="m-telefon" type="tel" value="' + u.selamat(m.telefon || '') +
       '" placeholder="Contoh: 012-3456789" autocomplete="off"></div>' +
 
+      /* Halaqah dan kumpulan diperlukan oleh eksport spreadsheet: halaqah
+         menentukan blok mana dalam helaian, kumpulan menentukan helaian mana
+         (Banin atau Banat). Kedua-duanya juga berguna pada kad murid. */
+      '<div class="medan"><label for="m-halaqah">Halaqah</label>' +
+      '<input id="m-halaqah" type="text" list="senarai-halaqah" value="' +
+      u.selamat(m.halaqah || '') +
+      '" placeholder="Contoh: HALAQAH UST MOHD MAHFUZ" autocomplete="off">' +
+      '<datalist id="senarai-halaqah">' + pilihanHalaqah() + '</datalist>' +
+      '<p class="kecil" style="margin-top:5px">Nama halaqah mesti sama seperti ' +
+      'dalam spreadsheet supaya eksport masuk ke blok yang betul.</p></div>' +
+
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="m-kumpulan">Kumpulan</label>' +
+      '<select id="m-kumpulan">' +
+      '<option value="banin"' + (m.kumpulan !== 'banat' ? ' selected' : '') +
+      '>Banin (lelaki)</option>' +
+      '<option value="banat"' + (m.kumpulan === 'banat' ? ' selected' : '') +
+      '>Banat (perempuan)</option>' +
+      '</select></div>' +
+
       '<div class="medan"><label for="m-program">Program</label>' +
       '<select id="m-program">' +
       '<option value="diploma"' + (m.program !== 'ijazah' ? ' selected' : '') +
@@ -106,6 +139,7 @@ CT.views.murid = (function () {
       '<option value="ijazah"' + (m.program === 'ijazah' ? ' selected' : '') +
       '>Ijazah (I\'adah 1-8)</option>' +
       '</select></div>' +
+      '</div>' +
 
       /* Hari kelas hanya dipaparkan untuk Ijazah. Diploma tetap Isnin hingga
          Jumaat, jadi tiada apa yang perlu dipilih. */
@@ -149,6 +183,8 @@ CT.views.murid = (function () {
         nama: nama,
         matrik: kotak.querySelector('#m-matrik').value.trim(),
         telefon: kotak.querySelector('#m-telefon').value.trim(),
+        halaqah: kotak.querySelector('#m-halaqah').value.trim(),
+        kumpulan: kotak.querySelector('#m-kumpulan').value,
         program: program,
         semester: +kotak.querySelector('#m-semester').value,
         hifz: +kotak.querySelector('#m-hifz').value
@@ -184,6 +220,8 @@ CT.views.murid = (function () {
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
       '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
       '<div><b>Program</b>' + u.selamat(CT.sukatan.program(m.program).nama) + '</div>' +
+      '<div><b>Kumpulan</b>' + (m.kumpulan === 'banat' ? 'Banat' : 'Banin') + '</div>' +
+      '<div><b>Halaqah</b>' + u.selamat(m.halaqah || 'Belum ditetapkan') + '</div>' +
       '<div><b>Hari kelas</b>' + u.selamat(CT.jadual.teksHari(m)) + '</div>' +
       '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
       '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +

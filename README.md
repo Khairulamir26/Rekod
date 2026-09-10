@@ -160,7 +160,81 @@ Setiap tarikh disimpan berasingan — mengemas kini rekod satu tarikh tidak
 menyentuh tarikh lain. Data kekal selepas halaman dimuat semula dan tidak
 dipadam semasa kod dikemas kini.
 
-## 8. Bahagian yang masih menggunakan data prototaip
+## 8. Sandaran dan eksport ke Google Sheet
+
+### 8.1 Sandaran fail (`js/sandaran.js`)
+
+Semua data guru tinggal dalam pelayar perantinya sahaja. Sandaran ialah
+satu-satunya salinan yang boleh dibawa keluar. Dibuka melalui baris versi di
+kaki tab Utama → **Tentang & Sandaran**.
+
+- **Muat turun JSON** `e-dawam-sandaran-YYYY-MM-DD.json` — lapan kunci data
+  penuh, boleh dipulihkan semula.
+- **Kongsi fail** melalui helaian perkongsian telefon, **salin teks**, dan
+  **eksport CSV** (ringkasan semester, murid, kehadiran, rekod bacaan).
+- **Pulih** menunjukkan perbandingan fail lawan peranti dahulu. Dua mod:
+  *Pulih penuh* (ganti, perlu dua tekan) dan *Gabung* (tambah yang tiada
+  sahaja, tidak pernah menimpa). Gabung memadankan murid ikut nombor matrik
+  atau nama, lalu memetakan semula id dalam kehadiran, rekod dan nota.
+- Setiap pemulihan menyimpan **titik undur** (kunci `pulihBalik`) dahulu.
+- Peringatan sandaran boleh ditetapkan 7 / 14 / 30 hari atau dimatikan.
+
+### 8.2 Eksport ke spreadsheet laporan (`js/sheet.js` + `tools/apps-script-edawam.gs`)
+
+e-Dawam ialah aplikasi statik tanpa pelayan, jadi ia tidak boleh menulis ke
+Google Sheet secara terus. Satu skrip Apps Script dipasang pada spreadsheet
+laporan dan diterbitkan sebagai Web App; aplikasi menghantar JSON kepada
+pautan itu.
+
+Sebab pendekatan ini dipilih:
+
+- Tiada kunci API atau kata kunci dalam kod aplikasi. Pautan Web App
+  dimasukkan oleh guru dan disimpan dalam `tetapan.sheetUrl` pada perantinya.
+- Skrip berjalan sebagai pemilik spreadsheet, jadi setiap guru tidak perlu
+  memberi kebenaran Google.
+- Permintaan menggunakan `Content-Type: text/plain` dengan sengaja — ini
+  mengelakkan permintaan preflight CORS yang Apps Script tidak jawab.
+
+**Pemetaan data → helaian**
+
+| Lajur helaian | Sumber e-Dawam |
+|---|---|
+| Helaian (tab) | `program` + `kumpulan` → `DIPLOMA/DEGREE` + `BANIN/BANAT` |
+| Blok halaqah | medan `halaqah` murid (mesti sama ejaannya dengan helaian) |
+| `NO MATRIK` | `matrik` — kunci padanan baris, dibandingkan tanpa ruang/sengkang |
+| `NAMA`, `DIP/DEG`, `NO TELEFON`, `HIFZQ` | profil murid, **hanya diisi bila sel kosong** |
+| `CATATAN` | nota e-Dawam terbaharu dalam tempoh itu (nota sulit dikecualikan) |
+| `M1`..`M14` | halaman tertinggi yang dicapai dalam minggu semester itu |
+
+Minggu 1 bermula pada hari pertama semester (`CT.sukatan.tarikhMula()`),
+bukan minggu kalendar. Minggu di luar M1–M14 dilangkau.
+
+**Jaminan skrip**
+
+Skrip tidak pernah menambah, membuang atau menyusun semula baris, lajur atau
+helaian; sel berformula sentiasa dilangkau; baris dicari melalui nombor matrik
+jadi hantaran berulang mengemas kini baris yang sama dan tidak menghasilkan
+pendua; hanya minggu yang benar-benar ada rekod ditulis. Murid yang tidak dapat
+diletakkan dilaporkan balik kepada guru, bukan diletakkan secara teka.
+
+**Cara memasang (sekali sahaja)**
+
+1. Buka spreadsheet laporan → **Extensions → Apps Script**.
+2. Padam kod contoh, tampal `tools/apps-script-edawam.gs`, Save.
+3. **Deploy → New deployment → Web app**, dengan
+   *Execute as* = **Me** dan *Who has access* = **Anyone with the link**.
+4. Salin pautan yang berakhir dengan `/exec`, tampal ke dalam e-Dawam:
+   tab Kehadiran → **Eksport ke Sheet** → **Pautan spreadsheet**.
+5. Tekan **Uji sambungan** — ia memulangkan senarai nama helaian.
+
+Dua tetapan di kepala fail `.gs` boleh diubah: `TULIS_CATATAN` dan
+`TULIS_PROFIL_JIKA_KOSONG`.
+
+**Peringatan Jumaat** — tab Kehadiran memaparkan satu notis pada hari Jumaat
+jika data minggu itu belum dieksport. Ia hilang sebaik eksport dibuat dan
+boleh ditutup untuk hari itu.
+
+## 9. Bahagian yang masih menggunakan data prototaip
 
 - **Pasukan / jabatan** — senarai guru, peranan dan tahap akses disimpan pada
   peranti ini sahaja. "Guru aktif" menggantikan log masuk sebenar.
@@ -177,7 +251,7 @@ dipadam semasa kod dikemas kini.
 - **Murid contoh** — butang "Muat 5 murid contoh" hanya muncul apabila senarai
   murid kosong.
 
-## 9. Langkah ke arah aplikasi sebenar (akaun + pangkalan data awan)
+## 10. Langkah ke arah aplikasi sebenar (akaun + pangkalan data awan)
 
 1. **Log masuk guru** — sambungkan pembekal identiti universiti (SSO/Google
    Workspace) atau e-mel + kata laluan. Ganti pemilih "Guru aktif" dalam tab
@@ -201,7 +275,7 @@ dipadam semasa kod dikemas kini.
 7. **Perlindungan data murid** — HTTPS wajib, penyulitan semasa rehat, dasar
    simpanan data, dan kebenaran penjaga selaras PDPA Malaysia.
 
-## 10. Nota penyelenggaraan
+## 11. Nota penyelenggaraan
 
 - Setiap kali fail aplikasi diubah, naikkan `VERSI` dalam `sw.js`
   (contoh: `classtrack-v1.0.0` → `classtrack-v1.0.1`) supaya cache lama

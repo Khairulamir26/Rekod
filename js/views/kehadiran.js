@@ -219,6 +219,13 @@ CT.views.kehadiran = (function () {
       CT.app.segarSemula();
     }));
 
+    /* Peringatan eksport hari Jumaat. Diletakkan di sini kerana tab Kehadiran
+       ialah tab yang guru buka setiap hari, manakala tab Utama mesti kekal
+       ringkas. Ia hilang sebaik data minggu ini dieksport, dan boleh ditutup
+       untuk hari itu. */
+    var peringatan = peringatanEksport();
+    if (peringatan) { skrin.appendChild(peringatan); }
+
     /* Notis cuti umum */
     var cuti = CT.ui.notisCuti(tarikh);
     if (cuti) {
@@ -324,6 +331,39 @@ CT.views.kehadiran = (function () {
     pautanBawah(skrin);
   }
 
+  /* Peringatan Jumaat: nada relaks, bukan amaran. Satu ayat dan satu butang. */
+  function peringatanEksport() {
+    if (!CT.sheet.perluPeringatan(u.hariIni())) { return null; }
+
+    var kotak = document.createElement('div');
+    kotak.className = 'notis notis-info notis-peringatan jarak-atas';
+
+    var teks = document.createElement('span');
+    teks.className = 'peringatan-teks';
+    teks.innerHTML = '<b>Peringatan:</b> Sila eksport data minggu ini ke dalam ' +
+      'spreadsheet.';
+    kotak.appendChild(teks);
+
+    var pergi = document.createElement('button');
+    pergi.type = 'button';
+    pergi.className = 'butang butang-kecil';
+    pergi.textContent = 'Eksport Sekarang';
+    pergi.addEventListener('click', function () { CT.eksport.buka('minggu-ini'); });
+    kotak.appendChild(pergi);
+
+    var tutup = document.createElement('button');
+    tutup.type = 'button';
+    tutup.className = 'butang butang-luar butang-kecil';
+    tutup.textContent = 'Nanti';
+    tutup.addEventListener('click', function () {
+      CT.sheet.tutupPeringatan(u.hariIni());
+      CT.app.segarSemula();
+    });
+    kotak.appendChild(tutup);
+
+    return kotak;
+  }
+
   /* Dua pautan di bawah tab, dipaparkan sama ada ada kelas pada hari itu
      atau tidak. */
   function pautanBawah(skrin) {
@@ -342,6 +382,13 @@ CT.views.kehadiran = (function () {
     pautanRingkas.textContent = 'Jumlah tidak hadir sepanjang semester';
     pautanRingkas.addEventListener('click', bukaRingkasan);
     skrin.appendChild(pautanRingkas);
+
+    var pautanEksport = document.createElement('button');
+    pautanEksport.type = 'button';
+    pautanEksport.className = 'butang butang-lembut butang-penuh jarak-atas';
+    pautanEksport.textContent = 'Eksport ke Sheet';
+    pautanEksport.addEventListener('click', function () { CT.eksport.buka(); });
+    skrin.appendChild(pautanEksport);
   }
 
   /* ---------- Ringkasan ketidakhadiran sepanjang semester ---------- */

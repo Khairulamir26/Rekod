@@ -595,6 +595,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .notis-cuti { background: #fdf3d8; border-color: #f0d99a; color: #6d4e00; }
 .notis-info { background: var(--biru-muda); border-color: #c9dcf5; color: #14498c; }
 .notis-baik { background: var(--hijau-muda); border-color: #bfe3d8; color: var(--hijau-gelap); }
+.notis-ralat { background: var(--merah-muda); border-color: #f3c4ca; color: #9c1524; }
+.notis-peringatan { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.notis-peringatan .peringatan-teks { flex: 1 1 180px; min-width: 0; }
+.notis-peringatan .butang { flex: 0 0 auto; }
 .notis + .kad, .notis + .notis { margin-top: 10px; }
 
 /* Sandaran: perbandingan fail lawan peranti sebelum pemulihan. */

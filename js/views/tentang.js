@@ -145,6 +145,25 @@ CT.tentang = (function () {
     return medan;
   }
 
+  /* ---------- Eksport ke spreadsheet laporan ---------- */
+
+  function kadSheet() {
+    var st = CT.sheet.status();
+    var kotak = seksyen('Eksport ke Sheet');
+    var nota = el('p', 'kecil');
+    nota.style.marginTop = '2px';
+    nota.textContent = st.pernah ? st.teks
+      : 'Hantar rekod bacaan mingguan terus ke dalam spreadsheet laporan halaqah.';
+    kotak.appendChild(nota);
+
+    var b = butang('Eksport ke Sheet', 'butang-lembut butang-penuh', function () {
+      CT.eksport.buka();
+    });
+    b.style.marginTop = '12px';
+    kotak.appendChild(b);
+    return kotak;
+  }
+
   /* ---------- Eksport CSV ---------- */
 
   function kadCsv() {
@@ -399,6 +418,7 @@ CT.tentang = (function () {
     var undur = kadUndur();
     if (undur) { kotak.appendChild(undur); }
     kotak.appendChild(kadPulih());
+    kotak.appendChild(kadSheet());
     kotak.appendChild(kadCsv());
     kotak.appendChild(kadTentang());
     return kotak;

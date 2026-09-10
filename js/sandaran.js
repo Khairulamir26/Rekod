@@ -474,11 +474,12 @@ window.CT = window.CT || {};
   }
 
   function csvMurid() {
-    var baris = [['Nama', 'No. Matrik', 'No. Telefon', 'Program', 'Semester',
-      'Tahap', 'Hari kelas']];
+    var baris = [['Nama', 'No. Matrik', 'No. Telefon', 'Program', 'Kumpulan',
+      'Halaqah', 'Semester', 'Tahap', 'Hari kelas']];
     CT.store.senaraiMurid().forEach(function (m) {
       baris.push([
         m.nama || '', m.matrik || '', m.telefon || '', namaProgram(m),
+        m.kumpulan === 'banat' ? 'Banat' : 'Banin', m.halaqah || '',
         m.semester || '', CT.sukatan.namaTahap(CT.jadual.programMurid(m), m.hifz || ''),
         CT.jadual.teksHari(m)
       ]);
@@ -579,6 +580,7 @@ window.CT = window.CT || {};
     salin: salin,
     bacaFail: bacaFail,
 
+    csvTeks: csv,
     csvMurid: csvMurid,
     csvKehadiran: csvKehadiran,
     csvRekod: csvRekod,

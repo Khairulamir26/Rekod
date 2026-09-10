@@ -2,7 +2,7 @@
    PENTING: naikkan VERSI setiap kali fail aplikasi diubah supaya cache lama
    digantikan. Data guru (localStorage / IndexedDB) tidak pernah disentuh di sini. */
 
-var VERSI = 'edawam-v1.13.0';
+var VERSI = 'edawam-v1.14.0';
 
 var FAIL_TERAS = [
   './',
@@ -16,8 +16,10 @@ var FAIL_TERAS = [
   './js/jadual.js',
   './js/ringkasan.js',
   './js/sandaran.js',
+  './js/sheet.js',
   './js/ui.js',
   './js/app.js',
+  './js/views/eksport.js',
   './js/views/tentang.js',
   './js/views/utama.js',
   './js/views/murid.js',

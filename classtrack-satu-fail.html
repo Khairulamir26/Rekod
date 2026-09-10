@@ -610,6 +610,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .notis-cuti { background: #fdf3d8; border-color: #f0d99a; color: #6d4e00; }
 .notis-info { background: var(--biru-muda); border-color: #c9dcf5; color: #14498c; }
 .notis-baik { background: var(--hijau-muda); border-color: #bfe3d8; color: var(--hijau-gelap); }
+.notis-ralat { background: var(--merah-muda); border-color: #f3c4ca; color: #9c1524; }
+.notis-peringatan { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.notis-peringatan .peringatan-teks { flex: 1 1 180px; min-width: 0; }
+.notis-peringatan .butang { flex: 0 0 auto; }
 .notis + .kad, .notis + .notis { margin-top: 10px; }
 
 /* Sandaran: perbandingan fail lawan peranti sebelum pemulihan. */
@@ -2743,11 +2747,12 @@ window.CT = window.CT || {};
   }
 
   function csvMurid() {
-    var baris = [['Nama', 'No. Matrik', 'No. Telefon', 'Program', 'Semester',
-      'Tahap', 'Hari kelas']];
+    var baris = [['Nama', 'No. Matrik', 'No. Telefon', 'Program', 'Kumpulan',
+      'Halaqah', 'Semester', 'Tahap', 'Hari kelas']];
     CT.store.senaraiMurid().forEach(function (m) {
       baris.push([
         m.nama || '', m.matrik || '', m.telefon || '', namaProgram(m),
+        m.kumpulan === 'banat' ? 'Banat' : 'Banin', m.halaqah || '',
         m.semester || '', CT.sukatan.namaTahap(CT.jadual.programMurid(m), m.hifz || ''),
         CT.jadual.teksHari(m)
       ]);
@@ -2848,10 +2853,377 @@ window.CT = window.CT || {};
     salin: salin,
     bacaFail: bacaFail,
 
+    csvTeks: csv,
     csvMurid: csvMurid,
     csvKehadiran: csvKehadiran,
     csvRekod: csvRekod,
     csvRingkasan: csvRingkasan
+  };
+})();
+
+</script>
+
+<script>
+/* js/sheet.js */
+/* e-Dawam — eksport ke Google Sheet.
+
+   e-Dawam ialah aplikasi statik tanpa pelayan, jadi ia tidak boleh menulis ke
+   Google Sheet secara terus. Sebaliknya, satu skrip kecil (Apps Script) dipasang
+   pada spreadsheet itu sendiri dan diterbitkan sebagai Web App. Aplikasi
+   menghantar data kepada pautan itu, dan skrip itulah yang menulis ke dalam
+   helaian. Kebaikannya:
+
+   - Tiada kunci API atau kata kunci di dalam kod aplikasi. Pautan Web App
+     dimasukkan oleh guru sendiri dan disimpan pada perantinya sahaja.
+   - Skrip berjalan sebagai pemilik spreadsheet, jadi kebenaran Google tidak
+     perlu diminta daripada setiap guru.
+   - Skrip hanya menulis sel data yang dinamakan. Tajuk, formula, susunan dan
+     reka bentuk helaian tidak pernah disentuh.
+
+   Fail skrip itu ada dalam tools/apps-script-edawam.gs. */
+
+window.CT = window.CT || {};
+
+(function () {
+  'use strict';
+
+  var u = CT.util;
+
+  var JENIS = 'e-dawam-eksport';
+  var VERSI_MUATAN = 1;
+
+  /* Helaian membawa lajur M1 hingga M14 — satu bagi setiap minggu semester. */
+  var MINGGU_MAKS = 14;
+
+  /* ---------- Minggu semester ---------- */
+
+  /* Minggu 1 bermula pada hari pertama semester. Guna aritmetik hari, bukan
+     nombor minggu kalendar, supaya ia sejajar dengan lajur M1..M14 helaian. */
+  function mingguUntuk(tarikh, mula) {
+    mula = mula || CT.sukatan.tarikhMula();
+    if (!u.sahKunci(tarikh) || !u.sahKunci(mula)) { return null; }
+    var beza = CT.sukatan.bezaHari(mula, tarikh);
+    if (beza < 0) { return null; }
+    var n = Math.floor(beza / 7) + 1;
+    return n > MINGGU_MAKS ? null : n;
+  }
+
+  /* Isnin hingga Ahad bagi minggu yang mengandungi tarikh diberi. */
+  function mingguKalendar(tarikh) {
+    var hari = u.hariMinggu(tarikh);
+    var kePada = hari === 0 ? -6 : 1 - hari;      // Ahad dikira hujung minggu
+    var isnin = u.tambahHari(tarikh, kePada);
+    return { dari: isnin, hingga: u.tambahHari(isnin, 6) };
+  }
+
+  /* ---------- Pilihan tempoh ---------- */
+
+  function tempoh(kunci, tarikh) {
+    var hariIni = tarikh || u.hariIni();
+    if (kunci === 'minggu-lepas') {
+      var m = mingguKalendar(u.tambahHari(hariIni, -7));
+      return { dari: m.dari, hingga: m.hingga, nama: 'Minggu lepas' };
+    }
+    if (kunci === 'semester') {
+      return {
+        dari: CT.sukatan.tarikhMula(),
+        hingga: CT.sukatan.tarikhAkhir(),
+        nama: 'Sepanjang semester'
+      };
+    }
+    var ini = mingguKalendar(hariIni);
+    return { dari: ini.dari, hingga: ini.hingga, nama: 'Minggu ini' };
+  }
+
+  /* ---------- Membina muatan ---------- */
+
+  function helaianUntuk(m) {
+    var program = CT.jadual.programMurid(m) === 'ijazah' ? 'DEGREE' : 'DIPLOMA';
+    var kumpulan = m.kumpulan === 'banat' ? 'BANAT' : 'BANIN';
+    return program + ' ' + kumpulan;
+  }
+
+  function dipDeg(m) {
+    return CT.jadual.programMurid(m) === 'ijazah' ? 'DEG' : 'DIP';
+  }
+
+  /* Muka surat terkini bagi setiap minggu dalam julat: halaman tertinggi yang
+     dicapai murid dalam minggu itu. Minggu tanpa rekod sengaja ditinggalkan —
+     skrip helaian hanya menulis sel yang ada nilainya, jadi apa yang guru taip
+     sendiri dalam helaian tidak akan dikosongkan. */
+  function mingguMurid(muridId, dari, hingga, mula) {
+    var rekod = CT.store.baca('rekod', {}) || {};
+    var hasil = {};
+    Object.keys(rekod).forEach(function (t) {
+      if (t < dari || t > hingga) { return; }
+      var r = (rekod[t] || {})[muridId];
+      if (!r) { return; }
+      var halaman = +r.mukaHabis || +r.mukaMula || 0;
+      if (!halaman) { return; }
+      var n = mingguUntuk(t, mula);
+      if (!n) { return; }
+      if (!hasil[n] || halaman > hasil[n]) { hasil[n] = halaman; }
+    });
+    return hasil;
+  }
+
+  /* Catatan hanya dihantar jika e-Dawam benar-benar mempunyai nota dalam julat
+     itu. Kalau tidak, lajur CATATAN dalam helaian dibiarkan seperti asal. */
+  function catatanMurid(muridId, dari, hingga) {
+    var pilihan = null;
+    CT.store.senaraiNota().forEach(function (n) {
+      if (n.muridId !== muridId || n.sulit) { return; }
+      if (!n.tarikh || n.tarikh < dari || n.tarikh > hingga) { return; }
+      if (!pilihan || String(n.tarikh) > String(pilihan.tarikh)) { pilihan = n; }
+    });
+    return pilihan ? String(pilihan.teks || '').trim() : '';
+  }
+
+  function bina(pilihanTempoh) {
+    var t = pilihanTempoh && pilihanTempoh.dari ? pilihanTempoh : tempoh(pilihanTempoh);
+    var mula = CT.sukatan.tarikhMula();
+
+    var murid = CT.store.senaraiMurid().map(function (m) {
+      return {
+        matrik: String(m.matrik || '').trim(),
+        nama: String(m.nama || '').trim(),
+        helaian: helaianUntuk(m),
+        halaqah: String(m.halaqah || '').trim(),
+        dipDeg: dipDeg(m),
+        telefon: String(m.telefon || '').trim(),
+        hifzq: CT.sukatan.namaTahap(CT.jadual.programMurid(m), m.hifz || ''),
+        catatan: catatanMurid(m.id, t.dari, t.hingga),
+        minggu: mingguMurid(m.id, t.dari, t.hingga, mula)
+      };
+    });
+
+    return {
+      aplikasi: 'e-Dawam',
+      jenis: JENIS,
+      versiMuatan: VERSI_MUATAN,
+      versiAplikasi: CT.VERSI || '',
+      dihantar: new Date().toISOString(),
+      semesterMula: mula,
+      mingguMaks: MINGGU_MAKS,
+      julat: {
+        dari: t.dari,
+        hingga: t.hingga,
+        nama: t.nama || '',
+        mingguDari: mingguUntuk(t.dari, mula),
+        mingguHingga: mingguUntuk(t.hingga, mula)
+      },
+      murid: murid
+    };
+  }
+
+  /* Ringkasan untuk dipaparkan sebelum guru menekan hantar. */
+  function pratonton(pilihanTempoh) {
+    var muatan = bina(pilihanTempoh);
+    var adaData = 0, tiadaHalaqah = 0, tiadaMatrik = 0, jumlahSel = 0;
+    var minggu = {};
+
+    muatan.murid.forEach(function (m) {
+      var bil = Object.keys(m.minggu).length;
+      if (bil) { adaData++; jumlahSel += bil; }
+      Object.keys(m.minggu).forEach(function (n) { minggu[n] = true; });
+      if (!m.halaqah) { tiadaHalaqah++; }
+      if (!m.matrik) { tiadaMatrik++; }
+    });
+
+    return {
+      muatan: muatan,
+      julat: muatan.julat,
+      murid: muatan.murid.length,
+      adaData: adaData,
+      jumlahSel: jumlahSel,
+      minggu: Object.keys(minggu).map(Number).sort(function (a, b) { return a - b; }),
+      tiadaHalaqah: tiadaHalaqah,
+      tiadaMatrik: tiadaMatrik
+    };
+  }
+
+  /* ---------- Pautan Apps Script ---------- */
+
+  function pautan() {
+    return String(CT.store.tetapan().sheetUrl || '').trim();
+  }
+
+  function pautanSah(url) {
+    return /^https:\/\/script\.google(usercontent)?\.com\/macros\/s\/[\w-]+\/exec/.test(
+      String(url || '').trim());
+  }
+
+  function simpanPautan(url) {
+    var bersih = String(url || '').trim();
+    if (bersih && !pautanSah(bersih)) {
+      return { berjaya: false, sebab: 'Pautan itu bukan pautan Web App Apps Script. ' +
+        'Ia sepatutnya berakhir dengan /exec.' };
+    }
+    CT.store.simpanTetapan({ sheetUrl: bersih });
+    return { berjaya: true };
+  }
+
+  /* ---------- Menghantar ---------- */
+
+  /* Ralat rangkaian datang dalam banyak bentuk. Guru hanya perlu tahu apa yang
+     patut dibuat seterusnya, jadi setiap satu ditukar kepada satu ayat. */
+  function ralatMudah(e) {
+    if (!navigator.onLine) {
+      return 'Tiada internet. Sambung ke internet, kemudian cuba semula.';
+    }
+    var mesej = String((e && e.message) || '');
+    if (/Failed to fetch|NetworkError|Load failed|TypeError/i.test(mesej)) {
+      return 'Tidak dapat menghubungi spreadsheet. Periksa pautan Apps Script ' +
+        'dan pastikan ia diterbitkan untuk "sesiapa yang mempunyai pautan".';
+    }
+    return mesej || 'Eksport gagal. Sila cuba semula.';
+  }
+
+  function hantarMentah(muatan) {
+    var url = pautan();
+    if (!url) {
+      return Promise.reject(new Error('Pautan spreadsheet belum ditetapkan.'));
+    }
+    /* text/plain digunakan dengan sengaja: ia mengelakkan permintaan preflight
+       CORS, yang Apps Script tidak jawab. Skrip di sebelah sana menghurai
+       badan permintaan sebagai JSON. */
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(muatan),
+      redirect: 'follow'
+    }).then(function (jawapan) {
+      if (!jawapan.ok) {
+        throw new Error('Google membalas ralat ' + jawapan.status + '. ' +
+          'Terbitkan semula Apps Script, kemudian cuba lagi.');
+      }
+      return jawapan.text();
+    }).then(function (teks) {
+      var hasil;
+      try { hasil = JSON.parse(teks); }
+      catch (e) {
+        throw new Error('Balasan tidak difahami. Pastikan pautan itu pautan ' +
+          'Apps Script e-Dawam, bukan pautan spreadsheet biasa.');
+      }
+      if (!hasil.ok) {
+        throw new Error(hasil.ralat || 'Spreadsheet menolak data ini.');
+      }
+      return hasil;
+    });
+  }
+
+  function uji() {
+    return hantarMentah({ aplikasi: 'e-Dawam', jenis: JENIS, ujian: true })
+      .catch(function (e) { throw new Error(ralatMudah(e)); });
+  }
+
+  function eksport(pilihanTempoh) {
+    var muatan = (pilihanTempoh && pilihanTempoh.murid) ? pilihanTempoh : bina(pilihanTempoh);
+    return hantarMentah(muatan).then(function (hasil) {
+      catat(muatan, hasil);
+      return hasil;
+    }, function (e) {
+      throw new Error(ralatMudah(e));
+    });
+  }
+
+  /* ---------- Eksport terakhir dan peringatan Jumaat ---------- */
+
+  function catat(muatan, hasil) {
+    CT.store.simpanTetapan({
+      eksportTerakhir: new Date().toISOString(),
+      eksportTerakhirJulat: muatan.julat ? (muatan.julat.dari + '..' + muatan.julat.hingga) : '',
+      eksportTerakhirBil: (hasil && hasil.dikemaskini) || 0
+    });
+  }
+
+  function status() {
+    var t = CT.store.tetapan();
+    var iso = t.eksportTerakhir || '';
+    var hasil = {
+      pernah: false, iso: '', teks: 'Belum pernah dieksport',
+      julat: t.eksportTerakhirJulat || '', bil: +t.eksportTerakhirBil || 0,
+      adaPautan: !!pautan()
+    };
+    if (!iso) { return hasil; }
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) { return hasil; }
+    hasil.pernah = true;
+    hasil.iso = iso;
+    hasil.teks = 'Eksport terakhir: ' + u.capMasa(iso);
+    return hasil;
+  }
+
+  /* Sudah dieksport dalam minggu kalendar semasa? */
+  function sudahEksportMingguIni(tarikh) {
+    var iso = CT.store.tetapan().eksportTerakhir;
+    if (!iso) { return false; }
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) { return false; }
+    var m = mingguKalendar(tarikh || u.hariIni());
+    var kunci = u.kunciDari(d);
+    return kunci >= m.dari && kunci <= m.hingga;
+  }
+
+  /* Peringatan hari Jumaat: ringkas, tidak menakutkan, dan boleh ditutup untuk
+     hari itu. Ia tidak muncul jika guru sudah eksport minggu ini. */
+  function perluPeringatan(tarikh) {
+    var hariIni = tarikh || u.hariIni();
+    if (u.hariMinggu(hariIni) !== 5) { return false; }
+    if (CT.store.tetapan().eksportPeringatanTutup === hariIni) { return false; }
+    if (!CT.store.senaraiMurid().length) { return false; }
+    return !sudahEksportMingguIni(hariIni);
+  }
+
+  function tutupPeringatan(tarikh) {
+    CT.store.simpanTetapan({ eksportPeringatanTutup: tarikh || u.hariIni() });
+  }
+
+  /* ---------- Salinan CSV mengikut susunan helaian ---------- */
+
+  /* Untuk guru yang tidak mahu memasang Apps Script: fail CSV dengan lajur
+     dalam susunan yang sama seperti helaian, sedia untuk ditampal. */
+  function csvHelaian(pilihanTempoh) {
+    var muatan = bina(pilihanTempoh);
+    var tajuk = ['HELAIAN', 'HALAQAH', 'NO MATRIK', 'NAMA', 'DIP/DEG',
+      'NO TELEFON', 'CATATAN', 'HIFZQ'];
+    for (var i = 1; i <= MINGGU_MAKS; i++) { tajuk.push('M' + i); }
+
+    var baris = [tajuk];
+    muatan.murid.forEach(function (m) {
+      var r = [m.helaian, m.halaqah, m.matrik, m.nama, m.dipDeg, m.telefon,
+        m.catatan, m.hifzq];
+      for (var i = 1; i <= MINGGU_MAKS; i++) {
+        r.push(m.minggu[i] === undefined ? '' : m.minggu[i]);
+      }
+      baris.push(r);
+    });
+    return baris;
+  }
+
+  CT.sheet = {
+    MINGGU_MAKS: MINGGU_MAKS,
+
+    mingguUntuk: mingguUntuk,
+    mingguKalendar: mingguKalendar,
+    tempoh: tempoh,
+    bina: bina,
+    pratonton: pratonton,
+
+    pautan: pautan,
+    pautanSah: pautanSah,
+    simpanPautan: simpanPautan,
+
+    uji: uji,
+    eksport: eksport,
+    ralatMudah: ralatMudah,
+
+    status: status,
+    sudahEksportMingguIni: sudahEksportMingguIni,
+    perluPeringatan: perluPeringatan,
+    tutupPeringatan: tutupPeringatan,
+
+    csvHelaian: csvHelaian
   };
 })();
 
@@ -3057,6 +3429,344 @@ window.CT = window.CT || {};
 </script>
 
 <script>
+/* js/views/eksport.js */
+/* Lapisan "Eksport ke Sheet".
+
+   Aliran yang guru lihat: pilih tempoh, lihat ringkasan apa yang akan dihantar,
+   tekan sekali, dapat jawapan. Kegagalan sentiasa datang bersama butang
+   "Cuba semula" — tiada jalan mati. */
+
+window.CT = window.CT || {};
+
+CT.eksport = (function () {
+  'use strict';
+
+  var u = CT.util;
+  var s = CT.sheet;
+
+  var tempohDipilih = 'minggu-ini';
+  var tarikhDari = '';
+  var tarikhHingga = '';
+  var sedangHantar = false;
+  var mesej = null;              // { jenis: 'baik'|'ralat', teks, perinci, cubaSemula }
+
+  /* ---------- Bantuan ---------- */
+
+  function el(tag, kelas, teks) {
+    var x = document.createElement(tag);
+    if (kelas) { x.className = kelas; }
+    if (teks !== undefined) { x.textContent = teks; }
+    return x;
+  }
+
+  function butang(label, kelas, bila) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'butang ' + (kelas || 'butang-luar');
+    b.textContent = label;
+    b.addEventListener('click', bila);
+    return b;
+  }
+
+  function kad(tajuk) {
+    var kotak = el('div', 'kad');
+    if (tajuk) { kotak.appendChild(el('p', 'tebal', tajuk)); }
+    return kotak;
+  }
+
+  /* Tempoh yang sedang dipilih, dalam bentuk { dari, hingga, nama }. */
+  function julatSemasa() {
+    if (tempohDipilih === 'sendiri') {
+      var dari = tarikhDari || s.tempoh('minggu-ini').dari;
+      var hingga = tarikhHingga || s.tempoh('minggu-ini').hingga;
+      if (dari > hingga) { var t = dari; dari = hingga; hingga = t; }
+      return { dari: dari, hingga: hingga, nama: 'Tarikh pilihan' };
+    }
+    return s.tempoh(tempohDipilih);
+  }
+
+  /* ---------- Status eksport terakhir ---------- */
+
+  function kadStatus() {
+    var st = s.status();
+    var kotak = el('div', 'notis ' + (st.pernah ? 'notis-baik' : 'notis-info'));
+    if (!st.pernah) {
+      kotak.innerHTML = '<b>Belum pernah dieksport.</b> Data e-Dawam belum ' +
+        'pernah dihantar ke spreadsheet.';
+    } else {
+      kotak.innerHTML = '<b>' + u.selamat(st.teks) + '</b>' +
+        (st.julat ? '<br>Tempoh: ' + u.selamat(u.tarikhRingkas(st.julat.split('..')[0])) +
+          ' hingga ' + u.selamat(u.tarikhRingkas(st.julat.split('..')[1])) : '') +
+        (st.bil ? '<br>' + st.bil + ' baris dikemas kini' : '');
+    }
+    return kotak;
+  }
+
+  /* ---------- Pilihan tempoh ---------- */
+
+  function kadTempoh() {
+    var kotak = kad('Tempoh data');
+    var nota = el('p', 'kecil');
+    nota.style.marginTop = '2px';
+    nota.textContent = 'Pilih tempoh yang ingin dieksport sebelum menghantar.';
+    kotak.appendChild(nota);
+
+    var tapis = el('div', 'tapis jarak-atas');
+    [
+      ['minggu-ini', 'Minggu ini'],
+      ['minggu-lepas', 'Minggu lepas'],
+      ['semester', 'Semester'],
+      ['sendiri', 'Pilih tarikh']
+    ].forEach(function (x) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = x[1];
+      if (tempohDipilih === x[0]) { b.classList.add('aktif'); }
+      b.addEventListener('click', function () {
+        tempohDipilih = x[0];
+        mesej = null;
+        segar();
+      });
+      tapis.appendChild(b);
+    });
+    kotak.appendChild(tapis);
+
+    if (tempohDipilih === 'sendiri') {
+      var lalai = s.tempoh('minggu-ini');
+      var medan = el('div', 'medan-dua julat-medan jarak-atas');
+      medan.innerHTML =
+        '<div class="medan" style="margin-bottom:0">' +
+        '<label for="ek-dari">Dari</label>' +
+        '<input id="ek-dari" type="date" value="' +
+        u.selamat(tarikhDari || lalai.dari) + '"></div>' +
+        '<div class="medan" style="margin-bottom:0">' +
+        '<label for="ek-hingga">Hingga</label>' +
+        '<input id="ek-hingga" type="date" value="' +
+        u.selamat(tarikhHingga || lalai.hingga) + '"></div>';
+      medan.querySelector('#ek-dari').addEventListener('change', function () {
+        tarikhDari = this.value; mesej = null; segar();
+      });
+      medan.querySelector('#ek-hingga').addEventListener('change', function () {
+        tarikhHingga = this.value; mesej = null; segar();
+      });
+      kotak.appendChild(medan);
+    }
+
+    var julat = julatSemasa();
+    var papar = el('p', 'kecil jarak-atas');
+    papar.innerHTML = '<b>' + u.selamat(u.tarikhRingkas(julat.dari)) + '</b> hingga <b>' +
+      u.selamat(u.tarikhRingkas(julat.hingga)) + '</b>';
+    kotak.appendChild(papar);
+
+    return kotak;
+  }
+
+  /* ---------- Ringkasan sebelum hantar ---------- */
+
+  function kadPratonton() {
+    var julat = julatSemasa();
+    var p = s.pratonton(julat);
+    var kotak = kad('Yang akan dihantar');
+
+    var perinci = el('p', 'kecil');
+    perinci.style.marginTop = '2px';
+    perinci.innerHTML =
+      '<b>' + p.murid + '</b> murid &middot; <b>' + p.adaData +
+      '</b> ada rekod bacaan dalam tempoh ini<br>' +
+      (p.minggu.length
+        ? 'Lajur yang akan dikemas kini: <b>' +
+          p.minggu.map(function (n) { return 'M' + n; }).join(', ') + '</b>' +
+          ' (' + p.jumlahSel + ' sel)'
+        : 'Tiada rekod bacaan dalam tempoh ini — tiada lajur M akan disentuh.');
+    kotak.appendChild(perinci);
+
+    if (p.tiadaMatrik || p.tiadaHalaqah) {
+      var amaran = el('div', 'notis notis-cuti jarak-atas');
+      var baris = [];
+      if (p.tiadaMatrik) {
+        baris.push('<b>' + p.tiadaMatrik + '</b> murid tiada nombor matrik. ' +
+          'Baris dalam helaian dicari melalui nombor matrik, jadi mereka akan dilangkau.');
+      }
+      if (p.tiadaHalaqah) {
+        baris.push('<b>' + p.tiadaHalaqah + '</b> murid belum ada halaqah. ' +
+          'Kalau namanya belum ada dalam helaian, dia tidak dapat diletakkan.');
+      }
+      amaran.innerHTML = baris.join('<br><br>');
+      kotak.appendChild(amaran);
+    }
+
+    var hantar = butang(sedangHantar ? 'Menghantar…' : 'Eksport ke Sheet',
+      'butang-penuh', function () { jalankan(p.muatan); });
+    hantar.style.marginTop = '12px';
+    hantar.disabled = sedangHantar || !s.pautan();
+    kotak.appendChild(hantar);
+
+    if (!s.pautan()) {
+      var perlu = el('p', 'kecil jarak-atas');
+      perlu.textContent = 'Tetapkan pautan Apps Script di bawah dahulu.';
+      kotak.appendChild(perlu);
+    }
+
+    var csv = butang('Muat turun CSV susunan helaian', 'butang-luar butang-penuh butang-kecil',
+      function () {
+        CT.sandaran.muatTurun('e-dawam-helaian-' + julat.dari + '-' + julat.hingga + '.csv',
+          CT.sandaran.csvTeks(s.csvHelaian(julat)), 'text/csv;charset=utf-8');
+        CT.ui.toast('CSV dimuat turun.');
+      });
+    csv.style.marginTop = '8px';
+    kotak.appendChild(csv);
+
+    return kotak;
+  }
+
+  /* ---------- Menjalankan eksport ---------- */
+
+  function jalankan(muatan) {
+    if (sedangHantar) { return; }
+    sedangHantar = true;
+    mesej = null;
+    segar();
+
+    s.eksport(muatan).then(function (hasil) {
+      sedangHantar = false;
+      var perinci = [];
+      if (hasil.dikemaskini !== undefined) {
+        perinci.push(hasil.dikemaskini + ' baris murid dikemas kini');
+      }
+      if (hasil.sel !== undefined) { perinci.push(hasil.sel + ' sel ditulis'); }
+      if (hasil.tidakDijumpai && hasil.tidakDijumpai.length) {
+        perinci.push('Tidak dijumpai dalam helaian: ' +
+          hasil.tidakDijumpai.slice(0, 12).join(', ') +
+          (hasil.tidakDijumpai.length > 12
+            ? ' dan ' + (hasil.tidakDijumpai.length - 12) + ' lagi' : ''));
+      }
+      mesej = {
+        jenis: 'baik',
+        teks: 'Data berjaya dieksport ke sheet',
+        perinci: perinci.join(' &middot; ')
+      };
+      segar();
+    }, function (e) {
+      sedangHantar = false;
+      mesej = {
+        jenis: 'ralat',
+        teks: e.message,
+        cubaSemula: function () { jalankan(muatan); }
+      };
+      segar();
+    });
+  }
+
+  function kadMesej() {
+    if (!mesej) { return null; }
+    var kotak = el('div', 'notis ' + (mesej.jenis === 'baik' ? 'notis-baik' : 'notis-ralat'));
+    kotak.innerHTML = '<b>' + u.selamat(mesej.teks) + '</b>' +
+      (mesej.perinci ? '<br>' + mesej.perinci : '');
+    if (mesej.cubaSemula) {
+      var b = butang('Cuba semula', 'butang-luar butang-penuh butang-kecil', function () {
+        var f = mesej.cubaSemula;
+        mesej = null;
+        f();
+      });
+      b.style.marginTop = '10px';
+      kotak.appendChild(b);
+    }
+    return kotak;
+  }
+
+  /* ---------- Tetapan pautan ---------- */
+
+  function kadTetapan() {
+    var kotak = kad('Pautan spreadsheet');
+    var nota = el('p', 'kecil');
+    nota.style.marginTop = '2px';
+    nota.innerHTML = 'Pautan Web App Apps Script yang dipasang pada spreadsheet ' +
+      'laporan. Ia disimpan pada peranti ini sahaja.';
+    kotak.appendChild(nota);
+
+    var medan = el('div', 'medan jarak-atas');
+    medan.style.marginBottom = '0';
+    medan.innerHTML =
+      '<label for="ek-pautan">Pautan Apps Script</label>' +
+      '<input id="ek-pautan" type="url" inputmode="url" autocomplete="off" ' +
+      'placeholder="https://script.google.com/macros/s/.../exec" value="' +
+      u.selamat(s.pautan()) + '">';
+    kotak.appendChild(medan);
+
+    var baris = el('div', 'baris-lipat jarak-atas');
+    baris.appendChild(butang('Simpan pautan', 'butang-lembut tumbuh', function () {
+      var hasil = s.simpanPautan(kotak.querySelector('#ek-pautan').value);
+      if (!hasil.berjaya) { CT.ui.toast(hasil.sebab); return; }
+      CT.ui.toast('Pautan disimpan.');
+      segar();
+    }));
+    baris.appendChild(butang('Uji sambungan', 'butang-luar tumbuh', function () {
+      if (!s.pautan()) { CT.ui.toast('Simpan pautan dahulu.'); return; }
+      CT.ui.toast('Menguji sambungan…');
+      s.uji().then(function (hasil) {
+        mesej = {
+          jenis: 'baik',
+          teks: 'Sambungan berjaya',
+          perinci: hasil.helaian && hasil.helaian.length
+            ? 'Helaian dijumpai: ' + hasil.helaian.join(', ')
+            : ''
+        };
+        segar();
+      }, function (e) {
+        mesej = { jenis: 'ralat', teks: e.message };
+        segar();
+      });
+    }));
+    kotak.appendChild(baris);
+
+    var panduan = el('p', 'kecil jarak-atas');
+    panduan.innerHTML = 'Cara memasang: buka spreadsheet &rarr; ' +
+      '<b>Extensions &rarr; Apps Script</b> &rarr; tampal fail ' +
+      '<b>apps-script-edawam.gs</b> daripada projek e-Dawam &rarr; ' +
+      '<b>Deploy &rarr; New deployment &rarr; Web app</b>, ' +
+      'tetapkan <b>Execute as: Me</b> dan <b>Who has access: Anyone with the link</b>, ' +
+      'kemudian salin pautan yang berakhir dengan <b>/exec</b>.';
+    kotak.appendChild(panduan);
+
+    return kotak;
+  }
+
+  /* ---------- Susunan ---------- */
+
+  function bina() {
+    var kotak = el('div');
+    var m = kadMesej();
+    if (m) { kotak.appendChild(m); }
+    kotak.appendChild(kadStatus());
+    kotak.appendChild(kadTempoh());
+    kotak.appendChild(kadPratonton());
+    kotak.appendChild(kadTetapan());
+    return kotak;
+  }
+
+  function segar() {
+    var bekas = document.getElementById('lapisan-kandungan');
+    if (!bekas) { return; }
+    var tatal = bekas.scrollTop;
+    bekas.innerHTML = '';
+    bekas.appendChild(bina());
+    CT.ui.hiasSemua(bekas);
+    bekas.scrollTop = tatal;
+  }
+
+  function buka(pilihanTempoh) {
+    if (pilihanTempoh) { tempohDipilih = pilihanTempoh; }
+    mesej = null;
+    sedangHantar = false;
+    CT.ui.bukaLapisan('Eksport ke Sheet', bina());
+  }
+
+  return { buka: buka };
+})();
+
+</script>
+
+<script>
 /* js/views/tentang.js */
 /* Lapisan "Tentang & Sandaran".
 
@@ -3203,6 +3913,25 @@ CT.tentang = (function () {
       segar();
     });
     return medan;
+  }
+
+  /* ---------- Eksport ke spreadsheet laporan ---------- */
+
+  function kadSheet() {
+    var st = CT.sheet.status();
+    var kotak = seksyen('Eksport ke Sheet');
+    var nota = el('p', 'kecil');
+    nota.style.marginTop = '2px';
+    nota.textContent = st.pernah ? st.teks
+      : 'Hantar rekod bacaan mingguan terus ke dalam spreadsheet laporan halaqah.';
+    kotak.appendChild(nota);
+
+    var b = butang('Eksport ke Sheet', 'butang-lembut butang-penuh', function () {
+      CT.eksport.buka();
+    });
+    b.style.marginTop = '12px';
+    kotak.appendChild(b);
+    return kotak;
   }
 
   /* ---------- Eksport CSV ---------- */
@@ -3459,6 +4188,7 @@ CT.tentang = (function () {
     var undur = kadUndur();
     if (undur) { kotak.appendChild(undur); }
     kotak.appendChild(kadPulih());
+    kotak.appendChild(kadSheet());
     kotak.appendChild(kadCsv());
     kotak.appendChild(kadTentang());
     return kotak;
@@ -3689,6 +4419,19 @@ CT.views.murid = (function () {
     return butang;
   }
 
+  /* Senarai halaqah yang sudah pernah ditaip, supaya ejaan kekal sama antara
+     murid — eksport spreadsheet bergantung pada padanan nama ini. */
+  function pilihanHalaqah() {
+    var set = {};
+    CT.store.senaraiMurid().forEach(function (m) {
+      var h = String(m.halaqah || '').trim();
+      if (h) { set[h] = true; }
+    });
+    return Object.keys(set).sort().map(function (h) {
+      return '<option value="' + u.selamat(h) + '"></option>';
+    }).join('');
+  }
+
   function pilihanHari(terpilih) {
     var n = CT.jadual.hariIjazah({ program: 'ijazah', hariKelas: terpilih });
     return CT.jadual.NAMA_HARI.map(function (nama, i) {
@@ -3714,6 +4457,26 @@ CT.views.murid = (function () {
       '<input id="m-telefon" type="tel" value="' + u.selamat(m.telefon || '') +
       '" placeholder="Contoh: 012-3456789" autocomplete="off"></div>' +
 
+      /* Halaqah dan kumpulan diperlukan oleh eksport spreadsheet: halaqah
+         menentukan blok mana dalam helaian, kumpulan menentukan helaian mana
+         (Banin atau Banat). Kedua-duanya juga berguna pada kad murid. */
+      '<div class="medan"><label for="m-halaqah">Halaqah</label>' +
+      '<input id="m-halaqah" type="text" list="senarai-halaqah" value="' +
+      u.selamat(m.halaqah || '') +
+      '" placeholder="Contoh: HALAQAH UST MOHD MAHFUZ" autocomplete="off">' +
+      '<datalist id="senarai-halaqah">' + pilihanHalaqah() + '</datalist>' +
+      '<p class="kecil" style="margin-top:5px">Nama halaqah mesti sama seperti ' +
+      'dalam spreadsheet supaya eksport masuk ke blok yang betul.</p></div>' +
+
+      '<div class="medan-dua">' +
+      '<div class="medan"><label for="m-kumpulan">Kumpulan</label>' +
+      '<select id="m-kumpulan">' +
+      '<option value="banin"' + (m.kumpulan !== 'banat' ? ' selected' : '') +
+      '>Banin (lelaki)</option>' +
+      '<option value="banat"' + (m.kumpulan === 'banat' ? ' selected' : '') +
+      '>Banat (perempuan)</option>' +
+      '</select></div>' +
+
       '<div class="medan"><label for="m-program">Program</label>' +
       '<select id="m-program">' +
       '<option value="diploma"' + (m.program !== 'ijazah' ? ' selected' : '') +
@@ -3721,6 +4484,7 @@ CT.views.murid = (function () {
       '<option value="ijazah"' + (m.program === 'ijazah' ? ' selected' : '') +
       '>Ijazah (I\'adah 1-8)</option>' +
       '</select></div>' +
+      '</div>' +
 
       /* Hari kelas hanya dipaparkan untuk Ijazah. Diploma tetap Isnin hingga
          Jumaat, jadi tiada apa yang perlu dipilih. */
@@ -3764,6 +4528,8 @@ CT.views.murid = (function () {
         nama: nama,
         matrik: kotak.querySelector('#m-matrik').value.trim(),
         telefon: kotak.querySelector('#m-telefon').value.trim(),
+        halaqah: kotak.querySelector('#m-halaqah').value.trim(),
+        kumpulan: kotak.querySelector('#m-kumpulan').value,
         program: program,
         semester: +kotak.querySelector('#m-semester').value,
         hifz: +kotak.querySelector('#m-hifz').value
@@ -3799,6 +4565,8 @@ CT.views.murid = (function () {
       '<div><b>Nombor matrik</b>' + u.selamat(m.matrik || 'Tiada') + '</div>' +
       '<div><b>Nombor telefon</b>' + u.selamat(m.telefon || 'Tiada') + '</div>' +
       '<div><b>Program</b>' + u.selamat(CT.sukatan.program(m.program).nama) + '</div>' +
+      '<div><b>Kumpulan</b>' + (m.kumpulan === 'banat' ? 'Banat' : 'Banin') + '</div>' +
+      '<div><b>Halaqah</b>' + u.selamat(m.halaqah || 'Belum ditetapkan') + '</div>' +
       '<div><b>Hari kelas</b>' + u.selamat(CT.jadual.teksHari(m)) + '</div>' +
       '<div><b>Semester</b>' + u.selamat(m.semester || '-') + '</div>' +
       '<div><b>Hifz / I\'adah</b>' + u.selamat(m.hifz || '-') + '</div>' +
@@ -4157,6 +4925,13 @@ CT.views.kehadiran = (function () {
       CT.app.segarSemula();
     }));
 
+    /* Peringatan eksport hari Jumaat. Diletakkan di sini kerana tab Kehadiran
+       ialah tab yang guru buka setiap hari, manakala tab Utama mesti kekal
+       ringkas. Ia hilang sebaik data minggu ini dieksport, dan boleh ditutup
+       untuk hari itu. */
+    var peringatan = peringatanEksport();
+    if (peringatan) { skrin.appendChild(peringatan); }
+
     /* Notis cuti umum */
     var cuti = CT.ui.notisCuti(tarikh);
     if (cuti) {
@@ -4262,6 +5037,39 @@ CT.views.kehadiran = (function () {
     pautanBawah(skrin);
   }
 
+  /* Peringatan Jumaat: nada relaks, bukan amaran. Satu ayat dan satu butang. */
+  function peringatanEksport() {
+    if (!CT.sheet.perluPeringatan(u.hariIni())) { return null; }
+
+    var kotak = document.createElement('div');
+    kotak.className = 'notis notis-info notis-peringatan jarak-atas';
+
+    var teks = document.createElement('span');
+    teks.className = 'peringatan-teks';
+    teks.innerHTML = '<b>Peringatan:</b> Sila eksport data minggu ini ke dalam ' +
+      'spreadsheet.';
+    kotak.appendChild(teks);
+
+    var pergi = document.createElement('button');
+    pergi.type = 'button';
+    pergi.className = 'butang butang-kecil';
+    pergi.textContent = 'Eksport Sekarang';
+    pergi.addEventListener('click', function () { CT.eksport.buka('minggu-ini'); });
+    kotak.appendChild(pergi);
+
+    var tutup = document.createElement('button');
+    tutup.type = 'button';
+    tutup.className = 'butang butang-luar butang-kecil';
+    tutup.textContent = 'Nanti';
+    tutup.addEventListener('click', function () {
+      CT.sheet.tutupPeringatan(u.hariIni());
+      CT.app.segarSemula();
+    });
+    kotak.appendChild(tutup);
+
+    return kotak;
+  }
+
   /* Dua pautan di bawah tab, dipaparkan sama ada ada kelas pada hari itu
      atau tidak. */
   function pautanBawah(skrin) {
@@ -4280,6 +5088,13 @@ CT.views.kehadiran = (function () {
     pautanRingkas.textContent = 'Jumlah tidak hadir sepanjang semester';
     pautanRingkas.addEventListener('click', bukaRingkasan);
     skrin.appendChild(pautanRingkas);
+
+    var pautanEksport = document.createElement('button');
+    pautanEksport.type = 'button';
+    pautanEksport.className = 'butang butang-lembut butang-penuh jarak-atas';
+    pautanEksport.textContent = 'Eksport ke Sheet';
+    pautanEksport.addEventListener('click', function () { CT.eksport.buka(); });
+    skrin.appendChild(pautanEksport);
   }
 
   /* ---------- Ringkasan ketidakhadiran sepanjang semester ---------- */
@@ -5777,7 +6592,7 @@ window.CT = window.CT || {};
 
   /* Versi aplikasi. Naikkan bersama VERSI dalam sw.js setiap kali kod diubah,
      supaya guru boleh mengesahkan binaan mana yang sedang berjalan. */
-  CT.VERSI = '1.13.0';
+  CT.VERSI = '1.14.0';
 
   var TAB = ['utama', 'murid', 'kehadiran', 'kalendar', 'rekod', 'sukatan',
     'quran', 'nota'];
