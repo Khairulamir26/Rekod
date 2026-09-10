@@ -75,6 +75,7 @@ window.CT = window.CT || {};
     HARI_DIPLOMA: HARI_DIPLOMA,
     namaHari: namaHari,
     namaHariPendek: namaHariPendek,
+    programMurid: programMurid,
     hariIjazah: hariIjazah,
     perluHari: perluHari,
     hariKelas: hariKelas,

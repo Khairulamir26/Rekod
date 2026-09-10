@@ -91,11 +91,31 @@ CT.views.utama = (function () {
     /* Versi dan hakcipta dipindahkan ke sini apabila tab Pasukan dibuang.
        Ia diletakkan di bawah sekali sebagai kaki halaman — nombor versi
        diperlukan untuk mengesahkan binaan mana yang sedang berjalan pada
-       peranti guru. */
-    var kaki = document.createElement('p');
-    kaki.className = 'kecil tengah utama-kaki';
-    kaki.textContent = 'e-Dawam versi ' + (CT.VERSI || '-') +
-      ' · Hakcipta © Abu Dawud 2026';
+       peranti guru.
+
+       Baris yang sama ialah pintu masuk kepada "Tentang & Sandaran". Tab Utama
+       mesti kekal ringkas, jadi sandaran tidak diberi butang sendiri; ia
+       bersembunyi di sebalik baris versi yang memang sudah ada di sini. */
+    var kaki = document.createElement('button');
+    kaki.type = 'button';
+    kaki.className = 'kecil tengah utama-kaki kaki-butang';
+    kaki.setAttribute('aria-label', 'Tentang dan sandaran');
+    kaki.appendChild(document.createTextNode('e-Dawam versi ' + (CT.VERSI || '-') +
+      ' · Hakcipta © Abu Dawud 2026'));
+
+    /* Satu-satunya tambahan pada skrin Utama: lencana kecil yang muncul hanya
+       apabila sandaran memang sudah lama. Ia hilang sebaik guru menyandar. */
+    var st = CT.sandaran.status();
+    if (st.perlu) {
+      var lencana = document.createElement('span');
+      lencana.className = 'lencana lencana-emas kaki-lencana';
+      lencana.textContent = st.pernah
+        ? 'Sandaran ' + st.hari + ' hari lalu'
+        : 'Belum disandarkan';
+      kaki.appendChild(lencana);
+    }
+
+    kaki.addEventListener('click', function () { CT.tentang.buka(); });
     skrin.appendChild(kaki);
   }
 

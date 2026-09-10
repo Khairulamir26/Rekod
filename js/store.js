@@ -50,6 +50,19 @@ window.CT = window.CT || {};
     }
   }
 
+  /* Membuang satu kunci sepenuhnya, bukan menulis nilai kosong. Ini penting
+     untuk pemulihan sandaran: kunci yang tidak wujud sebelum ini mesti hilang
+     semula apabila guru mengundurkan pemulihan, bukan tertinggal sebagai null. */
+  function buang(kunci) {
+    try {
+      localStorage.removeItem(AWALAN + kunci);
+      return true;
+    } catch (e) {
+      console.warn('Gagal membuang', kunci, e);
+      return false;
+    }
+  }
+
   /* ---------- Murid ---------- */
   function senaraiMurid() {
     var senarai = baca('murid', []);
@@ -392,6 +405,7 @@ window.CT = window.CT || {};
     lapor: lapor,
     baca: baca,
     tulis: tulis,
+    buang: buang,
 
     senaraiMurid: senaraiMurid,
     ambilMurid: ambilMurid,

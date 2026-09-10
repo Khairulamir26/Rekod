@@ -344,6 +344,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Kaki halaman Utama: versi dan hakcipta. Sengaja senyap — ia maklumat
    rujukan, bukan sebahagian daripada tugas guru. */
 .utama-kaki { margin-top: 2px; padding-bottom: 4px; }
+.kaki-butang {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 8px 0 4px;
+  font: inherit;
+  font-size: .82rem;
+  color: var(--teks-lembut);
+  cursor: pointer;
+}
+.kaki-butang:active { opacity: .6; }
+.kaki-lencana { display: block; width: max-content; margin: 6px auto 0; }
 
 .logo-bingkai {
   width: 100%;
@@ -581,6 +594,31 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .notis-cuti { background: #fdf3d8; border-color: #f0d99a; color: #6d4e00; }
 .notis-info { background: var(--biru-muda); border-color: #c9dcf5; color: #14498c; }
+.notis-baik { background: var(--hijau-muda); border-color: #bfe3d8; color: var(--hijau-gelap); }
+.notis + .kad, .notis + .notis { margin-top: 10px; }
+
+/* Sandaran: perbandingan fail lawan peranti sebelum pemulihan. */
+.banding { margin-top: 12px; }
+.banding-baris {
+  display: grid;
+  grid-template-columns: 1fr 72px 72px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  border-top: 1px solid var(--garis);
+  font-size: .85rem;
+  color: var(--teks-lembut);
+}
+.banding-baris > span:not(:first-child) { text-align: right; }
+.banding-kepala {
+  border-top: 0;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  padding-bottom: 2px;
+}
+.banding-nilai { font-weight: 700; color: var(--hijau-gelap); font-variant-numeric: tabular-nums; }
+.banding-kini { color: var(--teks-lembut); }
 
 .bar-tindakan {
   position: sticky;
